@@ -8,23 +8,18 @@ use Illuminate\Http\Request;
 
 class SettingsController extends Controller
 {
-    /**
-     * Settings home page
-     */
-
+   
 
     /**
      * Booking Settings Page
      */
-    public function bookings()
-    {
-        $serviceProvided = Setting::where('key', 'service_provided')->get();
-        $serviceType = Setting::where('key', 'service_type')->get();
-        $cabinType = Setting::where('key', 'cabin_type')->get();
+public function bookings()
+{
+    $serviceProvided = collect(Setting::getOptions('service_provided'));
+    $serviceType = collect(Setting::getOptions('service_type'));
 
-        return view('admin.settings.bookings', compact('serviceProvided', 'serviceType', 'cabinType'));
-    }
-
+    return view('admin.settings.bookings', compact('serviceProvided', 'serviceType'));
+}
     /**
      * Add new option
      */

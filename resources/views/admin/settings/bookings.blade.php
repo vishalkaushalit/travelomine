@@ -23,7 +23,7 @@
 
     <div class="row">
         <!-- Service Provided -->
-        <div class="col-md-4 mb-4">
+        <div class="col-md-6 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <strong><i class="bi bi-briefcase"></i> Service Provided</strong>
@@ -39,10 +39,10 @@
                     </form>
 
                     <ul class="list-group">
-                        @forelse($serviceProvided as $item)
+                        @forelse($serviceProvided as $id => $value)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ $item->value }}
-                                <form action="{{ route('admin.settings.destroy', $item->id) }}" method="POST" style="display:inline;">
+                                {{ $value }}
+                                <form action="{{ route('admin.settings.destroy', $id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this option?')">
@@ -59,7 +59,7 @@
         </div>
 
         <!-- Service Type -->
-        <div class="col-md-4 mb-4">
+        <div class="col-md-6 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-success text-white">
                     <strong><i class="bi bi-tags"></i> Service Type</strong>
@@ -75,46 +75,10 @@
                     </form>
 
                     <ul class="list-group">
-                        @forelse($serviceType as $item)
+                        @forelse($serviceType as $id => $value)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ $item->value }}
-                                <form action="{{ route('admin.settings.destroy', $item->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this option?')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </li>
-                        @empty
-                            <li class="list-group-item text-muted">No options are available</li>
-                        @endforelse
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cabin Type -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-warning text-dark">
-                    <strong><i class="bi bi-airplane"></i> Cabin Type</strong>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('admin.settings.store') }}" method="POST" class="mb-3">
-                        @csrf
-                        <input type="hidden" name="key" value="cabin_type">
-                        <div class="input-group">
-                            <input type="text" name="value" class="form-control" placeholder="Add new option" required>
-                            <button type="submit" class="btn btn-warning"><i class="bi bi-plus-circle"></i></button>
-                        </div>
-                    </form>
-
-                    <ul class="list-group">
-                        @forelse($cabinType as $item)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ $item->value }}
-                                <form action="{{ route('admin.settings.destroy', $item->id) }}" method="POST" style="display:inline;">
+                                {{ $value }}
+                                <form action="{{ route('admin.settings.destroy', $id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this option?')">
@@ -132,5 +96,3 @@
     </div>
 </div>
 @endsection
-
-

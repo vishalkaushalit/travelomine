@@ -111,9 +111,9 @@ class AgentBookingController extends Controller
             'full_payment.expiration_year' => 'nullable|string|max:4',
             'full_payment.cvv' => 'nullable|string|max:4',
             'full_payment.charge_amount' => 'nullable|numeric|min:0.01',
-            'full_payment.billing_email' => 'nullable|email|max:255',
-            'full_payment.billing_phone' => 'nullable|string|max:30',
-            'full_payment.billing_address' => 'nullable|string',
+            // 'full_payment.billing_email' => 'nullable|email|max:255',
+            // 'full_payment.billing_phone' => 'nullable|string|max:30',
+            // 'full_payment.billing_address' => 'nullable|string',
             'full_payment.merchant_id' => 'nullable|exists:merchants,id',
 
             // Split payment
@@ -126,9 +126,9 @@ class AgentBookingController extends Controller
             'split_payment.airline.expiration_year' => 'nullable|string|max:4',
             'split_payment.airline.cvv' => 'nullable|string|max:4',
             'split_payment.airline.charge_amount' => 'nullable|numeric|min:0.01',
-            'split_payment.airline.billing_email' => 'nullable|email|max:255',
-            'split_payment.airline.billing_phone' => 'nullable|string|max:30',
-            'split_payment.airline.billing_address' => 'nullable|string',
+            // 'split_payment.airline.billing_email' => 'nullable|email|max:255',
+            // 'split_payment.airline.billing_phone' => 'nullable|string|max:30',
+            // 'split_payment.airline.billing_address' => 'nullable|string',
 
             'split_payment.agency.merchant_id' => 'nullable|exists:merchants,id',
             'split_payment.agency.card_holder_name' => 'nullable|string|max:255',
@@ -138,9 +138,9 @@ class AgentBookingController extends Controller
             'split_payment.agency.expiration_year' => 'nullable|string|max:4',
             'split_payment.agency.cvv' => 'nullable|string|max:4',
             'split_payment.agency.charge_amount' => 'nullable|numeric|min:0.01',
-            'split_payment.agency.billing_email' => 'nullable|email|max:255',
-            'split_payment.agency.billing_phone' => 'nullable|string|max:30',
-            'split_payment.agency.billing_address' => 'nullable|string',
+            // 'split_payment.agency.billing_email' => 'nullable|email|max:255',
+            // 'split_payment.agency.billing_phone' => 'nullable|string|max:30',
+            // 'split_payment.agency.billing_address' => 'nullable|string',
 
             // 7. Optional services + remarks
             'agent_remarks' => 'nullable|string',

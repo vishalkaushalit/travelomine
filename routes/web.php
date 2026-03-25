@@ -24,12 +24,32 @@ use App\Http\Controllers\Agent\Bookings\FlightSegmentController;
 
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Support\CsLoginController;
+use App\Http\Controllers\Support\SupportDashboardController;
 use App\Http\Controllers\Agent\Bookings\PassengerController;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+// payment contollers 
+use App\Http\Controllers\PublicPaymentController;
+use App\Http\Controllers\Charge\BookingPaymentLinkController;
 
-// email consent routes
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
+
+
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    } else {
+        return view('welcome');
+    }
+});
+
+Route::get('/pay/{token}', [PublicPaymentController::class, 'show'])->name('public.pay.show');
+Route::post('/pay/{token}', [PublicPaymentController::class, 'process'])->name('public.pay.process');
+Route::get('/pay/{token}/success', [PublicPaymentController::class, 'success'])->name('public.pay.success');
+
 // Customer access route (Signed for security)
 Route::get('/consent/{id}', [AuthConsentController::class, 'customerConsentView'])
     ->name('customer.consent.view')
@@ -40,11 +60,6 @@ Route::get('/login', [AgentAuthController::class, 'showLogin'])->name('agent.log
 Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
 Route::post('/agent/login', [AgentAuthController::class, 'login']);
 Route::post('/agent/logout', [AgentAuthController::class, 'logout'])->name('agent.logout');
-
-// mis auth routes
-// Route::get('/mis/login', [MisAuthController::class, 'showLogin'])->name('mis.login');
-// Route::post('/mis/login', [MisAuthController::class, 'login']);
-// Route::post('/mis/logout', [MisAuthController::class, 'logout'])->name('mis.logout');
 
 // admin auth routes
 Route::get('/Admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
@@ -83,6 +98,17 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
 
     Route::post('/bookings/{id}/update-status', [ChargeBookingStatusController::class, 'update'])
         ->name('bookings.update-status');
+
+            // Show "Charge Now" form for a booking
+    Route::get('/bookings/{booking}/payment-link/create', [BookingPaymentLinkController::class, 'create'])
+        ->name('bookings.payment-link.create');
+
+    // Store payment link for that booking
+    Route::post('/bookings/{booking}/payment-link', [BookingPaymentLinkController::class, 'store'])
+        ->name('bookings.payment-link.store');
+        // send email 
+            Route::post('/bookings/{booking}/payment-link/{link}/send-mail', [BookingPaymentLinkController::class, 'sendMail'])
+        ->name('bookings.payment-link.send-mail');
 });
 
 
@@ -123,10 +149,9 @@ Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.
     Route::put('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
 });
-
 // customer support ROUTES
 Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardcontroller::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardController::class, 'index'])->name('dashboard');
     // Route::get('/agents-list', [\App\Http\Controllers\Support\SupportAgentsController::class, 'index'])->name('agents.index');
     Route::get('/bookings/all', [\App\Http\Controllers\Support\SupportBookingsController::class, 'all'])->name('bookings.all');
     Route::get('/bookings', [\App\Http\Controllers\Support\SupportBookingsController::class, 'index'])->name('bookings.index');
@@ -233,3 +258,19 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/agent/test-notifications', function () {
     return view('agent.test-notifications');
 })->middleware(['auth', 'role:agent'])->name('agent.test');
+
+
+
+// clear all cache 
+Route::get('/clear-all-cache', function() {
+    // Clear config cache
+    Artisan::call('config:clear');
+    
+    // Clear route cache
+    Artisan::call('route:clear');
+    
+    // Optimize the application (clears all other caches like application cache and views)
+    Artisan::call('optimize:clear');
+    
+    return "Configuration, Routes, and all other caches cleared and application optimized!";
+});

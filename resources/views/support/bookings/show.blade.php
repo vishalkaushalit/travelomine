@@ -1,7 +1,5 @@
 @extends('layouts.support')
-
 @section('title', 'Booking #' . $booking->id)
-
 @section('content')
 <div class="container py-4">
     <div class="row mb-4">
@@ -68,16 +66,16 @@
                             <th>To</th>
                             <th>Departure Date</th>
                             <th>PNR</th>
-                            <th>Airline</th>
+                            <th>Airline code</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($booking->segments as $segment)
                             <tr>
-                                <td>{{ $segment->from_airport }}</td>
-                                <td>{{ $segment->to_airport }}</td>
+                                <td>{{ $segment->from_city }}</td>
+                                <td>{{ $segment->to_city }}</td>
                                 <td>{{ $segment->departure_date->format('d M Y') }}</td>
-                                <td>{{ $segment->pnr ?? 'N/A' }}</td>
+                                <td>{{ $segment->gk_pnr ?? 'N/A' }}</td>
                                 <td>{{ $segment->airline_code }}</td>
                             </tr>
                         @endforeach
@@ -111,7 +109,7 @@
                                 <td>{{ $passenger->middle_name ?? '-' }}</td>
                                 <td>{{ $passenger->last_name }}</td>
                                 <td>{{ $passenger->dob->format('d M Y') }}</td>
-                                <td>{{ $passenger->sex }}</td>
+                                <td>{{ $passenger->gender }}</td>
                             </tr>
                         @endforeach
                     </tbody>

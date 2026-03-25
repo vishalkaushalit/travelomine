@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('service_provided', function (Blueprint $table) {
             $table->id();
-            $table->string('service_name');         // e.g. "Flight + Hotel"
-            $table->string('slug')->unique();        // e.g. "flight-hotel"
-            $table->text('description')->nullable(); // optional description
+            $table->string('service_name');         
+            $table->string('slug')->unique();       
+            $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

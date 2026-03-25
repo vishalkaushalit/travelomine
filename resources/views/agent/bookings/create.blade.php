@@ -143,7 +143,7 @@
         <div class="card mb-4" id="flightDetailsCard">
             <div class="card-header"><strong>3. Flight Details</strong></div>
             <div class="card-body">
-                <div class="row">
+                <div class="row flight-row">
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Flight Type <span class="text-danger">*</span></label>
                         <select name="flight_type" id="flight_type" class="form-control">
@@ -230,7 +230,7 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label class="form-label">Amount Charged <span class="text-danger">*</span></label>
+                        <label class="form-label">Total Quoted <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" min="0" name="amount_charged" id="amount_charged"
                                class="form-control" value="{{ old('amount_charged') }}" required>
                     </div>
@@ -329,7 +329,7 @@
                             </div>
 
                             <div class="col-md-2 mb-3">
-                                <label>CVV</label>
+                                <label>CVV <span class="text-danger">*</span></label>
                                 <input type="text" name="full_payment[cvv]" class="form-control"
                                        value="{{ old('full_payment.cvv') }}">
                             </div>
@@ -341,22 +341,22 @@
                                        value="{{ old('full_payment.charge_amount') }}">
                             </div>
 
-                            <div class="col-md-4 mb-3">
+                            {{-- <div class="col-md-4 mb-3">
                                 <label>Billing Email</label>
                                 <input type="email" name="full_payment[billing_email]" class="form-control billing-email-sync"
                                        value="{{ old('full_payment.billing_email', old('customer_email')) }}">
-                            </div>
+                            </div> --}}
 
-                            <div class="col-md-4 mb-3">
+                            {{-- <div class="col-md-4 mb-3">
                                 <label>Billing Phone</label>
                                 <input type="text" name="full_payment[billing_phone]" class="form-control billing-phone-sync"
                                        value="{{ old('full_payment.billing_phone', old('billing_phone')) }}">
-                            </div>
+                            </div> --}}
 
-                            <div class="col-md-12 mb-3">
+                            {{-- <div class="col-md-12 mb-3">
                                 <label>Billing Address</label>
                                 <textarea name="full_payment[billing_address]" class="form-control billing-address-sync" rows="2">{{ old('full_payment.billing_address', old('billing_address')) }}</textarea>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -404,25 +404,25 @@
                             </div>
 
                             <div class="col-md-2 mb-3">
-                                <label>Exp Year</label>
+                                <label>Exp Year <span class="text-danger">*</span></label>
                                 <input type="text" name="split_payment[airline][expiration_year]" class="form-control"
-                                       value="{{ old('split_payment.airline.expiration_year') }}">
+                                       value="{{ old('split_payment.airline.expiration_year') }}" required>
                             </div>
 
                             <div class="col-md-2 mb-3">
-                                <label>CVV</label>
+                                <label>CVV <span class="text-danger">*</span></label>
                                 <input type="text" name="split_payment[airline][cvv]" class="form-control"
-                                       value="{{ old('split_payment.airline.cvv') }}">
+                                       value="{{ old('split_payment.airline.cvv') }}" required>
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label>Charge Amount</label>
+                                <label>Charge Amount <span class="text-danger">*</span></label>
                                 <input type="number" step="0.01" min="0" name="split_payment[airline][charge_amount]"
                                        id="split_airline_charge_amount" class="form-control"
                                        value="{{ old('split_payment.airline.charge_amount') }}">
                             </div>
 
-                            <div class="col-md-4 mb-3">
+                            {{-- <div class="col-md-4 mb-3">
                                 <label>Billing Email</label>
                                 <input type="email" name="split_payment[airline][billing_email]" class="form-control billing-email-sync"
                                        value="{{ old('split_payment.airline.billing_email', old('customer_email')) }}">
@@ -437,7 +437,7 @@
                             <div class="col-md-12 mb-3">
                                 <label>Billing Address</label>
                                 <textarea name="split_payment[airline][billing_address]" class="form-control billing-address-sync" rows="2">{{ old('split_payment.airline.billing_address', old('billing_address')) }}</textarea>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
 
@@ -495,19 +495,19 @@
                             </div>
 
                             <div class="col-md-2 mb-3">
-                                <label>CVV</label>
+                                <label>CVV <span class="text-danger">*</span></label>
                                 <input type="text" name="split_payment[agency][cvv]" class="form-control"
                                        value="{{ old('split_payment.agency.cvv') }}">
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label>Charge Amount</label>
+                                <label>Charge Amount <span class="text-danger">*</span></label>
                                 <input type="number" step="0.01" min="0" name="split_payment[agency][charge_amount]"
                                        id="split_agency_charge_amount" class="form-control"
                                        value="{{ old('split_payment.agency.charge_amount') }}">
                             </div>
 
-                            <div class="col-md-4 mb-3">
+                            {{-- <div class="col-md-4 mb-3">
                                 <label>Billing Email</label>
                                 <input type="email" name="split_payment[agency][billing_email]" class="form-control billing-email-sync"
                                        value="{{ old('split_payment.agency.billing_email', old('customer_email')) }}">
@@ -522,7 +522,7 @@
                             <div class="col-md-12 mb-3">
                                 <label>Billing Address</label>
                                 <textarea name="split_payment[agency][billing_address]" class="form-control billing-address-sync" rows="2">{{ old('split_payment.agency.billing_address', old('billing_address')) }}</textarea>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -535,7 +535,8 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label">Agent Remark</label>
-                    <textarea name="agent_remarks" class="form-control" rows="4">{{ old('agent_remarks') }}</textarea>
+                    <p class="text-muted small">Enter financial details here </p>
+                    <textarea placeholder="enter card holder detail" name="agent_remarks" class="form-control" rows="4">{{ old('agent_remarks') }}</textarea>
                 </div>
             </div>
         </div>
@@ -572,64 +573,63 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let segmentIndex = 0;
 
-    function makeSegmentCard(index, showReturnDate = false, removable = false) {
-        return `
-            <div class="border rounded p-3 mb-3 segment-item">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0">Flight Segment ${index + 1}</h6>
-                    ${removable ? '<button type="button" class="btn btn-sm btn-outline-danger remove-segment-btn">Remove</button>' : ''}
+    function makeSegmentCard(index, showReturnDate = false, removable = false, swapCities = false) {return `
+        <div class="border rounded p-3 mb-3 segment-item">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">Flight Segment ${index + 1}</h6>
+                ${removable ? '<button type="button" class="btn btn-sm btn-outline-danger remove-segment-btn">Remove</button>' : ''}
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label>${swapCities ? 'To City (Return)' : 'From City'} <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][from_city]" class="form-control" required>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label>From City <span class="text-danger">*</span></label>
-                        <input type="text" name="segments[${index}][from_city]" class="form-control" required>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>${swapCities ? 'From City (Return)' : 'To City'} <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][to_city]" class="form-control" required>
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>To City <span class="text-danger">*</span></label>
-                        <input type="text" name="segments[${index}][to_city]" class="form-control" required>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Departure Date <span class="text-danger">*</span></label>
+                    <input type="date" name="segments[${index}][departure_date]" class="form-control" required>
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>Departure Date <span class="text-danger">*</span></label>
-                        <input type="date" name="segments[${index}][departure_date]" class="form-control" required>
-                    </div>
+                <div class="col-md-3 mb-3" ${!showReturnDate ? 'style="display:none;"' : ''}>
+                    <label>Return Date ${showReturnDate ? '<span class="text-danger">*</span>' : ''}</label>
+                    <input type="date" name="segments[${index}][return_date]" class="form-control" ${showReturnDate ? 'required' : ''}>
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>Return Date ${showReturnDate ? '<span class="text-danger">*</span>' : ''}</label>
-                        <input type="date" name="segments[${index}][return_date]" class="form-control" ${showReturnDate ? 'required' : ''}>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Airline Name <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][airline_name]" class="form-control" required>
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>Airline Name <span class="text-danger">*</span></label>
-                        <input type="text" name="segments[${index}][airline_name]" class="form-control" required>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Flight Number</label>
+                    <input type="text" name="segments[${index}][flight_number]" class="form-control">
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>Flight Number</label>
-                        <input type="text" name="segments[${index}][flight_number]" class="form-control">
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Segment PNR</label>
+                    <input type="text" name="segments[${index}][segment_pnr]" class="form-control">
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>Segment PNR</label>
-                        <input type="text" name="segments[${index}][segment_pnr]" class="form-control">
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <label>Cabin Class <span class="text-danger">*</span></label>
-                        <select name="segments[${index}][cabin_class]" class="form-control" required>
-                            <option value="">Select Cabin</option>
-                            <option value="economy">Economy</option>
-                            <option value="premium_economy">Premium Economy</option>
-                            <option value="business">Business</option>
-                            <option value="first">First</option>
-                        </select>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Cabin Class <span class="text-danger">*</span></label>
+                    <select name="segments[${index}][cabin_class]" class="form-control" required>
+                        <option value="">Select Cabin</option>
+                        <option value="economy">Economy</option>
+                        <option value="premium_economy">Premium Economy</option>
+                        <option value="business">Business</option>
+                        <option value="first">First</option>
+                    </select>
                 </div>
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
     function buildSegments() {
         const type = flightType.value;

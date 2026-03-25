@@ -5,21 +5,9 @@
 @section('content')
 <div class="container-fluid py-4">
     
-    {{-- Welcome Section --}}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex align-items-center">
-                <div>
-                    <h2 class="fw-bold mb-0">Dashboard Overview</h2>
-                    <p class="text-muted mb-0">Welcome back, {{ explode(' ', $profileData['name'])[0] }}! Here's what's happening with your business today.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- Header / Profile Card --}}
     <div class="row g-4 mb-4">
-        <div class="col-12 col-lg-4">
+        <div class="col-12 col-lg-3">
             <div class="card border-0 shadow-sm h-100 overflow-hidden">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center mb-4">
@@ -42,10 +30,7 @@
                             <span class="text-muted small">Joined</span>
                             <span class="fw-semibold d-block">{{ $profileData['joined_date'] }}</span>
                         </div>
-                        <div class="info-item">
-                            <span class="text-muted small">Total Bookings</span>
-                            <span class="fw-semibold d-block">{{ $profileData['total_bookings'] }}</span>
-                        </div>
+                       
                     </div>
 
                     <div class="border-top pt-3">
@@ -88,7 +73,7 @@
                             <div class="stat-icon mb-3">
                                 <i class="bi bi-graph-up-arrow fs-2 text-info"></i>
                             </div>
-                            <p class="text-muted small mb-1">Monthly Revenue</p>
+                            <p class="text-muted small mb-1">Total Charged </p>
                             <h3 class="fw-bold mb-0 display-6">${{ number_format($monthAmountCharged, 2) }}</h3>
                             <span class="badge bg-light text-muted mt-2">Current month</span>
                         </div>
@@ -203,7 +188,9 @@
     .bg-gradient-primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
-    
+    .booking-item:nth-child(even) {
+        background: #fff4f4;
+    }
     .avatar-lg {
         width: 60px;
         height: 60px;
@@ -216,7 +203,7 @@
     
     .info-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
     
