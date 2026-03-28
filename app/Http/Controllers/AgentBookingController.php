@@ -110,15 +110,15 @@ class AgentBookingController extends Controller
             'full_payment.card_last_four' => 'nullable|digits:4',
 
             // Split payment
-            'split_payment.airline_merchant_name' => 'nullable|string|max:255',
-            'split_payment.airline.charge_amount' => 'nullable|numeric|min:0.01',
-            'split_payment.airline.card_holder_name' => 'nullable|string|max:255',
-            'split_payment.airline.card_last_four' => 'nullable|digits:4',
+            'split_payment.airline_merchant_name' => 'required_if:payment_type,split|string|max:255',
+            'split_payment.airline.charge_amount' => 'required_if:payment_type,split|numeric|min:0.01',
+            'split_payment.airline.card_holder_name' => 'required_if:payment_type,split|string|max:255',
+            'split_payment.airline.card_last_four' => 'required_if:payment_type,split|digits:4',
 
-            'split_payment.agency.merchant_id' => 'nullable|exists:merchants,id',
-            'split_payment.agency.charge_amount' => 'nullable|numeric|min:0.01',
-            'split_payment.agency.card_holder_name' => 'nullable|string|max:255',
-            'split_payment.agency.card_last_four' => 'nullable|digits:4',
+            'split_payment.agency.merchant_id' => 'required_if:payment_type,split|exists:merchants,id',
+            'split_payment.agency.charge_amount' => 'required_if:payment_type,split|numeric|min:0.01',
+            'split_payment.agency.card_holder_name' => 'required_if:payment_type,split|string|max:255',
+            'split_payment.agency.card_last_four' => 'required_if:payment_type,split|digits:4',
 
             // 7. Optional services + remarks
             'agent_remarks' => 'required|string',
