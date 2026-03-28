@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class ChargeAssignment extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'booking_id',
         'charger_id',
@@ -18,29 +16,33 @@ class ChargeAssignment extends Model
         'assigned_at',
         'accepted_at',
         'rejected_at',
+        'viewed_at',
+        'completed_at',
     ];
-
+    
     protected $casts = [
         'assigned_at' => 'datetime',
         'accepted_at' => 'datetime',
         'rejected_at' => 'datetime',
+        'viewed_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
-
+    
     public function booking()
     {
         return $this->belongsTo(Booking::class);
     }
-
+    
     public function charger()
     {
         return $this->belongsTo(User::class, 'charger_id');
     }
-
+    
     public function agent()
     {
         return $this->belongsTo(User::class, 'agent_id');
     }
-
+    
     public function merchant()
     {
         return $this->belongsTo(Merchant::class);

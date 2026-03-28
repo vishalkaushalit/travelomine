@@ -38,6 +38,7 @@
                             </div>
                             <div class="col-md-3">
                                 <strong>PNR:</strong><br>
+                                <span>Airline PNR: hello</span> <br>
                                 <span class="badge badge-info">{{ $booking->gk_pnr ?? $booking->airline_pnr ?? 'N/A' }}</span>
                             </div>
                             <div class="col-md-3">

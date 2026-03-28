@@ -38,14 +38,6 @@ use Illuminate\Support\Facades\Artisan;
 
 
 
-Route::get('/', function () {
-    if (Auth::check()) {
-        return redirect()->route('dashboard');
-    } else {
-        return view('welcome');
-    }
-});
-
 Route::get('/pay/{token}', [PublicPaymentController::class, 'show'])->name('public.pay.show');
 Route::post('/pay/{token}', [PublicPaymentController::class, 'process'])->name('public.pay.process');
 Route::get('/pay/{token}/success', [PublicPaymentController::class, 'success'])->name('public.pay.success');
@@ -54,7 +46,6 @@ Route::get('/pay/{token}/success', [PublicPaymentController::class, 'success'])-
 Route::get('/consent/{id}', [AuthConsentController::class, 'customerConsentView'])
     ->name('customer.consent.view')
     ->middleware('signed'); // This prevents tampering with the ID
-Route::get('/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
 
 // agent auth routes
 Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
@@ -78,37 +69,29 @@ Route::post('/charge/logout', [ChargeLoginController::class, 'logout'])->name('c
 
 // CHARGING TEAM
 Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->group(function () {
+    // Route::get('/dashboard', [ChargeController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [ChargingDashboardController::class, 'index'])->name('dashboard');
+    
     Route::get('/assignments/{assignment}/details', [ChargeController::class, 'showDetails'])->name('assignments.details');
+    Route::get('/assignments/{assignment}/accept-form', [ChargeController::class, 'showAcceptForm'])->name('assignments.accept-form');
     Route::post('/assignments/{assignment}/accept', [ChargeController::class, 'accept'])->name('assignments.accept');
     Route::post('/assignments/{assignment}/reject', [ChargeController::class, 'reject'])->name('assignments.reject');
-    Route::get('/bookings/{booking}', [BookingController::class, 'chargeShow'])->name('bookings.show');
 
-    Route::get('/booking/{id}/authorize-edit', [AuthConsentController::class, 'edit'])
-        ->name('authorize.edit');
+    Route::post('/bookings/{booking}/mark-viewed', [ChargeController::class, 'markAsViewed'])->name('bookings.mark-viewed');
+    Route::get('/bookings/{booking}', [ChargeController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking}/accept', [ChargeController::class, 'acceptAssignment'])->name('bookings.accept');
 
-    Route::post('/booking/{id}/authorize-preview', [AuthConsentController::class, 'preview'])
-        ->name('authorize.preview');
+    Route::get('/booking/{id}/authorize-edit', [AuthConsentController::class, 'edit'])->name('authorize.edit');
+    Route::post('/booking/{id}/authorize-preview', [AuthConsentController::class, 'preview'])->name('authorize.preview');
+    Route::get('/booking/{id}/authorize-preview', [AuthConsentController::class, 'previewPage'])->name('authorize.preview.page');
+    Route::post('/booking/{id}/authorize-send', [AuthConsentController::class, 'send'])->name('authorize.send');
+    Route::post('/booking/{id}/authorize-resend', [AuthConsentController::class, 'resend'])->name('authorize.resend');
+    Route::patch('/charge/booking/{id}/auth-done', [AuthConsentController::class, 'markAuthDone'])->name('auth.done');
+    Route::post('/bookings/{id}/update-status', [ChargeBookingStatusController::class, 'update'])->name('bookings.update-status');
 
-    Route::get('/booking/{id}/authorize-preview', [AuthConsentController::class, 'previewPage'])
-        ->name('authorize.preview.page');
-
-    Route::post('/booking/{id}/authorize-send', [AuthConsentController::class, 'send'])
-        ->name('authorize.send');
-
-    Route::post('/bookings/{id}/update-status', [ChargeBookingStatusController::class, 'update'])
-        ->name('bookings.update-status');
-
-            // Show "Charge Now" form for a booking
-    Route::get('/bookings/{booking}/payment-link/create', [BookingPaymentLinkController::class, 'create'])
-        ->name('bookings.payment-link.create');
-
-    // Store payment link for that booking
-    Route::post('/bookings/{booking}/payment-link', [BookingPaymentLinkController::class, 'store'])
-        ->name('bookings.payment-link.store');
-        // send email 
-            Route::post('/bookings/{booking}/payment-link/{link}/send-mail', [BookingPaymentLinkController::class, 'sendMail'])
-        ->name('bookings.payment-link.send-mail');
+    Route::get('/bookings/{booking}/payment-link/create', [BookingPaymentLinkController::class, 'create'])->name('bookings.payment-link.create');
+    Route::post('/bookings/{booking}/payment-link', [BookingPaymentLinkController::class, 'store'])->name('bookings.payment-link.store');
+    Route::post('/bookings/{booking}/payment-link/{link}/send-mail', [BookingPaymentLinkController::class, 'sendMail'])->name('bookings.payment-link.send-mail');
 });
 
 
@@ -120,9 +103,12 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
     // Route::get('/dashboard', [BookingController::class, 'agentIndex'])->name('dashboard');
     Route::get('/bookings', [BookingController::class, 'agentIndex'])->name('bookings.index');
     Route::get('/bookings/create', [AgentBookingController::class, 'create'])->name('bookings.create');
+
     Route::post('/bookings', [AgentBookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{booking}', [BookingController::class, 'agentShow'])->name('bookings.show');
     Route::get('/{booking}/edit', [BookingController::class, 'agentEdit'])->name('bookings.edit');
+    Route::get('bookings/{booking}/update-pnr', [AgentBookingController::class, 'editPnr'])->name('bookings.update-pnr');
+    Route::patch('bookings/{booking}/update-pnr', [AgentBookingController::class, 'updatePnr'])->name('bookings.update');
     Route::get('/bookings/{booking}/charge', [ChargingController::class, 'chargeByAgent'])->name('bookings.charge');
     Route::post('/bookings/{booking}/charge/assign', [ChargingController::class, 'assignForCharging'])->name('bookings.charge.assign');
 });

@@ -7,22 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 class FlightSegment extends Model
 {
     protected $fillable = [
-        'booking_id',
-        'from_city',
-        'to_city',
-        'from_airport',
-        'to_airport',
-        'departure_date',
-        'return_date',
-        'airline_name',
-        'flight_number',
-        'segment_pnr',
-        'cabin_class',
-        'pnr',              // extra column in your DB
-        'airline_code',     // extra column in your DB
-        'cabin_type',       // extra column in your DB (duplicate of cabin_class)
+    'booking_id',
+    'from_city',
+    'to_city',
+    'from_airport',
+    'to_airport',
+    'departure_date',
+    'return_date',
+    'airline_name',
+    'flight_number',
+    'segment_pnr',
+    'cabin_class',
+    'airline_code',
+    'airline_pnr',   // ← was 'pnr'
+    // cabin_type removed ✓
     ];
-
     protected $casts = [
         'departure_date' => 'date',
         'return_date' => 'date',
@@ -45,3 +44,4 @@ class FlightSegment extends Model
 }
 
 }
+

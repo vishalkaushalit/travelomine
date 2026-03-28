@@ -69,7 +69,7 @@ class AgentBookingController extends Controller
             'segments.*.departure_date' => 'required|date',
             'segments.*.return_date' => 'nullable|date',
             'segments.*.airline_name' => 'required|string|max:100',
-            'segments.*.flight_number' => 'nullable|string|max:50',
+            'segments.*.flight_number' => 'nullable|string|max:10',
             'segments.*.segment_pnr' => 'nullable|string|max:50',
             'segments.*.cabin_class' => 'required|string|max:50',
 
@@ -104,46 +104,24 @@ class AgentBookingController extends Controller
             'payment_type' => 'required|string|in:full,split',
 
             // Full payment
-            'full_payment.card_holder_name' => 'nullable|string|max:255',
-            'full_payment.card_number' => 'nullable|string|max:25',
-            'full_payment.card_type' => 'nullable|string|max:50',
-            'full_payment.expiration_month' => 'nullable|string|max:2',
-            'full_payment.expiration_year' => 'nullable|string|max:4',
-            'full_payment.cvv' => 'nullable|string|max:4',
             'full_payment.charge_amount' => 'nullable|numeric|min:0.01',
-            // 'full_payment.billing_email' => 'nullable|email|max:255',
-            // 'full_payment.billing_phone' => 'nullable|string|max:30',
-            // 'full_payment.billing_address' => 'nullable|string',
             'full_payment.merchant_id' => 'nullable|exists:merchants,id',
+            'full_payment.card_holder_name' => 'nullable|string|max:255',
+            'full_payment.card_last_four' => 'nullable|digits:4',
 
             // Split payment
             'split_payment.airline_merchant_name' => 'nullable|string|max:255',
-
-            'split_payment.airline.card_holder_name' => 'nullable|string|max:255',
-            'split_payment.airline.card_number' => 'nullable|string|max:25',
-            'split_payment.airline.card_type' => 'nullable|string|max:50',
-            'split_payment.airline.expiration_month' => 'nullable|string|max:2',
-            'split_payment.airline.expiration_year' => 'nullable|string|max:4',
-            'split_payment.airline.cvv' => 'nullable|string|max:4',
             'split_payment.airline.charge_amount' => 'nullable|numeric|min:0.01',
-            // 'split_payment.airline.billing_email' => 'nullable|email|max:255',
-            // 'split_payment.airline.billing_phone' => 'nullable|string|max:30',
-            // 'split_payment.airline.billing_address' => 'nullable|string',
+            'split_payment.airline.card_holder_name' => 'nullable|string|max:255',
+            'split_payment.airline.card_last_four' => 'nullable|digits:4',
 
             'split_payment.agency.merchant_id' => 'nullable|exists:merchants,id',
-            'split_payment.agency.card_holder_name' => 'nullable|string|max:255',
-            'split_payment.agency.card_number' => 'nullable|string|max:25',
-            'split_payment.agency.card_type' => 'nullable|string|max:50',
-            'split_payment.agency.expiration_month' => 'nullable|string|max:2',
-            'split_payment.agency.expiration_year' => 'nullable|string|max:4',
-            'split_payment.agency.cvv' => 'nullable|string|max:4',
             'split_payment.agency.charge_amount' => 'nullable|numeric|min:0.01',
-            // 'split_payment.agency.billing_email' => 'nullable|email|max:255',
-            // 'split_payment.agency.billing_phone' => 'nullable|string|max:30',
-            // 'split_payment.agency.billing_address' => 'nullable|string',
+            'split_payment.agency.card_holder_name' => 'nullable|string|max:255',
+            'split_payment.agency.card_last_four' => 'nullable|digits:4',
 
             // 7. Optional services + remarks
-            'agent_remarks' => 'nullable|string',
+            'agent_remarks' => 'required|string',
             'hotel_required' => 'nullable|boolean',
             'cab_required' => 'nullable|boolean',
             'insurance_required' => 'nullable|boolean',
@@ -156,16 +134,26 @@ class AgentBookingController extends Controller
         try {
             $segments = $validated['segments'] ?? [];
             $firstSegment = $segments[0] ?? null;
-            $lastSegment = !empty($segments) ? $segments[count($segments) - 1] : null;
+            $lastSegment = ! empty($segments) ? $segments[count($segments) - 1] : null;
 
             $calculatedMco = (float) $validated['amount_charged'] - (float) $validated['amount_paid_airline'];
             $finalMco = array_key_exists('total_mco', $validated) && $validated['total_mco'] !== null
                 ? $validated['total_mco']
                 : $calculatedMco;
 
+            // ✅ Determine primary card's last 4 digits for the bookings table
+            $primaryCardLastFour = null;
+            if ($validated['payment_type'] === 'full') {
+                $primaryCardLastFour = $validated['full_payment']['card_last_four'] ?? null;
+            } elseif ($validated['payment_type'] === 'split') {
+                $primaryCardLastFour = $validated['split_payment']['airline']['card_last_four']
+                                    ?? $validated['split_payment']['agency']['card_last_four']
+                                    ?? null;
+            }
+
             $bookingData = [
                 'user_id' => auth()->id(),
-                'agent_custom_id' => auth()->user()->agent_custom_id ?? ('AG' . auth()->id()),
+                'agent_custom_id' => auth()->user()->agent_custom_id ?? ('AG'.auth()->id()),
 
                 'booking_date' => $validated['booking_date'],
                 'call_type' => $validated['call_type'],
@@ -184,7 +172,7 @@ class AgentBookingController extends Controller
                 'departure_city' => $firstSegment['from_city'] ?? null,
                 'arrival_city' => $lastSegment['to_city'] ?? null,
                 'departure_date' => $firstSegment['departure_date'] ?? null,
-                'return_date' => $validated['flight_type'] === 'roundtrip'
+                'return_date' => ($validated['flight_type'] ?? null) === 'roundtrip'
                     ? ($firstSegment['return_date'] ?? null)
                     : null,
                 'airline_name' => $firstSegment['airline_name'] ?? null,
@@ -204,8 +192,12 @@ class AgentBookingController extends Controller
                 'amount_paid_airline' => $validated['amount_paid_airline'],
                 'total_mco' => $finalMco,
 
+                'payment_type' => $validated['payment_type'],
                 'status' => 'pending',
                 'agent_remarks' => $validated['agent_remarks'] ?? null,
+
+                // ✅ Save primary card's last 4 digits to bookings table
+                'card_last_four' => $primaryCardLastFour,
 
                 'hotel_required' => $request->boolean('hotel_required'),
                 'cab_required' => $request->boolean('cab_required'),
@@ -224,11 +216,8 @@ class AgentBookingController extends Controller
                     'return_date' => $segment['return_date'] ?? null,
                     'airline_name' => $segment['airline_name'],
                     'flight_number' => $segment['flight_number'] ?? null,
-                    'segment_pnr' => $segment['segment_pnr'] ?? null,
                     'cabin_class' => $segment['cabin_class'],
-                    'pnr' => $segment['segment_pnr'] ?? null,
                     'airline_code' => $segment['airline_name'],
-                    'cabin_type' => $segment['cabin_class'],
                 ]);
             }
 
@@ -250,23 +239,129 @@ class AgentBookingController extends Controller
                 ]);
             }
 
-            if ($validated['payment_type'] === 'full') {
-                $this->createFullPaymentCard($booking, $validated['full_payment']);
-            } else {
-                $this->createSplitPaymentCards($booking, $validated['split_payment']);
+            // ✅ Save detailed card records to booking_cards table
+            $commonCardData = [
+                'booking_id' => $booking->id,
+                'billing_address' => $validated['billing_address'] ?? null,
+                'billing_phone' => $validated['billing_phone'] ?? null,
+                'billing_email' => $validated['customer_email'] ?? null,
+            ];
+
+            if ($validated['payment_type'] === 'full' && ! empty($validated['full_payment'])) {
+                \App\Models\BookingCard::create(array_merge($commonCardData, [
+                    'merchant_id' => $validated['full_payment']['merchant_id'] ?? null,
+                    'card_holder_name' => $validated['full_payment']['card_holder_name'] ?? null,
+                    'card_last_four' => $validated['full_payment']['card_last_four'] ?? null,
+                    'charge_amount' => $validated['full_payment']['charge_amount'] ?? null,
+                    'card_order' => 1, // Helps identify primary card
+                ]));
+            } elseif ($validated['payment_type'] === 'split' && ! empty($validated['split_payment'])) {
+
+                // 1. Insert Airline Card
+                if (! empty($validated['split_payment']['airline']['charge_amount'])) {
+                    \App\Models\BookingCard::create(array_merge($commonCardData, [
+                        'merchant_id' => null,
+                        'card_holder_name' => $validated['split_payment']['airline']['card_holder_name'] ?? null,
+                        'card_last_four' => $validated['split_payment']['airline']['card_last_four'] ?? null,
+                        'charge_amount' => $validated['split_payment']['airline']['charge_amount'] ?? null,
+                        'card_order' => 1, // Airline card
+                    ]));
+                }
+
+                // 2. Insert Agency Card
+                if (! empty($validated['split_payment']['agency']['charge_amount'])) {
+                    \App\Models\BookingCard::create(array_merge($commonCardData, [
+                        'merchant_id' => $validated['split_payment']['agency']['merchant_id'] ?? null,
+                        'card_holder_name' => $validated['split_payment']['agency']['card_holder_name'] ?? null,
+                        'card_last_four' => $validated['split_payment']['agency']['card_last_four'] ?? null,
+                        'charge_amount' => $validated['split_payment']['agency']['charge_amount'] ?? null,
+                        'card_order' => 2, // Agency card
+                    ]));
+                }
             }
 
             DB::commit();
 
             return redirect()
                 ->route('agent.bookings.show', $booking->id)
-                ->with('success', 'Booking created successfully. Ref: ' . $booking->booking_reference);
+                ->with('success', 'Booking created successfully. Ref: '.$booking->booking_reference);
 
         } catch (\Throwable $e) {
             DB::rollBack();
 
             return back()
                 ->withErrors(['error' => $e->getMessage()])
+                ->withInput();
+        }
+    }
+    // update pnr after bookings created
+
+    public function editPnr(Booking $booking)
+    {
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Eager load all segments for this booking
+        $booking->load('flightSegments');
+
+        return view('agent.bookings.update-pnr', compact('booking'));
+    }
+
+    public function updatePnr(Request $request, Booking $booking)
+    {
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $segmentCount = $booking->flightSegments->count();
+
+        // Build dynamic validation rules — one airline_pnr per segment
+        $rules = [];
+        $messages = [];
+
+        for ($i = 0; $i < $segmentCount; $i++) {
+            $rules["segments.{$i}.airline_pnr"] = [
+                'required',
+                'string',
+                'size:6',
+                'regex:/^[A-Z0-9]{6}$/',
+            ];
+            $messages["segments.{$i}.airline_pnr.size"] = 'PNR for Flight '.($i + 1).' must be exactly 6 characters.';
+            $messages["segments.{$i}.airline_pnr.regex"] = 'PNR for Flight '.($i + 1).' must be uppercase letters and numbers only.';
+        }
+
+        $validated = $request->validate($rules, $messages);
+
+        // Also update booking-level airline_pnr from first segment
+        $firstPnr = strtoupper($validated['segments'][0]['airline_pnr']);
+
+        DB::beginTransaction();
+
+        try {
+            // Update each segment's airline_pnr individually
+            foreach ($booking->flightSegments as $index => $segment) {
+                $segment->update([
+                    'airline_pnr' => strtoupper($validated['segments'][$index]['airline_pnr']),
+                ]);
+            }
+
+            // Sync first segment PNR to bookings table airline_pnr
+            $booking->update([
+                'airline_pnr' => $firstPnr,
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('agent.bookings.show', $booking->id)
+                ->with('success', 'Airline PNR(s) updated successfully for all '.$segmentCount.' flight(s).');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return back()
+                ->withErrors(['error' => 'Failed to update PNRs: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -359,7 +454,7 @@ class AgentBookingController extends Controller
         $segments = $validated['segments'] ?? [];
         $count = count($segments);
 
-        if (!$flightType) {
+        if (! $flightType) {
             throw ValidationException::withMessages([
                 'flight_type' => 'Flight type is required.',
             ]);
@@ -408,31 +503,21 @@ class AgentBookingController extends Controller
 
     protected function validatePaymentRules(array $validated): void
     {
-        $paymentType = $validated['payment_type'];
+        $paymentType = $validated['payment_type'] ?? null;
 
         if ($paymentType === 'full') {
             $full = $validated['full_payment'] ?? [];
 
-            $requiredFields = [
-                'merchant_id',
-                'card_holder_name',
-                'card_number',
-                'card_type',
-                'expiration_month',
-                'expiration_year',
-                'cvv',
-                'charge_amount',
-                'billing_email',
-                'billing_phone',
-                'billing_address',
-            ];
+            if (empty($full['merchant_id'])) {
+                throw ValidationException::withMessages([
+                    'full_payment.merchant_id' => 'Merchant is required for full payment.',
+                ]);
+            }
 
-            foreach ($requiredFields as $field) {
-                if (empty($full[$field])) {
-                    throw ValidationException::withMessages([
-                        "full_payment.$field" => ucfirst(str_replace('_', ' ', $field)) . ' is required for full payment.',
-                    ]);
-                }
+            if (! isset($full['charge_amount']) || (float) $full['charge_amount'] <= 0) {
+                throw ValidationException::withMessages([
+                    'full_payment.charge_amount' => 'Charge amount is required for full payment.',
+                ]);
             }
 
             if ((float) $full['charge_amount'] != (float) $validated['amount_charged']) {
@@ -453,47 +538,22 @@ class AgentBookingController extends Controller
                 ]);
             }
 
-            $airlineRequired = [
-                'card_holder_name',
-                'card_number',
-                'card_type',
-                'expiration_month',
-                'expiration_year',
-                'cvv',
-                'charge_amount',
-                'billing_email',
-                'billing_phone',
-                'billing_address',
-            ];
-
-            foreach ($airlineRequired as $field) {
-                if (empty($airline[$field])) {
-                    throw ValidationException::withMessages([
-                        "split_payment.airline.$field" => ucfirst(str_replace('_', ' ', $field)) . ' is required for airline payment.',
-                    ]);
-                }
+            if (! isset($airline['charge_amount']) || (float) $airline['charge_amount'] <= 0) {
+                throw ValidationException::withMessages([
+                    'split_payment.airline.charge_amount' => 'Charge amount is required for airline payment.',
+                ]);
             }
 
-            $agencyRequired = [
-                'merchant_id',
-                'card_holder_name',
-                'card_number',
-                'card_type',
-                'expiration_month',
-                'expiration_year',
-                'cvv',
-                'charge_amount',
-                'billing_email',
-                'billing_phone',
-                'billing_address',
-            ];
+            if (empty($agency['merchant_id'])) {
+                throw ValidationException::withMessages([
+                    'split_payment.agency.merchant_id' => 'Merchant is required for agency payment.',
+                ]);
+            }
 
-            foreach ($agencyRequired as $field) {
-                if (empty($agency[$field])) {
-                    throw ValidationException::withMessages([
-                        "split_payment.agency.$field" => ucfirst(str_replace('_', ' ', $field)) . ' is required for agency payment.',
-                    ]);
-                }
+            if (! isset($agency['charge_amount']) || (float) $agency['charge_amount'] <= 0) {
+                throw ValidationException::withMessages([
+                    'split_payment.agency.charge_amount' => 'Charge amount is required for agency payment.',
+                ]);
             }
 
             $splitTotal = (float) ($airline['charge_amount'] ?? 0) + (float) ($agency['charge_amount'] ?? 0);

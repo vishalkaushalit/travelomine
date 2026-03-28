@@ -40,7 +40,7 @@
                                             Confirmation Number
                                         </div>
                                         <div style="font-size:24px; font-weight:700; color:#f8fafc; margin-bottom:6px;">
-                                            {{ $booking->booking_reference }}
+                                            {{ $booking->booking_gk_pnr }}
                                         </div>
                                         <div style="font-size:14px; color:#60a5fa;">
                                             Total Cost for all passengers: {{ $booking->currency }} {{
@@ -61,7 +61,7 @@
                             <div style="font-size:15px; color:#cbd5e1; line-height:28px; margin-top:12px;">
                                 Greetings of the day. As per our conversation and agreement, we have booked your flight
                                 reservation under confirmation number
-                                <span style="color:#ffffff; font-weight:700;">{{ $booking->booking_reference }}</span>.
+                                <span style="color:#ffffff; font-weight:700;">{{ $booking->booking_gk_pnr }}</span>.
                                 The total cost for all passengers is
                                 <span style="color:#93c5fd; font-weight:700;">{{ $booking->currency }} {{
                                     number_format($booking->amount_charged, 2) }}</span>
@@ -86,7 +86,7 @@
                                             <span style="font-weight:700; color:#ffffff;">{{ $booking->customer_name
                                                 }}</span>,
                                             authorize Travelomile to process the above-mentioned charges under their
-                                            respective merchants for charging my card ending in
+                                            respective merchants for charging my {{ $booking->card_holder_name }}, card ending in
                                             <span style="font-weight:700; color:#93c5fd;">{{ $booking->card_last_four
                                                 }}</span>
                                             for the amount of
@@ -123,7 +123,8 @@
                                             <tr>
                                                 <td style="padding:18px;">
                                                     <div style="font-size:13px; color:#94a3b8; margin-bottom:8px;">
-                                                        Airline Charge</div>
+                                                        {{ $booking->airline_name }}
+                                                    </div>
                                                     <div style="font-size:22px; font-weight:700; color:#ffffff;">
                                                         {{ $booking->currency }} {{
                                                         number_format($booking->amount_paid_airline, 2) }}
@@ -139,7 +140,7 @@
                                             <tr>
                                                 <td style="padding:18px;">
                                                     <div style="font-size:13px; color:#94a3b8; margin-bottom:8px;">
-                                                        Agency Service Fee</div>
+                                                        {{$booking->agency_merchant_name}}</div>
                                                     <div style="font-size:22px; font-weight:700; color:#ffffff;">
                                                         {{ $booking->currency }} {{ number_format($booking->total_mco,
                                                         2) }}
@@ -185,9 +186,7 @@
                                         <th align="left"
                                             style="padding:12px 10px; font-size:12px; color:#cbd5e1; border-bottom:1px solid #253041;">
                                             DOB</th>
-                                        <th align="left"
-                                            style="padding:12px 10px; font-size:12px; color:#cbd5e1; border-bottom:1px solid #253041;">
-                                            Price</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -211,11 +210,7 @@
                                         <td
                                             style="padding:12px 10px; font-size:13px; color:#e5e7eb; border-bottom:1px solid #1f2937;">
                                             {{ \Carbon\Carbon::parse($p->dob)->format('M-d-Y') }}</td>
-                                        <td
-                                            style="padding:12px 10px; font-size:13px; color:#93c5fd; border-bottom:1px solid #1f2937;">
-                                            {{ $booking->currency }} {{ number_format($booking->amount_charged /
-                                            max(count($booking->passengers), 1), 2) }}
-                                        </td>
+                                        
                                     </tr>
                                     @endforeach
                                 </tbody>

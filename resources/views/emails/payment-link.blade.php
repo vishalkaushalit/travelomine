@@ -20,14 +20,23 @@ We have prepared your secure payment link for your booking. Please review the bo
 **Billing Address:** {{ $link->billing_address ?? 'N/A' }}
 
 @if($booking)
-**Service:** {{ $booking->serviceprovided ?? 'Flight' }}  
-**Booking Type:** {{ $booking->servicetype ?? 'N/A' }}  
+**Service:** {{ $booking->service_provided ?? 'Flight' }}  
+**Booking Type:** {{ $booking->service_type ?? 'N/A' }}  
 @endif
 
 @if($booking && method_exists($booking, 'segments') && $booking->segments && $booking->segments->count())
 ### Travel Itinerary
+
 @foreach($booking->segments as $segment)
-- {{ $segment->from_city }} → {{ $segment->to_city }} on {{ \Carbon\Carbon::parse($segment->departure_date)->format('d M Y') }} ({{ $segment->cabin_class }})
+- **{{ $segment->from_city }} → {{ $segment->to_city }}** on {{ \Carbon\Carbon::parse($segment->departure_date)->format('d M Y') }} ({{ $segment->cabin_class }})
+@endforeach
+@endif
+
+@if($booking && method_exists($booking, 'passangers') && $booking->passangers && $booking->passangers->count())
+### Passenger Details
+
+@foreach($booking->passangers as $passenger)
+- **{{ $loop->iteration }}.** [{{ $passenger->passenger_type ?? 'N/A' }}] {{ $passenger->first_name }} {{ $passenger->middle_name ? $passenger->middle_name.' ' : '' }}{{ $passenger->last_name }} — {{ ucfirst($passenger->gender ?? 'N/A') }}{{ $passenger->dob ? ', DOB: '.\Carbon\Carbon::parse($passenger->dob)->format('d M Y') : '' }}
 @endforeach
 @endif
 
@@ -44,6 +53,5 @@ This is a secure one-time payment link for booking #{{ $link->booking_id }}. Do 
 </x-mail::subcopy>
 
 Thanks,<br>
-{{-- {{ config('app.name') }} --}}
 {{ $merchant->name ?? 'N/A' }}
 </x-mail::message>

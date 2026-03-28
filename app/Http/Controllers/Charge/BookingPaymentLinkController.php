@@ -51,21 +51,22 @@ class BookingPaymentLinkController extends Controller
      */
     public function store(Request $request, Booking $booking)
     {
-        // Only amount + notes are coming from the form
         $data = $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'notes' => 'nullable|string',
         ]);
 
-        // Find merchant based on booking's agency_merchant_name
-        // Adjust column names if different in your merchants table
-        $merchant = Merchant::where('name', $booking->agency_merchant_name)->first();
+        // ✅ Use assignment's merchant_id (agency_merchant_name is null on bookings)
+        $assignment = \App\Models\ChargeAssignment::where('booking_id', $booking->id)
+            ->latest()
+            ->first();
+
+        $merchant = $assignment ? Merchant::find($assignment->merchant_id) : null;
 
         if (! $merchant) {
-            return back()->with('error', 'Merchant "'.$booking->agency_merchant_name.'" not found. Please configure it in merchants table.');
+            return back()->with('error', 'No merchant found for this booking. Please contact admin.');
         }
 
-        // Create the payment link record using data from booking
         $link = BookingPaymentLink::create([
             'booking_id' => $booking->id,
             'merchant_id' => $merchant->id,
@@ -81,10 +82,8 @@ class BookingPaymentLinkController extends Controller
             'notes' => $data['notes'] ?? null,
         ]);
 
-        // Public URL customer will use to pay
         $paymentUrl = route('public.pay.show', $link->token);
 
-        // Show the "link created" page
         return view('charge.payment-links.created', [
             'booking' => $booking,
             'link' => $link,

@@ -1,45 +1,108 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta charset="utf-8">
-    <style>
-        /* Embed all your premium CSS here to ensure it travels with the email */
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .email-container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .header { background: #1a237e; color: #ffffff; padding: 30px; text-align: center; }
-        .content { padding: 30px; line-height: 1.6; color: #333; }
-        .btn-box { text-align: center; margin: 30px 0; }
-        .approve-btn { background-color: #1a237e; color: #ffffff !important; padding: 15px 35px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 18px; }
-        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #999; }
-    </style>
+    <meta charset="UTF-8">
+    <title>Payment Authorization</title>
 </head>
-<body>
-    <div @class(['email-container'])>
-        <div @class(['header'])>
-            <h1 style="margin:0; font-size:24px;">PAYMENT AUTHORIZATION</h1>
-            <p style="margin:5px 0 0; opacity:0.8;">Booking Reference: {{ $booking->booking_reference }}</p>
-        </div>
 
-        <div @class(['content'])>
-            <!-- This renders the custom HTML edited by the charger -->
-            {!! $emailBody !!}
+<body style="margin:0; padding:0; background-color:#f3f4f6;">
 
-<p style="font-size:14px; line-height:24px; color:#cbd5e1;">
-    Kindly reply to this email with your acknowledgement to confirm that you authorize
-    the above booking and payment charges.
-</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f3f4f6">
+        <tr>
+            <td align="center" style="padding:20px;">
 
-<p style="font-size:14px; line-height:24px; color:#ffffff; font-weight:700;">
-    You may reply with:
-    "I acknowledge and authorize this booking and the related payment charges."
-</p>
+                <!-- Container -->
+                <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"
+                    style="border-collapse:collapse;">
 
-        </div>
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" bgcolor="#0f172a" style="padding:30px 20px;">
+                            <h1 style="margin:0; font-size:20px; color:#ffffff; font-family:Arial, sans-serif;">
+                                PAYMENT AUTHORIZATION
+                            </h1>
+                            <p style="margin:10px 0 0; font-size:14px; color:#cbd5f5; font-family:Arial, sans-serif;">
+                                Booking Reference:
+                                <strong style="color:#ffffff;">
+                                    {{ $booking->booking_reference }}
+                                </strong>
+                            </p>
+                        </td>
+                    </tr>
 
-        <div @class(['footer'])>
-            &copy; 2026 Travelomile. All Rights Reserved.<br>
-            If you did not request this booking, please contact us immediately.
-        </div>
-    </div>
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding:30px 20px; font-family:Arial, sans-serif; color:#333333; font-size:15px; line-height:1.6;">
+
+                            <!-- Dynamic Content -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td>
+                                        {!! $emailBody !!}
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Authorization Box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                                style="margin-top:25px; background:#f8fafc; border-left:4px solid #0f172a;">
+                                <tr>
+                                    <td style="padding:20px;">
+
+                                        <p style="margin:0 0 15px; font-size:14px; color:#444;">
+                                            Kindly reply to this email with your acknowledgement to confirm that you
+                                            authorize the above booking and payment charges.
+                                        </p>
+
+                                        <p style="margin:0 0 8px; font-size:12px; font-weight:bold; color:#666;">
+                                            YOU MAY REPLY WITH:
+                                        </p>
+
+                                        <!-- Quote Box -->
+                                        <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                                            style="border:1px dashed #cccccc; background:#ffffff;">
+                                            <tr>
+                                                <td style="padding:15px; font-size:14px; font-style:italic; color:#000;">
+                                                    "I acknowledge and authorize this booking and the related payment
+                                                    charges."
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" bgcolor="#f9fafb"
+                            style="padding:20px; font-family:Arial, sans-serif;">
+
+                            <p style="margin:0 0 8px; font-size:14px; color:#333; font-weight:bold;">
+                                Travelomile
+                            </p>
+
+                            <p style="margin:0 0 8px; font-size:12px; color:#777;">
+                                If you did not request this booking, please contact our support team immediately.
+                            </p>
+
+                            <p style="margin:0; font-size:12px; color:#aaa;">
+                                © 2026 Travelomile. All Rights Reserved.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
 </body>
+
 </html>

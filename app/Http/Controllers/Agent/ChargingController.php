@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Agent;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Booking;
+use App\Models\ChargeAssignment;
+use App\Notifications\NewChargingAssignment;
 use App\Models\Merchant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class ChargingController extends Controller
@@ -78,7 +80,7 @@ class ChargingController extends Controller
     //     return view('agent.charging.charge', compact('booking', 'pendingCards', 'merchants'));
     // }
 
-        public function chargeByAgent(Booking $booking)
+    public function chargeByAgent(Booking $booking)
     {
         if ($booking->user_id !== auth()->id() || $booking->status !== 'pending') {
             abort(403);
@@ -91,12 +93,10 @@ class ChargingController extends Controller
     /**
      * Agent: Assign booking to random charging team member.
      */
-
     public function assignForCharging(Request $request, Booking $booking)
     {
-    // Only agent owner with pending status
-    if ($booking->user_id !== auth()->id() || $booking->status !== 'pending') {
-        abort(403, 'Unauthorized');
+        if ($booking->user_id !== auth()->id() || $booking->status !== 'pending') {
+            abort(403, 'Unauthorized');
     }
 
     $request->validate([
@@ -105,41 +105,46 @@ class ChargingController extends Controller
 
     $merchant = Merchant::findOrFail($request->merchant);
 
-    // Find available charger
-    $charger = User::where('role', 'charge')
-        ->inRandomOrder()
-        ->first();
+    $charger = User::where('role', 'charge')->inRandomOrder()->first();
 
     if (!$charger) {
         return back()->withErrors(['merchant' => 'No charging team member available!']);
     }
 
-    // Single assignment update
     $assignmentData = [
-        'charger_id'     => $charger->id,
-        'charger_name'   => $charger->name,
-        'assigned_at'    => now()->toDateTimeString(),
-        'merchant_id'    => $merchant->id,
-        'merchant_name'  => $merchant->name,
-        'status'         => 'pending',
+        'charger_id' => $charger->id,
+        'charger_name' => $charger->name,
+        'assigned_at' => now()->toDateTimeString(),
+        'merchant_id' => $merchant->id,
+        'merchant_name' => $merchant->name,
+        'status' => 'pending',
     ];
 
     $booking->update([
-        'status'            => 'assigned_to_charging',
-        'charging_remarks'  => json_encode($assignmentData),
-        'merchant_name'     => $merchant->name,
+        'status' => 'assigned_to_charging',
+        'charging_remarks' => json_encode($assignmentData),
+        'merchant_name' => $merchant->name,
     ]);
 
-    // Cache assignment for quick lookup (24h)
+    $assignment = ChargeAssignment::create([
+        'booking_id' => $booking->id,
+        'charger_id' => $charger->id,
+        'agent_id' => auth()->id(),
+        'merchant_id' => $merchant->id,
+        'status' => 'pending',
+        'assigned_at' => now(),
+    ]);
+
+    $charger->notify(new NewChargingAssignment($booking, $assignment));
+
     Cache::put("booking_assign_{$booking->id}", [
-        'charger_id'     => $charger->id,
-        'assigned_at'    => now(),
-        'merchant_name'  => $merchant->name,
+        'charger_id' => $charger->id,
+        'assigned_at' => now(),
+        'merchant_name' => $merchant->name,
     ], now()->addHours(24));
 
-    // ✅ CHANGED: Redirect to dashboard instead of back()
     return redirect()->route('agent.dashboard')
         ->with('success', "Booking #{$booking->booking_reference} sent to {$charger->name} | Merchant: {$merchant->name}");
-    }
+}
 
 }
