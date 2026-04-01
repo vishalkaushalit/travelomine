@@ -13,6 +13,7 @@ class NewChargingAssignment extends Notification
     use Queueable;
 
     public $booking;
+
     public $assignment;
 
     public function __construct(Booking $booking, ChargeAssignment $assignment) // Changed here too
@@ -23,7 +24,7 @@ class NewChargingAssignment extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail'];
+        return ['database'];
     }
 
     public function toMail($notifiable)
@@ -31,14 +32,13 @@ class NewChargingAssignment extends Notification
         return (new MailMessage)
             ->subject('New Charging Assignment Available')
             ->greeting('Hello ' . $notifiable->name . '!')
-            ->line('A new charging assignment is available for you to review.')
-            ->line('**Booking Reference:** ' . $this->booking->booking_reference)
-            ->line('**Customer Name:** ' . ($this->booking->customer_name ?? $this->booking->user->name))
-            ->line('**Amount:** $' . number_format($this->booking->amount_charged, 2))
-            ->line('**Merchant:** ' . ($this->assignment->merchant->name ?? 'N/A'))
+            ->line('A new charging assignment is available for review.')
+            ->line('Booking Reference: ' . $this->booking->booking_reference)
+            ->line('Customer Name: ' . ($this->booking->customer_name ?? optional($this->booking->user)->name ?? 'N/A'))
+            ->line('Amount: $' . number_format($this->booking->amount_charged, 2))
+            ->line('Merchant: ' . (optional($this->assignment->merchant)->name ?? 'N/A'))
             ->action('View Assignment', route('charge.assignments.details', $this->assignment->id))
-            ->line('First to accept will handle this booking.')
-            ->line('Thank you for your prompt attention!');
+            ->line('This booking is visible to all charge team members.');
     }
 
     public function toArray($notifiable)
@@ -51,7 +51,7 @@ class NewChargingAssignment extends Notification
             'message' => "New charging assignment: {$this->booking->booking_reference}",
             'url' => route('charge.assignments.details', $this->assignment->id),
             'amount' => $this->booking->amount_charged,
-            'assigned_at' => $this->assignment->assigned_at->toDateTimeString(),
+            'assigned_at' => optional($this->assignment->assigned_at)?->toDateTimeString(),
         ];
     }
 }

@@ -38,6 +38,10 @@ use Illuminate\Support\Facades\Artisan;
 
 
 
+Route::get('/', function () {
+    return view('welcome');
+})->name('public.home');
+
 Route::get('/pay/{token}', [PublicPaymentController::class, 'show'])->name('public.pay.show');
 Route::post('/pay/{token}', [PublicPaymentController::class, 'process'])->name('public.pay.process');
 Route::get('/pay/{token}/success', [PublicPaymentController::class, 'success'])->name('public.pay.success');
@@ -197,6 +201,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
     // Notification Management Routes (Only Admin)
     Route::prefix('notifications')->name('notifications.')->middleware(['role:admin'])->group(function () {
         Route::get('/', [AdminNotifyController::class, 'index'])->name('index');
+        Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
         Route::get('/create', [AdminNotifyController::class, 'create'])->name('create');
         Route::post('/', [AdminNotifyController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [AdminNotifyController::class, 'edit'])->name('edit');

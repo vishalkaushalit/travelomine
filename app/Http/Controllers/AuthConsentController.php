@@ -16,6 +16,7 @@ class AuthConsentController extends Controller
             'passengers',
             'cards.merchant',
             'segments',
+            'agencyMerchant',
         ])->findOrFail($id);
 
         $emailContent = view('emails.booking-auth-template', compact('booking'))->render();
@@ -29,6 +30,7 @@ class AuthConsentController extends Controller
             'segments',
             'cards.merchant',
             'passengers',
+            'agencyMerchant',
         ])->findOrFail($id);
 
         $finalContent = $request->input('email_body');

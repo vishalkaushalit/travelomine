@@ -15,7 +15,6 @@
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="{{ asset('css/panel.css') }}">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/favicon.png') }}">
-
     @stack('styles')
 </head>
 
@@ -24,6 +23,7 @@
 
         @auth
             {{-- @include('components.notifications') --}}
+            @include('layouts.notification-bell')
         @endauth
         <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -203,7 +203,7 @@
                     Unlocked</a>.</strong>
             All rights reserved.
             <div class="float-right d-none d-sm-inline-block">
-                <b>Version</b> 1.0.0
+                <b>Version: 2.0.1</b> 
             </div>
         </footer>
     </div>

@@ -5,56 +5,54 @@ namespace App\Http\Controllers\Charge;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\ChargeAssignment;
-use App\Models\User;
 use App\Notifications\NewChargingAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
 class ChargeController extends Controller
 {
-    // Dashboard: Pending charges for this user
-public function index()
-{
-    // Get pending assignments
-    $assignments = ChargeAssignment::with(['booking.user', 'booking.passengers', 'booking.cards'])
-        ->where('charger_id', auth()->id())
-        ->where('status', 'pending')
-        ->latest()
-        ->paginate(20);
+    // Dashboard: Pending charges for all charge users
+    public function index()
+    {
+        $assignments = ChargeAssignment::with(['booking.user', 'booking.passengers', 'booking.cards'])
+            ->where('status', 'pending')
+            ->latest()
+            ->paginate(20);
 
-    // Get accepted assignments with specific booking statuses
-    $acceptedAssignments = ChargeAssignment::with(['booking' => function($query) {
-            $query->whereIn('status', ['payment_processing', 'assigned_to_charging']);
-        }, 'booking.user', 'booking.passengers', 'booking.cards'])
-        ->where('charger_id', auth()->id())
-        ->where('status', 'accepted')
-        ->whereHas('booking', function($query) {
-            $query->whereIn('status', ['payment_processing', 'assigned_to_charging']);
-        })
-        ->latest()
-        ->get()
-        ->filter(function($assignment) {
-            // Additional filter to ensure booking exists with correct status
-            return $assignment->booking && in_array($assignment->booking->status, ['payment_processing', 'assigned_to_charging']);
-        });
+        $acceptedAssignments = ChargeAssignment::with([
+                'booking' => function ($query) {
+                    $query->whereIn('status', ['payment_processing', 'assigned_to_charging']);
+                },
+                'booking.user',
+                'booking.passengers',
+                'booking.cards'
+            ])
+            ->where('status', 'accepted')
+            ->whereHas('booking', function ($query) {
+                $query->whereIn('status', ['payment_processing', 'assigned_to_charging']);
+            })
+            ->latest()
+            ->get()
+            ->filter(function ($assignment) {
+                return $assignment->booking &&
+                    in_array($assignment->booking->status, ['payment_processing', 'assigned_to_charging']);
+            });
 
-    // Get new bookings (not yet viewed)
-    $newBookings = ChargeAssignment::where('charger_id', auth()->id())
-        ->where('status', 'pending')
-        ->whereNull('viewed_at')
-        ->get();
+        $newBookings = ChargeAssignment::where('status', 'pending')
+            ->whereNull('viewed_at')
+            ->get();
 
-    return view('charge.bookings.index', compact('assignments', 'acceptedAssignments', 'newBookings'));
-}
+        return view('charge.bookings.index', compact('assignments', 'acceptedAssignments', 'newBookings'));
+    }
 
     public function show(Booking $booking)
     {
-        // Check if this booking is assigned to current user
         $assignment = ChargeAssignment::where('booking_id', $booking->id)
-            ->where('charger_id', auth()->id())
+            ->whereIn('status', ['pending', 'accepted'])
+            ->latest()
             ->first();
 
-        if (!$assignment || !in_array($assignment->status, ['pending', 'accepted'])) {
+        if (!$assignment) {
             abort(403, 'You do not have access to this booking.');
         }
 
@@ -67,7 +65,7 @@ public function index()
     public function markAsViewed(Request $request, Booking $booking)
     {
         $assignment = ChargeAssignment::where('booking_id', $booking->id)
-            ->where('charger_id', auth()->id())
+            ->latest()
             ->first();
 
         if ($assignment && !$assignment->viewed_at) {
@@ -77,25 +75,23 @@ public function index()
         return response()->json(['success' => true]);
     }
 
-    // Decrypt card (secure - log to sankalp)
+    // Decrypt card
     public function decryptCard(Request $request, $cardId)
     {
         $card = \App\Models\BookingCard::findOrFail($cardId);
-        
-        // Verify user has access to this card through their assignments
-        $hasAccess = ChargeAssignment::where('charger_id', auth()->id())
-            ->where('booking_id', $card->booking_id)
-            ->exists();
+
+        $hasAccess = ChargeAssignment::where('booking_id', $card->booking_id)->exists();
 
         if (!$hasAccess) {
             abort(403);
         }
 
-        // Log to sankalp
-        Mail::to('sankalp.sharma@callinggenie.com')->send(new \App\Mail\CardViewed(auth()->user(), $card));
+        Mail::to('sankalp.sharma@callinggenie.com')->send(
+            new \App\Mail\CardViewed(auth()->user(), $card)
+        );
 
         return response()->json([
-            'fullcard' => $card->full_card, // decrypted
+            'fullcard' => $card->full_card,
             'fullcvv' => $card->full_cvv,
             'holder' => $card->holder_name,
         ]);
@@ -104,8 +100,7 @@ public function index()
     // Show accept form for assignment
     public function showAcceptForm(ChargeAssignment $assignment)
     {
-        // Ensure this assignment belongs to the logged-in charger and is pending
-        if ($assignment->charger_id !== auth()->id() || $assignment->status !== 'pending') {
+        if ($assignment->status !== 'pending') {
             abort(403);
         }
 
@@ -117,11 +112,6 @@ public function index()
     // Show assignment details
     public function showDetails(ChargeAssignment $assignment)
     {
-        // Ensure this assignment belongs to the logged-in charger
-        if ($assignment->charger_id !== auth()->id()) {
-            abort(403);
-        }
-
         $assignment->load([
             'agent',
             'merchant',
@@ -139,21 +129,22 @@ public function index()
     // Accept assignment
     public function accept(Request $request, ChargeAssignment $assignment)
     {
-        if ($assignment->charger_id !== auth()->id() || $assignment->status !== 'pending') {
+        if ($assignment->status !== 'pending') {
             abort(403);
         }
 
         $assignment->update([
             'status' => 'accepted',
             'accepted_at' => now(),
+            'charger_id' => auth()->id(), // whoever accepts becomes active handler
         ]);
 
-        // Update booking status
         $assignment->booking->update(['status' => 'payment_processing']);
 
-        // Optional: Notify agent that assignment was accepted
         if ($assignment->agent) {
-            $assignment->agent->notify(new \App\Notifications\NewChargingAssignment($assignment->booking, $assignment));
+            $assignment->agent->notify(
+                new \App\Notifications\NewChargingAssignment($assignment->booking, $assignment)
+            );
         }
 
         return redirect()->route('charge.bookings.show', $assignment->booking)
@@ -163,7 +154,7 @@ public function index()
     // Reject assignment
     public function reject(Request $request, ChargeAssignment $assignment)
     {
-        if ($assignment->charger_id !== auth()->id() || $assignment->status !== 'pending') {
+        if ($assignment->status !== 'pending') {
             abort(403);
         }
 
@@ -172,10 +163,8 @@ public function index()
             'rejected_at' => now(),
         ]);
 
-        // Reset booking status to pending so agent can reassign
         $assignment->booking->update(['status' => 'pending']);
 
-        // Optional: Notify agent that assignment was rejected
         if ($assignment->agent) {
             $assignment->agent->notify(new \App\Notifications\AssignmentRejected($assignment));
         }
@@ -188,30 +177,28 @@ public function index()
     public function acceptAssignment(Request $request, Booking $booking)
     {
         $assignment = ChargeAssignment::where('booking_id', $booking->id)
-            ->where('charger_id', auth()->id())
+            ->where('status', 'pending')
+            ->latest()
             ->first();
 
-        if (!$assignment || $assignment->status !== 'pending') {
+        if (!$assignment) {
             abort(403);
         }
 
         return $this->accept($request, $assignment);
     }
 
-    // Send Auth (customer consent)
+    // Send Auth
     public function sendAuth(Booking $booking)
     {
-        // Verify access
         $assignment = ChargeAssignment::where('booking_id', $booking->id)
-            ->where('charger_id', auth()->id())
+            ->where('status', 'accepted')
+            ->latest()
             ->first();
 
-        if (!$assignment || $assignment->status !== 'accepted') {
+        if (!$assignment) {
             abort(403);
         }
-
-        // TODO: Implement auth email logic
-        // Mail::to($booking->user->email)->send(new \App\Mail\PaymentAuthRequest($booking));
 
         return redirect()->back()->with('success', 'Authorization request sent to customer!');
     }

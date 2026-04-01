@@ -11,50 +11,50 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Booking extends Model
 {
     use HasFactory;
- protected $appends = ['badge_class'];
 
-  protected $fillable = [
-    
-    'user_id',
-    'agent_custom_id',
-    'booking_reference',
-    'booking_date',
-    'call_type',
-    'service_provided',
-    'service_type',
-    'booking_portal',
-    'email_auth_taken',
-    'customer_name',
-    'customer_email',
-    'customer_phone',
-    'billing_phone',
-    'billing_address',
-    'flight_type',  
-    'departure_city',
-    'arrival_city',      
-    'gk_pnr',             
-    'airline_pnr',        
-    'total_passengers',
-    'adults',
-    'children',
-    'infants',
-    'card_last_four',
-    'currency',
-    'amount_charged',
-    'amount_paid_airline',
-    'total_mco',
-    'status',
-    'agent_remarks',
-    'charging_remarks',
-    'mis_remarks',
-    'hotel_required',
-    'cab_required',
-    'insurance_required',
-    'auth_email_sent_at',
-    'payment_confirmed_at',
-    'ticketed_at',
-];
+    protected $appends = ['badge_class'];
 
+    protected $fillable = [
+
+        'user_id',
+        'agent_custom_id',
+        'booking_reference',
+        'booking_date',
+        'call_type',
+        'service_provided',
+        'service_type',
+        'booking_portal',
+        'email_auth_taken',
+        'customer_name',
+        'customer_email',
+        'customer_phone',
+        'billing_phone',
+        'billing_address',
+        'flight_type',
+        'departure_city',
+        'arrival_city',
+        'gk_pnr',
+        'airline_pnr',
+        'total_passengers',
+        'adults',
+        'children',
+        'infants',
+        'card_last_four',
+        'currency',
+        'amount_charged',
+        'amount_paid_airline',
+        'total_mco',
+        'status',
+        'agent_remarks',
+        'charging_remarks',
+        'mis_remarks',
+        'hotel_required',
+        'cab_required',
+        'insurance_required',
+        'auth_email_sent_at',
+        'payment_confirmed_at',
+        'ticketed_at',
+    ];
 
     protected $casts = [
         'booking_date' => 'date',
@@ -75,16 +75,16 @@ class Booking extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($booking) {
             // Generate unique booking reference
-            $booking->booking_reference = 'BTK' . strtoupper(substr(uniqid(), -5));
-            
+            $booking->booking_reference = 'BTK'.strtoupper(substr(uniqid(), -5));
+
             // Auto-calculate total_mco
             if ($booking->amount_charged && $booking->amount_paid_airline) {
                 $booking->total_mco = $booking->amount_charged - $booking->amount_paid_airline;
             }
-            
+
             // Calculate total passengers
             $booking->total_passengers = ($booking->adults ?? 0) + ($booking->children ?? 0) + ($booking->infants ?? 0);
         });
@@ -94,24 +94,24 @@ class Booking extends Model
             if ($booking->isDirty(['amount_charged', 'amount_paid_airline'])) {
                 $booking->total_mco = $booking->amount_charged - $booking->amount_paid_airline;
             }
-            
+
             // Recalculate total passengers
             if ($booking->isDirty(['adults', 'children', 'infants'])) {
                 $booking->total_passengers = ($booking->adults ?? 0) + ($booking->children ?? 0) + ($booking->infants ?? 0);
             }
         });
     }
+
     public function syncCitiesFromSegments(): void
-{
-    $firstSegment = $this->segments()->orderBy('id')->first();
-    $lastSegment = $this->segments()->orderByDesc('id')->first();
+    {
+        $firstSegment = $this->segments()->orderBy('id')->first();
+        $lastSegment = $this->segments()->orderByDesc('id')->first();
 
-    $this->updateQuietly([
-        'departure_city' => $firstSegment?->from_city,
-        'arrival_city'   => $lastSegment?->to_city,
-    ]);
-}
-
+        $this->updateQuietly([
+            'departure_city' => $firstSegment?->from_city,
+            'arrival_city' => $lastSegment?->to_city,
+        ]);
+    }
 
     // Relationships
     public function user(): BelongsTo
@@ -143,11 +143,11 @@ class Booking extends Model
     {
         return $this->hasOne(BookingInsurance::class);
     }
-    public function flightSegments()
-{
-    return $this->hasMany(\App\Models\FlightSegment::class);
-}
 
+    public function flightSegments()
+    {
+        return $this->hasMany(\App\Models\FlightSegment::class);
+    }
 
     // Accessors
     public function getTotalChargedAttribute(): float
@@ -159,17 +159,15 @@ class Booking extends Model
     {
         return $this->cards->sortBy('card_order')->first();
     }
-    
+
     // create multiple flight segmants relationship for one booking
     public function segments()
     {
-    return $this->hasMany(FlightSegment::class);
+        return $this->hasMany(FlightSegment::class);
     }
 
-
-
-    // encryption and decryption for card details 
- protected $encrypted = ['card_number', 'cvv'];
+    // encryption and decryption for card details
+    protected $encrypted = ['card_number', 'cvv'];
 
     public function setCardNumberAttribute($value)
     {
@@ -196,9 +194,18 @@ class Booking extends Model
         // When status is 'ticketed' we want the badge-ticketed classes
         return $this->status === 'ticketed'
             ? 'badge badge-ticketed'
-            : ''; // empty string – no badge for other statuses
+            : '';
+    }
+
+    public function agencyMerchant(): BelongsTo
+    {
+        return $this->belongsTo(Merchant::class, 'agency_merchant_id');
+    }
+
+    public function agent()
+    {
+        // We use agent_custom_id as the foreign key AND the owner key
+        return $this->belongsTo(User::class, 'agent_custom_id', 'agent_custom_id');
     }
 
 }
-
-

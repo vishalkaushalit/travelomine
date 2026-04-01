@@ -10,37 +10,29 @@ class ChargingDashboardController extends Controller
 {
     public function index()
     {
-        $chargerId = auth()->id();
-        
-        // If not logged in, redirect to login
-        if (!$chargerId) {
+        if (!auth()->check()) {
             return redirect()->route('charge.login');
         }
 
-        // For the table, let's show assignments that are not rejected
+        // Show all accepted assignments for charge team
         $assignments = ChargeAssignment::with(['booking', 'agent', 'merchant'])
-            ->where('charger_id', $chargerId)
             ->where('status', 'accepted')
             ->latest()
             ->paginate(10);
 
-        // Count only pending for the notification badge
-        $pendingCount = ChargeAssignment::where('charger_id', $chargerId)
-            ->where('status', 'pending')
-            ->count();
+        // Count all pending assignments for dashboard badge
+        $pendingCount = ChargeAssignment::where('status', 'pending')->count();
 
-        // Get the latest pending assignment for popup (if any)
-        $latestPending = ChargeAssignment::with(['booking', 'agent'])
-            ->where('charger_id', $chargerId)
+        // Latest pending assignment for popup
+        $latestPending = ChargeAssignment::with(['booking', 'agent', 'merchant'])
             ->where('status', 'pending')
             ->latest()
             ->first();
 
-
         return view('charge.dashboard', compact(
-            'assignments',   
-            'pendingCount',  
-            'latestPending'  
+            'assignments',
+            'pendingCount',
+            'latestPending'
         ));
     }
 }
