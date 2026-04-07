@@ -202,10 +202,10 @@ class Booking extends Model
         return $this->belongsTo(Merchant::class, 'agency_merchant_id');
     }
 
+
     public function agent()
     {
         // We use agent_custom_id as the foreign key AND the owner key
         return $this->belongsTo(User::class, 'agent_custom_id', 'agent_custom_id');
     }
-
 }

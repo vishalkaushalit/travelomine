@@ -2,28 +2,26 @@
 
 namespace App\Services;
 
+use App\Models\Merchant;
 use App\Models\NmiTransaction;
 use Illuminate\Support\Facades\Http;
 
 class NmiService
 {
     protected string $securityKey;
-
     protected string $apiUrl;
-
     protected ?int $merchantId = null;
 
     public function __construct()
     {
-        // Load from config/nmi.php
         $this->securityKey = (string) config('nmi.security_key');
         $this->apiUrl = (string) config('nmi.api_url');
     }
 
-    public function useMerchant(\App\Models\Merchant $merchant): static
+    public function useMerchant(Merchant $merchant): static
     {
-        $securityKey = $merchant->security_key ?? config('nmi.security_key');
-        $apiUrl = $merchant->api_url ?? config('nmi.api_url');
+        $securityKey = $merchant->security_key ?: config('nmi.security_key');
+        $apiUrl = $merchant->api_url ?: config('nmi.api_url');
 
         if (empty($securityKey)) {
             throw new \Exception('No security key found for selected merchant and no fallback NMI key is configured.');
@@ -41,23 +39,22 @@ class NmiService
     }
 
     /**
-     * Perform a sale transaction via Direct Post.
-     * Sends: security_key, type=sale, amount, ccnumber, ccexp, cvv + billing fields.
+     * Old raw-card sale flow.
+     * Keep only if you still need sandbox/backward compatibility.
      */
     public function sale(array $data): array
     {
         $cleanCardNumber = str_replace([' ', '-'], '', $data['ccnumber']);
 
-        // Build NMI Direct Post payload
         $payload = [
             'security_key' => $this->securityKey,
             'type' => 'sale',
-            'amount' => number_format($data['amount'], 2, '.', ''),
-            'ccnumber' => $cleanCardNumber, // Use the cleaned number here!
-            'ccexp' => $data['ccexp'],   // MMYY
+            'amount' => number_format((float) $data['amount'], 2, '.', ''),
+            'ccnumber' => $cleanCardNumber,
+            'ccexp' => $data['ccexp'],
             'cvv' => $data['cvv'],
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
+            'first_name' => $data['first_name'] ?? null,
+            'last_name' => $data['last_name'] ?? null,
             'address1' => $data['address1'] ?? null,
             'city' => $data['city'] ?? null,
             'state' => $data['state'] ?? null,
@@ -66,36 +63,51 @@ class NmiService
             'email' => $data['email'] ?? null,
             'orderid' => $data['order_id'] ?? null,
         ];
-        // POST as application/x-www-form-urlencoded to transact.php
+
+        return $this->sendRequest($payload);
+    }
+
+    /**
+     * New token-based sale flow for Collect.js/live usage.
+     */
+    public function saleWithToken(array $data): array
+    {
+        $payload = [
+            'security_key' => $this->securityKey,
+            'type' => 'sale',
+            'amount' => number_format((float) $data['amount'], 2, '.', ''),
+            'payment_token' => $data['payment_token'],
+            'first_name' => $data['first_name'] ?? null,
+            'last_name' => $data['last_name'] ?? null,
+            'address1' => $data['address1'] ?? null,
+            'city' => $data['city'] ?? null,
+            'state' => $data['state'] ?? null,
+            'zip' => $data['zip'] ?? null,
+            'country' => $data['country'] ?? null,
+            'email' => $data['email'] ?? null,
+            'orderid' => $data['order_id'] ?? null,
+        ];
+
+        return $this->sendRequest($payload);
+    }
+
+    protected function sendRequest(array $payload): array
+    {
         $response = Http::asForm()->post($this->apiUrl, $payload);
 
-        // NMI Direct Post responds as query-string like:
-        // response=1&responsetext=SUCCESS&authcode=...&transactionid=...
         $result = [];
         parse_str($response->body(), $result);
 
         return $result;
     }
 
-    /**
-     * Map NMI response into DB and store transaction log.
-     * Logs: names, last4, address, email, amount, timestamp, status, raw response.
-     */
     public function logTransaction(array $requestData, array $response): NmiTransaction
     {
-        // Map gateway response code to status string
-        // According to NMI: 1=approved, 2=declined, 3=error.[web:5][web:80]
-        $status = 'error';
-        if (isset($response['response'])) {
-            $status = $response['response'] == 1
-                ? 'approved'
-                : ($response['response'] == 2 ? 'declined' : 'error');
-        }
+        $status = $this->mapStatus($response);
 
-        // Derive last 4 digits from original request (do NOT store full PAN)
         $cardLast4 = isset($requestData['ccnumber'])
-            ? substr($requestData['ccnumber'], -4)
-            : null;
+            ? substr(str_replace([' ', '-'], '', $requestData['ccnumber']), -4)
+            : ($response['last4'] ?? null);
 
         return NmiTransaction::create([
             'order_id' => $requestData['order_id'] ?? null,
@@ -111,7 +123,7 @@ class NmiService
             'state' => $requestData['state'] ?? null,
             'zip' => $requestData['zip'] ?? null,
             'country' => $requestData['country'] ?? null,
-            'amount' => $requestData['amount'],
+            'amount' => $requestData['amount'] ?? 0,
             'currency' => 'USD',
             'status' => $status,
             'processed_at' => now(),
@@ -119,21 +131,13 @@ class NmiService
         ]);
     }
 
-    /**
-     * Log a transaction that came from a payment link
-     */
     public function logTransactionFromLink(array $requestData, array $response, int $paymentLinkId): NmiTransaction
     {
-        $status = 'error';
-        if (isset($response['response'])) {
-            $status = $response['response'] == 1
-                ? 'approved'
-                : ($response['response'] == 2 ? 'declined' : 'error');
-        }
+        $status = $this->mapStatus($response);
 
         $cardLast4 = isset($requestData['ccnumber'])
             ? substr(str_replace([' ', '-'], '', $requestData['ccnumber']), -4)
-            : null;
+            : ($response['last4'] ?? null);
 
         return NmiTransaction::create([
             'payment_link_id' => $paymentLinkId,
@@ -150,11 +154,24 @@ class NmiService
             'state' => $requestData['state'] ?? null,
             'zip' => $requestData['zip'] ?? null,
             'country' => $requestData['country'] ?? null,
-            'amount' => $requestData['amount'],
+            'amount' => $requestData['amount'] ?? 0,
             'currency' => 'USD',
             'status' => $status,
             'processed_at' => now(),
             'raw_response' => $response,
         ]);
+    }
+
+    protected function mapStatus(array $response): string
+    {
+        if (! isset($response['response'])) {
+            return 'error';
+        }
+
+        return match ((string) $response['response']) {
+            '1' => 'approved',
+            '2' => 'declined',
+            default => 'error',
+        };
     }
 }

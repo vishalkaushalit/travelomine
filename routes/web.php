@@ -7,36 +7,31 @@ use App\Http\Controllers\Admin\AdminBookingsController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminNotifyController;
+use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Agent\Auth\AgentAuthController;
-use App\Http\Controllers\Agent\DashboardController;
 use App\Http\Controllers\Agent\ChargingController;
+use App\Http\Controllers\Agent\DashboardController;
 use App\Http\Controllers\AgentBookingController;
 use App\Http\Controllers\Auth\ChargeLoginController;
 use App\Http\Controllers\AuthConsentController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\Charge\BookingPaymentLinkController;
+use App\Http\Controllers\Charge\ChargeBookingStatusController;
 use App\Http\Controllers\Charge\ChargeController;
 use App\Http\Controllers\Charge\ChargingDashboardController;
-use App\Http\Controllers\Charge\ChargeBookingStatusController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\Agent\Bookings\FlightSegmentController;
-
+// payment contollers
+use App\Http\Controllers\PublicPaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Support\CsLoginController;
-use App\Http\Controllers\Support\SupportDashboardController;
-use App\Http\Controllers\Agent\Bookings\PassengerController;
-
-// payment contollers 
-use App\Http\Controllers\PublicPaymentController;
-use App\Http\Controllers\Charge\BookingPaymentLinkController;
-
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
-
-
+use App\Models\Booking;
+use Illuminate\Support\Facades\Mail;
 
 Route::get('/', function () {
     return view('welcome');
@@ -75,7 +70,7 @@ Route::post('/charge/logout', [ChargeLoginController::class, 'logout'])->name('c
 Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->group(function () {
     // Route::get('/dashboard', [ChargeController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [ChargingDashboardController::class, 'index'])->name('dashboard');
-    
+
     Route::get('/assignments/{assignment}/details', [ChargeController::class, 'showDetails'])->name('assignments.details');
     Route::get('/assignments/{assignment}/accept-form', [ChargeController::class, 'showAcceptForm'])->name('assignments.accept-form');
     Route::post('/assignments/{assignment}/accept', [ChargeController::class, 'accept'])->name('assignments.accept');
@@ -96,8 +91,34 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
     Route::get('/bookings/{booking}/payment-link/create', [BookingPaymentLinkController::class, 'create'])->name('bookings.payment-link.create');
     Route::post('/bookings/{booking}/payment-link', [BookingPaymentLinkController::class, 'store'])->name('bookings.payment-link.store');
     Route::post('/bookings/{booking}/payment-link/{link}/send-mail', [BookingPaymentLinkController::class, 'sendMail'])->name('bookings.payment-link.send-mail');
-});
 
+
+
+
+Route::get('/test-auth-email', function () {
+    $booking = Booking::first(); // get one booking from database
+
+    if (!$booking) {
+        return 'No booking found in database.';
+    }
+
+    $emailBody = '
+        <p>Dear Customer,</p>
+        <p>This is a test payment authorization email for preview.</p>
+        <p>Please review your booking and confirm the charges.</p>
+    ';
+
+    Mail::send('emails.customer-final-auth', [
+        'booking' => $booking,
+        'emailBody' => $emailBody
+    ], function ($message) {
+        $message->to('prashant.saini@trafficpirates.com')
+                ->subject('Test Payment Authorization Email');
+    });
+
+    return 'Test email sent successfully.';
+});
+  });
 
 // AGENT DASHBOARD ROUTES ONLY (POST-LOGIN)
 Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->group(function () {
@@ -127,9 +148,10 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::get('/activity-logs/latest', [ActivityLogController::class, 'latest'])
             ->name('activity.logs.latest');
+        Route::resource('merchants', MerchantController::class)->except(['show']);
     });
 Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.')->group(function () {
-   
+
     Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/agents-list', [\App\Http\Controllers\Admin\AdminAgentsController::class, 'index'])->name('agents.index');
     Route::get('/bookings/all', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'all'])->name('bookings.all');
@@ -212,16 +234,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
         Route::get('/{id}/stats', [AdminNotifyController::class, 'stats'])->name('stats');
     });
     // Settings (Both Admin and Manager can access)
-        Route::get('/settings/bookings', [SettingsController::class, 'bookings'])
-            ->name('settings.bookings'); // used for the page itself
+    Route::get('/settings/bookings', [SettingsController::class, 'bookings'])
+        ->name('settings.bookings'); // used for the page itself
 
-        // Add new option (all three forms currently call these names)
-        Route::post('/settings/bookings', [SettingsController::class, 'store'])
-            ->name('settings.store');
+    // Add new option (all three forms currently call these names)
+    Route::post('/settings/bookings', [SettingsController::class, 'store'])
+        ->name('settings.store');
 
-        // Delete option
-        Route::delete('/settings/bookings/{id}', [SettingsController::class, 'destroy'])
-            ->name('settings.destroy');
+    // Delete option
+    Route::delete('/settings/bookings/{id}', [SettingsController::class, 'destroy'])
+        ->name('settings.destroy');
 
     // Reports (Both Admin and Manager can access)
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
@@ -250,18 +272,19 @@ Route::get('/agent/test-notifications', function () {
     return view('agent.test-notifications');
 })->middleware(['auth', 'role:agent'])->name('agent.test');
 
-
-
-// clear all cache 
-Route::get('/clear-all-cache', function() {
+// clear all cache
+Route::get('/clear-all-cache', function () {
     // Clear config cache
     Artisan::call('config:clear');
-    
+
     // Clear route cache
     Artisan::call('route:clear');
-    
+
     // Optimize the application (clears all other caches like application cache and views)
     Artisan::call('optimize:clear');
-    
-    return "Configuration, Routes, and all other caches cleared and application optimized!";
+
+    return 'Configuration, Routes, and all other caches cleared and application optimized!';
 });
+
+
+

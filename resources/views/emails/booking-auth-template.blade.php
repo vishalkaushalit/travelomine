@@ -43,7 +43,7 @@
                                             Confirmation Number
                                         </div>
                                         <div style="font-size:24px; font-weight:700; color:#f8fafc; margin-bottom:6px;">
-                                            {{ $booking->booking_gk_pnr }}
+                                            {{ $booking->booking_gk_pnr  }}
                                         </div>
                                         <div style="font-size:14px; color:#60a5fa;">
                                             Total Cost for all passengers: {{ $booking->currency }}
@@ -489,8 +489,3 @@
     </table>
 </body>
 </html>
-
-
-
-
-

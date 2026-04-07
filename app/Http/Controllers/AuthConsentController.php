@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Services\MerchantMailerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class AuthConsentController extends Controller
 {
+    public function __construct(
+        protected MerchantMailerService $merchantMailerService
+    ) {}
+
     public function edit($id)
     {
         $booking = Booking::with([
@@ -46,6 +50,7 @@ class AuthConsentController extends Controller
             'segments',
             'cards.merchant',
             'passengers',
+            'agencyMerchant',
         ])->findOrFail($id);
 
         $finalContent = session('authorize_preview_'.$id);
@@ -60,7 +65,7 @@ class AuthConsentController extends Controller
 
     public function send(Request $request, $id)
     {
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::with('agencyMerchant')->findOrFail($id);
 
         if ($booking->auth_email_sent_at || $booking->status === 'auth_email_sent') {
             return redirect()->route('charge.dashboard')
@@ -80,11 +85,7 @@ class AuthConsentController extends Controller
         ])->render();
 
         try {
-            Mail::html($finalHtml, function ($message) use ($booking) {
-                $message->to($booking->customer_email)
-                    ->subject('Booking Acknowledgement Required: '.$booking->booking_reference)
-                    ->from(config('mail.from.address'), 'Travelomile Reservation');
-            });
+            $this->merchantMailerService->sendAuthMail($booking, $finalHtml);
 
             $booking->update([
                 'status' => 'auth_email_sent',
@@ -93,16 +94,12 @@ class AuthConsentController extends Controller
 
             session()->forget('authorize_preview_'.$id);
 
-            Log::info('Authorization email sent successfully', [
-                'booking_id' => $booking->id,
-                'customer_email' => $booking->customer_email,
-            ]);
-
             return redirect()->route('charge.dashboard')
                 ->with('success', 'Acknowledgement mail sent successfully.');
         } catch (TransportExceptionInterface $e) {
             Log::error('Mail transport failed', [
                 'booking_id' => $booking->id,
+                'merchant_id' => $booking->agency_merchant_id,
                 'customer_email' => $booking->customer_email,
                 'error' => $e->getMessage(),
             ]);
@@ -112,6 +109,7 @@ class AuthConsentController extends Controller
         } catch (\Exception $e) {
             Log::error('General mail send error', [
                 'booking_id' => $booking->id,
+                'merchant_id' => $booking->agency_merchant_id,
                 'customer_email' => $booking->customer_email,
                 'error' => $e->getMessage(),
             ]);
@@ -123,12 +121,10 @@ class AuthConsentController extends Controller
 
     public function resend(Request $request, $id)
     {
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::with('agencyMerchant')->findOrFail($id);
 
-        // Get content from request or session
         $emailBody = $request->input('final_content') ?? session('authorize_preview_'.$id);
 
-        // If no session content, re-render the default template
         if (! $emailBody) {
             $emailBody = view('emails.booking-auth-template', compact('booking'))->render();
         }
@@ -139,13 +135,8 @@ class AuthConsentController extends Controller
         ])->render();
 
         try {
-            Mail::html($finalHtml, function ($message) use ($booking) {
-                $message->to($booking->customer_email)
-                    ->subject('Booking Acknowledgement Required: '.$booking->booking_reference)
-                    ->from(config('mail.from.address'), 'Travelomile Reservation');
-            });
+            $this->merchantMailerService->sendAuthMail($booking, $finalHtml);
 
-            // Update resend count and timestamp only — don't change status
             $booking->update([
                 'auth_email_sent_at' => now(),
                 'auth_email_resend_count' => ($booking->auth_email_resend_count ?? 0) + 1,
@@ -153,8 +144,8 @@ class AuthConsentController extends Controller
 
             Log::info('Authorization email re-sent', [
                 'booking_id' => $booking->id,
+                'merchant_id' => $booking->agency_merchant_id,
                 'customer_email' => $booking->customer_email,
-                'resend_count' => $booking->auth_email_resend_count,
             ]);
 
             return redirect()->back()
@@ -163,6 +154,7 @@ class AuthConsentController extends Controller
         } catch (TransportExceptionInterface $e) {
             Log::error('Resend mail transport failed', [
                 'booking_id' => $booking->id,
+                'merchant_id' => $booking->agency_merchant_id,
                 'error' => $e->getMessage(),
             ]);
 
@@ -170,6 +162,12 @@ class AuthConsentController extends Controller
                 ->with('error', 'Resend failed: '.$e->getMessage());
 
         } catch (\Exception $e) {
+            Log::error('Resend mail general error', [
+                'booking_id' => $booking->id,
+                'merchant_id' => $booking->agency_merchant_id,
+                'error' => $e->getMessage(),
+            ]);
+
             return redirect()->back()
                 ->with('error', 'Unexpected error: '.$e->getMessage());
         }
@@ -177,14 +175,11 @@ class AuthConsentController extends Controller
 
     public function markAuthDone($id)
     {
-        // Find the booking or fail with 404
         $booking = Booking::findOrFail($id);
 
-        // Update the auth status
         $booking->email_auth_taken = 1;
         $booking->save();
 
-        // Redirect back with a success message
         return redirect()->back()->with('success', 'Email Auth updated to Yes successfully.');
     }
 }

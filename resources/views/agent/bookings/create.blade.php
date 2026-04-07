@@ -438,9 +438,9 @@
                 <div class="card-header"><strong>7. Agent Remark</strong></div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Agent Remark</label>
+                        <label class="form-label" for="agent_remarks">Agent Remark <span class="text-danger">*</span> </label>
                         <p class="text-muted small">Enter financial details here </p>
-                        <textarea placeholder="enter card holder detail" name="agent_remarks" class="form-control" rows="4">{{ old('agent_remarks') }}</textarea>
+                        <textarea placeholder="enter card holder detail" name="agent_remarks" class="form-control" rows="4" id="agent_remarks" required>{{ old('agent_remarks') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -630,12 +630,12 @@
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label>Date of Birth</label>
+                                <label class="form-label" for="passenger_dob_${index}">Date of Birth </label>
                                 <input type="date" name="passengers[${index}][dob]" class="form-control" required>
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label>Passport Number</label>
+                                <label class="form-label" for="passenger_passport_number_${index}">Passport Number</label>
                                 <input type="text" name="passengers[${index}][passport_number]" class="form-control">
                             </div>
 
