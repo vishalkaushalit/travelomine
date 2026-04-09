@@ -7,10 +7,13 @@ use App\Http\Controllers\Admin\AdminBookingsController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminNotifyController;
+use App\Http\Controllers\Admin\AllBookingImportController;
 use App\Http\Controllers\Admin\MerchantController;
+use App\Http\Controllers\Admin\OldBookingUploadController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Agent\Auth\AgentAuthController;
+use App\Http\Controllers\Agent\bookings\AgentBookingSearchController;
 use App\Http\Controllers\Agent\ChargingController;
 use App\Http\Controllers\Agent\DashboardController;
 use App\Http\Controllers\AgentBookingController;
@@ -22,16 +25,17 @@ use App\Http\Controllers\Charge\ChargeBookingStatusController;
 use App\Http\Controllers\Charge\ChargeController;
 use App\Http\Controllers\Charge\ChargingDashboardController;
 use App\Http\Controllers\NotificationController;
-// payment contollers
 use App\Http\Controllers\PublicPaymentController;
+// payment contollers
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\StatusController;
 use App\Http\Controllers\Support\CsLoginController;
+use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -92,33 +96,30 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
     Route::post('/bookings/{booking}/payment-link', [BookingPaymentLinkController::class, 'store'])->name('bookings.payment-link.store');
     Route::post('/bookings/{booking}/payment-link/{link}/send-mail', [BookingPaymentLinkController::class, 'sendMail'])->name('bookings.payment-link.send-mail');
 
+    Route::get('/test-auth-email', function () {
+        $booking = Booking::first(); // get one booking from database
 
+        if (! $booking) {
+            return 'No booking found in database.';
+        }
 
-
-Route::get('/test-auth-email', function () {
-    $booking = Booking::first(); // get one booking from database
-
-    if (!$booking) {
-        return 'No booking found in database.';
-    }
-
-    $emailBody = '
+        $emailBody = '
         <p>Dear Customer,</p>
         <p>This is a test payment authorization email for preview.</p>
         <p>Please review your booking and confirm the charges.</p>
     ';
 
-    Mail::send('emails.customer-final-auth', [
-        'booking' => $booking,
-        'emailBody' => $emailBody
-    ], function ($message) {
-        $message->to('prashant.saini@trafficpirates.com')
+        Mail::send('emails.customer-final-auth', [
+            'booking' => $booking,
+            'emailBody' => $emailBody,
+        ], function ($message) {
+            $message->to('prashant.saini@trafficpirates.com')
                 ->subject('Test Payment Authorization Email');
-    });
+        });
 
-    return 'Test email sent successfully.';
+        return 'Test email sent successfully.';
+    });
 });
-  });
 
 // AGENT DASHBOARD ROUTES ONLY (POST-LOGIN)
 Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->group(function () {
@@ -136,6 +137,9 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
     Route::patch('bookings/{booking}/update-pnr', [AgentBookingController::class, 'updatePnr'])->name('bookings.update');
     Route::get('/bookings/{booking}/charge', [ChargingController::class, 'chargeByAgent'])->name('bookings.charge');
     Route::post('/bookings/{booking}/charge/assign', [ChargingController::class, 'assignForCharging'])->name('bookings.charge.assign');
+
+    Route::get('/booking-search', [AgentBookingSearchController::class, 'index'])->name('bookings.search');
+    Route::get('/booking-search/results', [AgentBookingSearchController::class, 'search'])->name('bookings.search.results');
 });
 
 // ADMIN ROUTES
@@ -149,6 +153,22 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/activity-logs/latest', [ActivityLogController::class, 'latest'])
             ->name('activity.logs.latest');
         Route::resource('merchants', MerchantController::class)->except(['show']);
+
+        // export csv of single booking
+        Route::get('/bookings/{booking}/export-csv', [App\Http\Controllers\Admin\BookingExportController::class, 'exportSingle'])
+            ->name('bookings.export.csv');
+        Route::post('/bookings/export/all', [AllBookingImportController::class, 'export'])
+            ->name('bookings.export.all');
+        Route::post('/bookings/export-selected', [AllBookingImportController::class, 'exportSelected'])
+            ->name('bookings.export.selected');
+
+        // upload old bookings feature
+        Route::get('/bookings/upload-old', [OldBookingUploadController::class, 'index'])
+            ->name('bookings.upload-old');
+
+        Route::post('/bookings/upload-old', [OldBookingUploadController::class, 'store'])
+            ->name('bookings.upload-old.store');
+
     });
 Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.')->group(function () {
 
@@ -177,6 +197,9 @@ Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(func
     Route::get('/bookings', [AdminBookingsController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{id}/edit', [AdminBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [AdminBookingsController::class, 'update'])->name('bookings.update');
+
+    Route::get('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'create'])->name('bookings.import.form');
+    Route::post('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'store'])->name('bookings.import.store');
 });
 
 // GENERAL LOGOUT
@@ -223,7 +246,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
     // Notification Management Routes (Only Admin)
     Route::prefix('notifications')->name('notifications.')->middleware(['role:admin'])->group(function () {
         Route::get('/', [AdminNotifyController::class, 'index'])->name('index');
-        Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
+        // Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
         Route::get('/create', [AdminNotifyController::class, 'create'])->name('create');
         Route::post('/', [AdminNotifyController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [AdminNotifyController::class, 'edit'])->name('edit');
@@ -268,6 +291,13 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/booking-status/{bookingId}', [StatusController::class, 'showByBooking'])->name('status.show');
+    Route::post('/booking-status/create/{bookingId}', [StatusController::class, 'storeFromBooking'])->name('status.store');
+    Route::post('/booking-status/sync/{bookingId}', [StatusController::class, 'syncFromBooking'])->name('status.sync');
+    Route::put('/booking-status/{id}', [StatusController::class, 'update'])->name('status.update');
+});
+
 Route::get('/agent/test-notifications', function () {
     return view('agent.test-notifications');
 })->middleware(['auth', 'role:agent'])->name('agent.test');
@@ -285,6 +315,3 @@ Route::get('/clear-all-cache', function () {
 
     return 'Configuration, Routes, and all other caches cleared and application optimized!';
 });
-
-
-

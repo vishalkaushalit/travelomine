@@ -81,12 +81,22 @@
                             <label class="form-label">Booking Portal <span class="text-danger">*</span></label>
                             <select name="booking_portal" class="form-control" required>
                                 <option value="">Select Portal</option>
-                                @foreach (['amadeus', 'sabre', 'worldspan', 'gds', 'website'] as $portal)
+                                @foreach (['amadeus', 'sabre', 'gds', 'website'] as $portal)
                                     <option value="{{ $portal }}"
                                         {{ old('booking_portal') == $portal ? 'selected' : '' }}>
                                         {{ strtoupper($portal) }}
                                     </option>
                                 @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Language <span class="text-danger">*</span></label>
+                            <select name="language" class="form-control" required>
+                                <option value="">Select Language</option>
+                                <option value="English" {{ old('language') == 'English' ? 'selected' : '' }}>English
+                                </option>
+                                <option value="Spanish" {{ old('language') == 'Spanish' ? 'selected' : '' }}>Spanish
+                                </option>
                             </select>
                         </div>
 
@@ -284,17 +294,17 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3 col-lg-4">
                                     <label class="form-label">Agency Merchant <span class="text-danger">*</span></label>
-                                    <select name="full_payment[merchant_id]" id="full_payment_merchant_id"
-                                        class="form-control">
+                                    <select name="full_payment[agency_merchant_id]" id="full_payment_agency_merchant_id"
+                                        class="form-control payment-full-field">
                                         <option value="">Select Merchant</option>
                                         @foreach ($merchants as $merchant)
                                             <option value="{{ $merchant->id }}"
-                                                {{ old('full_payment.merchant_id') == $merchant->id ? 'selected' : '' }}>
+                                                {{ old('full_payment.agency_merchant_id') == $merchant->id ? 'selected' : '' }}>
                                                 {{ $merchant->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('full_payment.merchant_id')
+                                    @error('full_payment.agency_merchant_id')
                                         <small class="text-danger">{{ $message }}</small>
                                     @enderror
                                 </div>
@@ -303,7 +313,8 @@
                                     <label class="form-label">Charge Amount <span class="text-danger">*</span></label>
                                     <input type="number" step="0.01" min="0"
                                         name="full_payment[charge_amount]" id="full_payment_charge_amount"
-                                        class="form-control" value="{{ old('full_payment.charge_amount') }}">
+                                        class="form-control payment-full-field"
+                                        value="{{ old('full_payment.charge_amount') }}">
                                     @error('full_payment.charge_amount')
                                         <small class="text-danger">{{ $message }}</small>
                                     @enderror
@@ -312,15 +323,18 @@
                                 <div class="col-md-6 mb-3 col-lg-4">
                                     <label class="form-label">Card Holder Full Name <span
                                             class="text-danger">*</span></label>
-                                    <input type="text" name="full_payment[card_holder_name]" class="form-control"
+                                    <input type="text" name="full_payment[card_holder_name]"
+                                        class="form-control payment-full-field"
                                         value="{{ old('full_payment.card_holder_name') }}">
                                 </div>
-                                <div class="col-md-6 mb-3 col-lg-2">
-                                    <label class="form-label">Card Last 4 Digits <span class="text-danger">*</label>
-                                    <input type="text" name="full_payment[card_last_four]" class="form-control"
-                                        maxlength="4" pattern="\d{4}" value="{{ old('full_payment.card_last_four') }}">
-                                </div>
 
+                                <div class="col-md-6 mb-3 col-lg-2">
+                                    <label class="form-label">Card Last 4 Digits <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" name="full_payment[card_last_four]"
+                                        class="form-control payment-full-field" maxlength="4" pattern="\d{4}"
+                                        value="{{ old('full_payment.card_last_four') }}">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -333,7 +347,7 @@
                                 <div class="col-md-6 mb-3 col-lg-3">
                                     <label class="form-label">Airline Full Name <span class="text-danger">*</span></label>
                                     <input type="text" name="split_payment[airline_merchant_name]"
-                                        class="form-control" required
+                                        class="form-control payment-split-field"
                                         value="{{ old('split_payment.airline_merchant_name') }}">
                                     @error('split_payment.airline_merchant_name')
                                         <small class="text-danger">{{ $message }}</small>
@@ -345,7 +359,7 @@
                                             class="text-danger">*</span></label>
                                     <input type="number" step="0.01" min="0"
                                         name="split_payment[airline][charge_amount]" id="split_airline_charge_amount"
-                                        class="form-control" required
+                                        class="form-control payment-split-field"
                                         value="{{ old('split_payment.airline.charge_amount') }}">
                                     @error('split_payment.airline.charge_amount')
                                         <small class="text-danger">{{ $message }}</small>
@@ -355,7 +369,7 @@
                                 <div class="col-md-6 mb-3 col-lg-4">
                                     <label class="form-label">Card Holder Name <span class="text-danger">*</span></label>
                                     <input type="text" name="split_payment[airline][card_holder_name]"
-                                        class="form-control" required
+                                        class="form-control payment-split-field"
                                         value="{{ old('split_payment.airline.card_holder_name') }}">
                                     @error('split_payment.airline.card_holder_name')
                                         <small class="text-danger">{{ $message }}</small>
@@ -366,7 +380,7 @@
                                     <label class="form-label">Card Last 4 Digits <span
                                             class="text-danger">*</span></label>
                                     <input type="text" name="split_payment[airline][card_last_four]"
-                                        class="form-control" maxlength="4" pattern="\d{4}" required
+                                        class="form-control payment-split-field" maxlength="4" pattern="\d{4}"
                                         value="{{ old('split_payment.airline.card_last_four') }}">
                                     @error('split_payment.airline.card_last_four')
                                         <small class="text-danger">{{ $message }}</small>
@@ -380,16 +394,17 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3 col-lg-3">
                                     <label class="form-label">Agency Merchant <span class="text-danger">*</span></label>
-                                    <select name="split_payment[agency][merchant_id]" class="form-control" required>
+                                    <select name="split_payment[agency][agency_merchant_id]"
+                                        class="form-control payment-split-field">
                                         <option value="">Select Merchant</option>
                                         @foreach ($merchants as $merchant)
                                             <option value="{{ $merchant->id }}"
-                                                {{ old('split_payment.agency.merchant_id') == $merchant->id ? 'selected' : '' }}>
+                                                {{ old('split_payment.agency.agency_merchant_id') == $merchant->id ? 'selected' : '' }}>
                                                 {{ $merchant->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('split_payment.agency.merchant_id')
+                                    @error('split_payment.agency.agency_merchant_id')
                                         <small class="text-danger">{{ $message }}</small>
                                     @enderror
                                 </div>
@@ -399,7 +414,7 @@
                                             class="text-danger">*</span></label>
                                     <input type="number" step="0.01" min="0"
                                         name="split_payment[agency][charge_amount]" id="split_agency_charge_amount"
-                                        class="form-control" required
+                                        class="form-control payment-split-field"
                                         value="{{ old('split_payment.agency.charge_amount') }}">
                                     @error('split_payment.agency.charge_amount')
                                         <small class="text-danger">{{ $message }}</small>
@@ -409,7 +424,7 @@
                                 <div class="col-md-6 mb-3 col-lg-4">
                                     <label class="form-label">Card Holder Name <span class="text-danger">*</span></label>
                                     <input type="text" name="split_payment[agency][card_holder_name]"
-                                        class="form-control" required
+                                        class="form-control payment-split-field"
                                         value="{{ old('split_payment.agency.card_holder_name') }}">
                                     @error('split_payment.agency.card_holder_name')
                                         <small class="text-danger">{{ $message }}</small>
@@ -420,7 +435,7 @@
                                     <label class="form-label">Card Last 4 Digits <span
                                             class="text-danger">*</span></label>
                                     <input type="text" name="split_payment[agency][card_last_four]"
-                                        class="form-control" maxlength="4" pattern="\d{4}" required
+                                        class="form-control payment-split-field" maxlength="4" pattern="\d{4}"
                                         value="{{ old('split_payment.agency.card_last_four') }}">
                                     @error('split_payment.agency.card_last_four')
                                         <small class="text-danger">{{ $message }}</small>
@@ -432,15 +447,16 @@
                 </div>
             </div>
 
-
             {{-- 7. Agent Remark --}}
             <div class="card mb-4">
                 <div class="card-header"><strong>7. Agent Remark</strong></div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label" for="agent_remarks">Agent Remark <span class="text-danger">*</span> </label>
+                        <label class="form-label" for="agent_remarks">Agent Remark <span class="text-danger">*</span>
+                        </label>
                         <p class="text-muted small">Enter financial details here </p>
-                        <textarea placeholder="enter card holder detail" name="agent_remarks" class="form-control" rows="4" id="agent_remarks" required>{{ old('agent_remarks') }}</textarea>
+                        <textarea placeholder="enter card holder detail" name="agent_remarks" class="form-control" rows="4"
+                            id="agent_remarks" required>{{ old('agent_remarks') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -534,6 +550,7 @@
                     <select name="segments[${index}][cabin_class]" class="form-control" required>
                         <option value="">Select Cabin</option>
                         <option value="economy">Economy</option>
+                        <option value="basic_economy">Basic-Economy</option>
                         <option value="premium_economy">Premium Economy</option>
                         <option value="business">Business</option>
                         <option value="first">First</option>
@@ -781,5 +798,3 @@
         });
     </script>
 @endpush
-
-

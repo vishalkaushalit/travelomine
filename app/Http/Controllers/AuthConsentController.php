@@ -65,7 +65,9 @@ class AuthConsentController extends Controller
 
     public function send(Request $request, $id)
     {
-        $booking = Booking::with('agencyMerchant')->findOrFail($id);
+        // $booking = Booking::with('agencyMerchant')->findOrFail($id);
+        $booking = Booking::with(['agencyMerchant', 'cards'])->findOrFail($id);
+
 
         if ($booking->auth_email_sent_at || $booking->status === 'auth_email_sent') {
             return redirect()->route('charge.dashboard')
@@ -121,7 +123,8 @@ class AuthConsentController extends Controller
 
     public function resend(Request $request, $id)
     {
-        $booking = Booking::with('agencyMerchant')->findOrFail($id);
+        // $booking = Booking::with('agencyMerchant')->findOrFail($id);
+        $booking = Booking::with(['agencyMerchant', 'cards'])->findOrFail($id);
 
         $emailBody = $request->input('final_content') ?? session('authorize_preview_'.$id);
 

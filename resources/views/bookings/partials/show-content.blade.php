@@ -31,9 +31,14 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
-                            <strong>Customer:</strong><br>
+                            <strong>Customer name:</strong><br>
                             {{ $booking->customer_name }}<br>
                             <small class="text-muted">{{ $booking->customer_phone }}</small>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Card Holder:</strong><br>
+                            {{ $booking->primary_card->card_holder_name ?? 'N/A' }}<br>
+                            <small class="text-muted">{{ $booking->primary_card->card_last_four ?? 'N/A' }}</small>
                         </div>
                         <div class="col-md-3">
                             <strong>PNR:</strong><br>
@@ -117,7 +122,7 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><strong>Booking Reference</strong></td>
+                                    <td><strong>Booking Reference </strong></td>
                                     <td><code>{{ $booking->booking_reference ?? 'N/A' }}</code></td>
                                 </tr>
                                 <tr>
@@ -192,6 +197,7 @@
                                     <th>Passport</th>
                                     <th>Seat/Meal</th>
                                     <th>Special</th>
+
                                 </tr>
                             </thead>
                             <tbody>

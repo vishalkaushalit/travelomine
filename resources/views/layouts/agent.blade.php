@@ -23,7 +23,7 @@
 
         @auth
             {{-- @include('components.notifications') --}}
-            @include('layouts.notification-bell')
+            {{-- @include('layouts.notification-bell') --}}
         @endauth
         <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -144,10 +144,16 @@
 
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
+                                        <a href="{{ route('agent.bookings.search') }}" class="nav-link">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>All Bookings</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
                                         <a href="{{ route('agent.bookings.index') }}"
                                             class="nav-link {{ request()->routeIs('agent.bookings.index') ? 'active' : '' }}">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>All Bookings</p>
+                                            <p>My Bookings</p>
                                         </a>
                                     </li>
 
@@ -203,7 +209,7 @@
                     Unlocked</a>.</strong>
             All rights reserved.
             <div class="float-right d-none d-sm-inline-block">
-                <b>Version: 2.0.1</b> 
+                <b>Version: 2.0.1</b>
             </div>
         </footer>
     </div>

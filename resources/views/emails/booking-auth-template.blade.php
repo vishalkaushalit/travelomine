@@ -43,7 +43,7 @@
                                             Confirmation Number
                                         </div>
                                         <div style="font-size:24px; font-weight:700; color:#f8fafc; margin-bottom:6px;">
-                                            {{ $booking->booking_gk_pnr  }}
+                                            {{ $booking->booking_gk_pnr }}
                                         </div>
                                         <div style="font-size:14px; color:#60a5fa;">
                                             Total Cost for all passengers: {{ $booking->currency }}
@@ -239,9 +239,9 @@
                                                 <td style="padding:6px 0; font-size:14px; color:#94a3b8; width:170px;">
                                                     Card Holder</td>
                                                 <td style="padding:6px 0; font-size:14px; color:#ffffff;">
-                                                    {{ $booking->cards->first()->card_holder_name ?? '$booking->customer_name' }}
+                                                    {{ optional($booking->primary_card)->card_holder_name ?: 'N/A' }}
                                                 </td>
-                                                {{-- $booking->cards->first()->card_holder_name ?? 'N/A' }}</td> --}}
+                                                {{-- $booking->primary_card->card_holder_name ?? 'N/A' }}</td> --}}
                                             </tr>
 
                                             <tr>
@@ -488,4 +488,5 @@
         </tr>
     </table>
 </body>
+
 </html>

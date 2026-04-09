@@ -14,8 +14,49 @@ class Booking extends Model
 
     protected $appends = ['badge_class'];
 
-    protected $fillable = [
+    // protected $fillable = [
 
+    //     'user_id',
+    //     'agent_custom_id',
+    //     'booking_reference',
+    //     'booking_date',
+    //     'call_type',
+    //     'service_provided',
+    //     'service_type',
+    //     'booking_portal',
+    //     'email_auth_taken',
+    //     'customer_name',
+    //     'customer_email',
+    //     'customer_phone',
+    //     'billing_phone',
+    //     'billing_address',
+    //     'flight_type',
+    //     'departure_city',
+    //     'arrival_city',
+    //     'gk_pnr',
+    //     'airline_pnr',
+    //     'total_passengers',
+    //     'adults',
+    //     'children',
+    //     'infants',
+    //     'card_last_four',
+    //     'currency',
+    //     'amount_charged',
+    //     'amount_paid_airline',
+    //     'total_mco',
+    //     'status',
+    //     'agent_remarks',
+    //     'charging_remarks',
+    //     'mis_remarks',
+    //     'hotel_required',
+    //     'cab_required',
+    //     'insurance_required',
+    //     'auth_email_sent_at',
+    //     'payment_confirmed_at',
+    //     'ticketed_at',
+    // ];
+
+    protected $fillable = [
         'user_id',
         'agent_custom_id',
         'booking_reference',
@@ -33,6 +74,11 @@ class Booking extends Model
         'flight_type',
         'departure_city',
         'arrival_city',
+        'departure_date',
+        'return_date',
+        'airline_name',
+        'flight_number',
+        'cabin_class',
         'gk_pnr',
         'airline_pnr',
         'total_passengers',
@@ -43,7 +89,11 @@ class Booking extends Model
         'currency',
         'amount_charged',
         'amount_paid_airline',
+        'language',
         'total_mco',
+        'agency_merchant_id',
+        'agency_merchant_name',
+        'airline_merchant',
         'status',
         'agent_remarks',
         'charging_remarks',
@@ -78,8 +128,9 @@ class Booking extends Model
 
         static::creating(function ($booking) {
             // Generate unique booking reference
-            $booking->booking_reference = 'BTK'.strtoupper(substr(uniqid(), -5));
-
+            if (empty($booking->booking_reference)) {
+                $booking->booking_reference = 'BTK' . strtoupper(substr(uniqid(), -5));
+        }
             // Auto-calculate total_mco
             if ($booking->amount_charged && $booking->amount_paid_airline) {
                 $booking->total_mco = $booking->amount_charged - $booking->amount_paid_airline;
@@ -202,10 +253,14 @@ class Booking extends Model
         return $this->belongsTo(Merchant::class, 'agency_merchant_id');
     }
 
-
     public function agent()
     {
         // We use agent_custom_id as the foreign key AND the owner key
         return $this->belongsTo(User::class, 'agent_custom_id', 'agent_custom_id');
+    }
+
+    public function bookingStatusRecord()
+    {
+        return $this->hasOne(Status::class, 'booking_id');
     }
 }

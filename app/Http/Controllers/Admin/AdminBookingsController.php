@@ -17,46 +17,59 @@ class AdminBookingsController extends Controller
         $query = Booking::with(['user', 'passengers', 'segments']);
 
         // Search functionality
-        if ($request->has('search') && $request->search != '') {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+
+            $query->where(function ($q) use ($search) {
                 $q->where('customer_email', 'like', "%{$search}%")
-                  ->orWhere('customer_phone', 'like', "%{$search}%")
-                  ->orWhere('agent_custom_id', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$search}%");
+                    ->orWhere('customer_phone', 'like', "%{$search}%")
+                    ->orWhere('agent_custom_id', 'like', "%{$search}%")
+                    ->orWhere('id', 'like', "%{$search}%");
             });
         }
 
         // Filter by status
-        if ($request->has('status') && $request->status != '') {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         // Filter by service
-        if ($request->has('service') && $request->service != '') {
+        if ($request->filled('service')) {
             $query->where('service_provided', $request->service);
         }
 
         // Filter by agent
-        if ($request->has('agent_id') && $request->agent_id != '') {
+        if ($request->filled('agent_id')) {
             $query->where('user_id', $request->agent_id);
         }
 
         // Filter by date range
-        if ($request->has('date_from') && $request->date_from != '') {
+        if ($request->filled('date_from')) {
             $query->whereDate('booking_date', '>=', $request->date_from);
         }
-        if ($request->has('date_to') && $request->date_to != '') {
+
+        if ($request->filled('date_to')) {
             $query->whereDate('booking_date', '<=', $request->date_to);
         }
 
-        $bookings = $query->orderBy('created_at', 'desc')->paginate(25);
-        
+        // Per page limit, max 500
+        $perPage = (int) $request->get('per_page', 25);
+        $allowedPerPage = [25, 50, 100, 250, 500];
+
+        if (! in_array($perPage, $allowedPerPage)) {
+            $perPage = 25;
+        }
+
+        $bookings = $query->orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->appends($request->query());
+
         $agents = User::where('email', 'like', '%@callinggenie.com')
             ->orWhere('email', 'like', '%@trafficpirates.com')
+            ->orderBy('name')
             ->get();
 
-        return view('admin.bookings.all', compact('bookings', 'agents'));
+        return view('admin.bookings.all', compact('bookings', 'agents', 'perPage'));
     }
 
     /**
@@ -72,7 +85,7 @@ class AdminBookingsController extends Controller
             ->where('user_id', $agentId)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
-        
+
         return view('admin.bookings.index', compact('bookings', 'agent'));
     }
 
@@ -83,7 +96,7 @@ class AdminBookingsController extends Controller
     {
         $booking = Booking::with(['passengers', 'segments', 'user'])
             ->findOrFail($id);
-        
+
         return view('admin.bookings.show', compact('booking'));
     }
 
@@ -94,34 +107,31 @@ class AdminBookingsController extends Controller
     {
         $booking = Booking::with(['passengers', 'segments'])
             ->findOrFail($id);
-        
+
         return view('admin.bookings.edit', compact('booking'));
     }
 
     /**
      * Update booking
      */
-    
     public function update(Request $request, $id)
-
     {
-            $booking = Booking::findOrFail($id);
+        $booking = Booking::findOrFail($id);
 
-            $validated = $request->validate([
-                'status' => 'required|in:pending,assigned_to_charging,auth_email_sent,payment_processing,confirmed,ticketed,failed,cancelled,hold,refund,charging_in_progress,Alert,RDR,retrieval,chargeback,charged',
-                'mis_remarks' => 'nullable|string',
-                'amount_charged' => 'required|numeric',
-                'amount_paid_airline' => 'required|numeric',
-                'total_mco' => 'required|numeric',
-            ]);
+        $validated = $request->validate([
+            'status' => 'required|in:pending,assigned_to_charging,auth_email_sent,payment_processing,confirmed,ticketed,failed,cancelled,hold,refund,charging_in_progress,Alert,RDR,retrieval,chargeback,charged',
+            'mis_remarks' => 'nullable|string',
+            'amount_charged' => 'required|numeric',
+            'amount_paid_airline' => 'required|numeric',
+            'total_mco' => 'required|numeric',
+        ]);
 
-            $booking->update($validated);
+        $booking->update($validated);
 
-            return redirect()
-                ->route('admin.bookings.index', ['agent_id' => $booking->user_id])
-                ->with('success', 'Booking updated successfully!');
+        return redirect()
+            ->route('admin.bookings.index', ['agent_id' => $booking->user_id])
+            ->with('success', 'Booking updated successfully!');
     }
-
 
     /**
      * Delete booking
@@ -130,9 +140,9 @@ class AdminBookingsController extends Controller
     {
         $booking = Booking::findOrFail($id);
         $agentId = $booking->user_id;
-        
+
         $booking->delete();
-        
+
         return redirect()
             ->route('admin.bookings.index', ['agent_id' => $agentId])
             ->with('success', 'Booking deleted successfully!');

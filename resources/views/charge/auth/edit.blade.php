@@ -28,10 +28,12 @@
                 <div class="card-header bg-dark text-white">Payment Info</div>
                 <div class="card-body">
                     <p class="mb-1 text-muted small">Card Holder</p>
-                    <h5 class="text-capitalize">{{ $booking->customer_name }}</h5>
+                    <h5 class="text-capitalize">
+                        {{ $booking->primary_card->card_holder_name ?? 'N/A' }}
+                    </h5>
                     <hr>
                     <p class="mb-1 text-muted small">Card Number</p>
-                    <h6>**** **** **** {{ $booking->cards->first()->card_last_four ?? 'N/A' }}</h6>
+                    <h6>**** **** **** {{ $booking->primary_card->card_last_four ?? 'N/A' }}</h6>
                     <hr>
                     <p class="mb-1 text-muted small">Total Amount</p>
                     <h5 class="text-success font-weight-bold">{{ $booking->currency }} {{ number_format($booking->amount_charged, 2) }}</h5>

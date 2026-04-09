@@ -122,6 +122,14 @@
                                         <td><code>{{ $booking->booking_reference ?? 'N/A' }}</code></td>
                                     </tr>
                                     <tr>
+                                        <td><strong>Language</strong></td>
+                                        <td>{{ ucfirst($booking->language) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Airline Merchant</strong></td>
+                                        <td><code>{{ $booking->airline_merchant ?? 'N/A' }}</code></td>
+                                    </tr>
+                                    <tr>
                                         <td><strong>Booking Date</strong></td>
                                         <td>{{ $booking->booking_date->format('M d, Y') }}</td>
                                     </tr>
@@ -294,7 +302,7 @@
                                                 <small>{{ $card->card_holder_name }}</small>
                                             </td>
                                             <td>
-                                                {{ $card->merchant->name ?? 'N/A' }}
+                                                {{ $card->agencyMerchant->name ?? 'N/A' }}
                                             </td>
                                             <td>
                                                 <strong>${{ number_format($card->charge_amount, 2) }}</strong>

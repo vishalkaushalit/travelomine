@@ -10,6 +10,7 @@
         "bezhansalleh/filament-shield": "^3.2",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
+        "maatwebsite/excel": "^1.1",
         "spatie/laravel-activitylog": "^4.11",
         "spatie/laravel-backup": "^9.3",
         "spatie/laravel-permission": "^6.24"
