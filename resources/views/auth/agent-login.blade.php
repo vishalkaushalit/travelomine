@@ -23,7 +23,7 @@
 
     body {
         font-family: 'Montserrat', sans-serif;
-        background: linear-gradient(rgba(10, 35, 81, 0.8), rgba(10, 35, 81, 0.8)),
+        background: linear-gradient(rgba(141, 158, 189, 0.8), rgba(10, 35, 81, 0.8)),
             url('https://images.unsplash.com/photo-1436491865332-7a61a109c0f2?auto=format&fit=crop&w=1920&q=80');
         background-size: cover;
         background-position: center;

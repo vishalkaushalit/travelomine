@@ -205,7 +205,23 @@
                                     </div>
                                 </a>
 
-                               
+                                {{-- MIS placeholder --}}
+                                <a href="{{ route('mis.login') }}" class="text-decoration-none text-light">
+                                    <div class="role-card p-3 h-100">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="role-icon bg-danger bg-opacity-10 text-danger border border-danger border-opacity-50">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">MIS</div>
+                                                <small class="text-secondary">
+                                                    Manage bookingn
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                                
                             </div>
 
                             <div class="col-md-6 d-flex flex-column gap-3">
@@ -227,7 +243,7 @@
                                 </a>
 
                                 {{-- Chargeback / Finance placeholder --}}
-                                <a href="#" class="text-decoration-none text-light">
+                                <a href="{{ route('support.login') }}" class="text-decoration-none text-light">
                                     <div class="role-card p-3 h-100">
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="role-icon bg-danger bg-opacity-10 text-danger border border-danger border-opacity-50">
