@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flight Ticket Style</title>
+  <style>
+    body {
+      background: #e8f0fe;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .ticket {
+      width: 100%;
+      max-width: 620px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      position: relative;
+      display: flex;
+      font-size: 15px;
+    }
+
+    .ticket::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 140px;
+      bottom: 140px;
+      width: 2px;
+      background: repeating-linear-gradient(
+        to bottom,
+        #e0e0e0,
+        #e0e0e0 6px,
+        transparent 6px,
+        transparent 12px
+      );
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+
+    .left-part {
+      width: 38%;
+      background: linear-gradient(135deg, #004aad 0%, #0066cc 100%);
+      color: white;
+      padding: 32px 28px;
+      position: relative;
+    }
+
+    .right-part {
+      width: 62%;
+      padding: 32px 28px;
+      background: white;
+    }
+
+    .airline {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 24px 0;
+      letter-spacing: 1px;
+    }
+
+    .flight-info {
+      margin: 28px 0;
+    }
+
+    .flight-info .line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .label {
+      color: #aaa;
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+
+    .value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .city {
+      font-size: 26px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .time {
+      font-size: 36px;
+      font-weight: 800;
+      margin: 8px 0 4px 0;
+    }
+
+    .date {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+
+    .boarding {
+      margin-top: 32px;
+    }
+
+    .barcode-area {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .barcode {
+      width: 180px;
+      height: 60px;
+      background: #111;
+      margin: 12px auto;
+      border-radius: 4px;
+      background: repeating-linear-gradient(
+        90deg,
+        #000 0px,
+        #000 2px,
+        #fff 2px,
+        #fff 4px,
+        #000 4px,
+        #000 6px,
+        #fff 6px,
+        #fff 8px,
+        #000 8px,
+        #000 10px,
+        #fff 10px,
+        #fff 12px,
+        #000 12px,
+        #000 14px,
+        #fff 14px,
+        #fff 16px,
+        #000 16px,
+        #000 22px,
+        transparent 22px
+      );
+    }
+
+    .ticket-number {
+      font-size: 13px;
+      color: #555;
+      margin-top: 6px;
+    }
+
+    .qr-placeholder {
+      width: 94px;
+      height: 94px;
+      background: #eee;
+      margin: 0 auto 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #777;
+    }
+
+    .passenger {
+      margin-top: 20px;
+    }
+
+    .important {
+      color: #d32f2f;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<div class="ticket">
+
+  <div class="left-part">
+    <div class="airline">INDIGO</div>
+
+    <div class="flight-info">
+      <div class="line">
+        <div>
+          <div class="label">Flight</div>
+          <div class="value">6E 2341</div>
+        </div>
+        <div>
+          <div class="label">Class</div>
+          <div class="value">Economy</div>
+        </div>
+      </div>
+
+      <div class="line">
+        <div>
+          <div class="label">Boarding</div>
+          <div class="value">11:40</div>
+        </div>
+        <div>
+          <div class="label">Gate</div>
+          <div class="value important">A14</div>
+        </div>
+      </div>
+
+      <div class="line">
+        <div>
+          <div class="label">Seat</div>
+          <div class="value important">19C</div>
+        </div>
+        <div>
+          <div class="label">Boarding group</div>
+          <div class="value">3</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="barcode-area">
+      <div class="barcode"></div>
+      <div class="ticket-number" style="color: #fff;">Ticket # 784 3926 5519284</div>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────────────────── -->
+
+  <div class="right-part">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+      <div>
+        <div class="city">DELHI</div>
+        <div class="time">10:15</div>
+        <div class="date">Sat, 14 Mar 2026</div>
+      </div>
+      <div style="font-size:42px; color:#999; font-weight:bold;">→</div>
+      <div style="text-align:right;">
+        <div class="city">BENGALURU</div>
+        <div class="time">12:45</div>
+        <div class="date">Sat, 14 Mar 2026</div>
+      </div>
+    </div>
+
+    <div class="passenger">
+      <div class="label">Passenger</div>
+      <div class="value" style="font-size:21px; margin:6px 0;">Prashant Sharma</div>
+      <div style="color:#555; font-size:14px;">Adult • Booking ref: YK9X4P</div>
+    </div>
+
+    <div style="margin-top:32px; display:flex; gap:40px;">
+      <div>
+        <div class="label">Baggage</div>
+        <div class="value">7 kg cabin</div>
+      </div>
+      <div>
+        <div class="label">Terminal</div>
+        <div class="value">T3</div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px; text-align:center;">
+      <div class="qr-placeholder">QR CODE</div>
+      <div style="font-size:13px; color:#777;">Scan to add to wallet</div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

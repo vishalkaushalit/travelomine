@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Agent Booking Wizard - Flight & Attached Services</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    >
+
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0f2fe, #f9fafb);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .booking-wrapper {
+            max-width: 1100px;
+            margin: 32px auto;
+        }
+
+        .booking-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        .booking-header {
+            background: linear-gradient(90deg, #0ea5e9, #6366f1);
+            color: #f9fafb;
+            padding: 22px 26px;
+        }
+
+        .booking-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .booking-header p {
+            margin: 3px 0 0;
+            opacity: 0.95;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .step-indicator-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: rgba(241, 245, 249, 0.9);
+        }
+
+        .step-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid rgba(248, 250, 252, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .step-indicator-item.active .step-circle {
+            background-color: #f9fafb;
+            color: #0f172a;
+            border-color: #f9fafb;
+        }
+
+        .step-indicator-item.completed .step-circle {
+            background-color: #22c55e;
+            border-color: #22c55e;
+            color: #f9fafb;
+        }
+
+        .step-indicator-item span.label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .booking-body {
+            padding: 22px 26px 18px;
+        }
+
+        .form-step {
+            display: none;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section-title {
+            font-size: 1.15rem;
+            margin-bottom: 4px;
+        }
+
+        .badge-step {
+            font-size: 0.75rem;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .form-text {
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+
+        .attached-service-card {
+            border-radius: .75rem;
+            border: 1px solid #e5e7eb;
+            padding: 12px 14px;
+            background-color: #f9fafb;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+        }
+
+        .attached-service-card.active {
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 2px rgba(14,165,233,0.2);
+            background-color: #e0f2fe;
+        }
+
+        .passenger-card {
+            background-color: #f9fafb;
+            border-radius: .75rem;
+            padding: 14px 14px 10px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 10px;
+        }
+
+        .summary-box {
+            background-color: #f9fafb;
+            border-radius: .75rem;
+            padding: 14px 14px;
+            border: 1px solid #e5e7eb;
+            font-size: 0.9rem;
+        }
+
+        .booking-footer {
+            padding: 14px 26px 18px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f3f4f6;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(90deg, #0ea5e9, #6366f1);
+            border: none;
+            color: #f9fafb;
+        }
+
+        .btn-gradient:hover {
+            background: linear-gradient(90deg, #0284c7, #4f46e5);
+        }
+
+        @media (max-width: 768px) {
+            .booking-wrapper {
+                margin: 20px auto;
+            }
+
+            .booking-header,
+            .booking-body,
+            .booking-footer {
+                padding-inline: 16px;
+            }
+
+            .step-indicator-item span.label {
+                font-size: 0.78rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="booking-wrapper">
+    <div class="booking-card">
+        <!-- HEADER -->
+        <div class="booking-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1><i class="bi bi-headset me-2"></i>Agent Booking Wizard</h1>
+                    <p>Capture call, flight & attached services in a clean flow.</p>
+                </div>
+                <div class="text-end small">
+                    <div>Agent panel prototype</div>
+                    <div class="opacity-75">Manual booking | Flight + add-ons</div>
+                </div>
+            </div>
+
+            <!-- Step indicator -->
+            <div id="stepIndicator" class="step-indicator mt-3">
+                <div class="step-indicator-item active" data-step="0">
+                    <div class="step-circle">1</div>
+                    <span class="label">Call & core service</span>
+                </div>
+                <div class="step-indicator-item" data-step="1">
+                    <div class="step-circle">2</div>
+                    <span class="label">Flight & attached services</span>
+                </div>
+                <div class="step-indicator-item" data-step="2">
+                    <div class="step-circle">3</div>
+                    <span class="label">Customer & passengers</span>
+                </div>
+                <div class="step-indicator-item" data-step="3">
+                    <div class="step-circle">4</div>
+                    <span class="label">Pricing & notes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <form id="bookingForm" class="booking-body">
+            <!-- STEP 1: CALL + CORE SERVICE -->
+            <div class="form-step active" data-step="0">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="form-section-title mb-0">Call & Core Service</h2>
+                    <span class="badge bg-primary-subtle text-primary-emphasis badge-step">
+                        Step 1 of 4
+                    </span>
+                </div>
+                <p class="text-muted small mb-3">
+                    Log how the lead came in and what you’re primarily selling (from your <code>bookings</code> table: call_type, service_provided, service_type, booking_portal, email_auth_taken, booking_date).[file:84][file:149]
+                </p>
+
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Booking date</label>
+                        <input type="date" class="form-control" name="booking_date" value="">
+                        <div class="form-text">Usually today, but you can back-date.</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Call type</label>
+                        <select class="form-select" name="call_type">
+                            <option value="">Select</option>
+                            <option>Meta</option>
+                            <option>Cap</option>
+                            <option>Inbound</option>
+                            <option>Outbound</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Booking portal</label>
+                        <select class="form-select" name="booking_portal">
+                            <option value="website">Website</option>
+                            <option value="gds">GDS</option>
+                            <option value="airline">Airline direct</option>
+                            <option value="other">Other OTA</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="emailAuth" name="email_auth_taken">
+                            <label class="form-check-label" for="emailAuth">
+                                Email auth taken
+                            </label>
+                            <div class="form-text">Customer confirmed via email/recording.</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Primary service</label>
+                        <select class="form-select" name="service_provided">
+                            <option value="Flight">Flight only</option>
+                            <option value="Flight + Hotel">Flight + Hotel</option>
+                            <option value="Flight + Cab">Flight + Cab</option>
+                            <option value="Flight + Hotel + Cab">Flight + Hotel + Cab</option>
+                            <option value="Hotel">Hotel only</option>
+                            <option value="Cab">Cab only</option>
+                            <option value="Other">Other travel service</option>
+                        </select>
+                        <div class="form-text">Maps to <code>service_provided</code> in DB.</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Service type</label>
+                        <select class="form-select" name="service_type">
+                            <option>New Booking</option>
+                            <option>Change</option>
+                            <option>Reissue</option>
+                            <option>Refund</option>
+                            <option>Upgrade</option>
+                        </select>
+                        <div class="form-text">Maps to <code>service_type</code>.</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Agent reference</label>
+                        <input type="text" class="form-control" value="AGXXXX (auto from CRM)" disabled>
+                        <div class="form-text">Agent ID from logged-in user.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: FLIGHT + ATTACHED SERVICES -->
+            <div class="form-step" data-step="1">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="form-section-title mb-0">Flight & Attached Services</h2>
+                    <span class="badge bg-primary-subtle text-primary-emphasis badge-step">
+                        Step 2 of 4
+                    </span>
+                </div>
+                <p class="text-muted small mb-3">
+                    Capture flight details and quickly toggle attached services like Hotel, Cab, Insurance etc.
+                </p>
+
+                <!-- Flight basics -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Flight type</label>
+                        <select class="form-select" name="flight_type">
+                            <option>One Way</option>
+                            <option>Round Trip</option>
+                            <option>Multi City</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cabin type</label>
+                        <select class="form-select" name="cabin_type">
+                            <option>Economy</option>
+                            <option>Premium Economy</option>
+                            <option>Business</option>
+                            <option>First</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">From (city / airport)</label>
+                        <input type="text" class="form-control" name="from_airport" placeholder="DEL - New Delhi">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To (city / airport)</label>
+                        <input type="text" class="form-control" name="to_airport" placeholder="JFK - New York">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Departure date</label>
+                        <input type="date" class="form-control" name="departure_date">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Return date</label>
+                        <input type="date" class="form-control" name="return_date">
+                        <div class="form-text">Leave blank for one-way.</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Preferred time</label>
+                        <select class="form-select" name="time_window">
+                            <option>Any time</option>
+                            <option>Morning</option>
+                            <option>Afternoon</option>
+                            <option>Evening</option>
+                            <option>Night</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Seat preference (overall)</label>
+                        <select class="form-select" name="seat_preference">
+                            <option>No preference</option>
+                            <option>Window</option>
+                            <option>Aisle</option>
+                            <option>Near front</option>
+                            <option>Extra legroom (paid)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Passenger counts -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Adults</label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" onclick="updatePax('adults', -1)">−</button>
+                            <input type="number" class="form-control text-center" id="adultsCount" name="adults" value="1" min="1" max="9">
+                            <button class="btn btn-outline-secondary" type="button" onclick="updatePax('adults', 1)">+</button>
+                        </div>
+                        <div class="form-text">12+ years</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Children</label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" onclick="updatePax('children', -1)">−</button>
+                            <input type="number" class="form-control text-center" id="childrenCount" name="children" value="0" min="0" max="8">
+                            <button class="btn btn-outline-secondary" type="button" onclick="updatePax('children', 1)">+</button>
+                        </div>
+                        <div class="form-text">2–11 years</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Infants</label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" onclick="updatePax('infants', -1)">−</button>
+                            <input type="number" class="form-control text-center" id="infantsCount" name="infants" value="0" min="0" max="4">
+                            <button class="btn btn-outline-secondary" type="button" onclick="updatePax('infants', 1)">+</button>
+                        </div>
+                        <div class="form-text">&lt; 2 years</div>
+                    </div>
+                </div>
+
+                <!-- Attached services -->
+                <h6 class="text-muted mb-2">Attached services offered on this call</h6>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="attached-service-card" data-target="#hotelDetails">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div>
+                                    <i class="bi bi-building me-1 text-primary"></i>
+                                    <strong>Hotel</strong>
+                                </div>
+                                <input type="checkbox" class="form-check-input mt-0" name="attach_hotel">
+                            </div>
+                            <p class="form-text mb-1">
+                                Add hotel stay details if customer is interested.
+                            </p>
+                            <div id="hotelDetails" class="collapse mt-2">
+                                <input type="text" class="form-control mb-2" name="hotel_city" placeholder="City / area">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="date" class="form-control" name="hotel_checkin" placeholder="Check-in">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="date" class="form-control" name="hotel_checkout" placeholder="Check-out">
+                                    </div>
+                                </div>
+                                <select class="form-select form-select-sm mt-2" name="hotel_star">
+                                    <option>Any category</option>
+                                    <option>3★</option>
+                                    <option>4★</option>
+                                    <option>5★</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="attached-service-card" data-target="#cabDetails">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div>
+                                    <i class="bi bi-taxi-front me-1 text-warning"></i>
+                                    <strong>Airport Cab</strong>
+                                </div>
+                                <input type="checkbox" class="form-check-input mt-0" name="attach_cab">
+                            </div>
+                            <p class="form-text mb-1">
+                                Offer airport pickup/drop or round-trip cab.
+                            </p>
+                            <div id="cabDetails" class="collapse mt-2">
+                                <select class="form-select form-select-sm mb-2" name="cab_type">
+                                    <option>Sedan</option>
+                                    <option>SUV</option>
+                                    <option>Luxury</option>
+                                </select>
+                                <input type="text" class="form-control mb-2" name="cab_route"
+                                       placeholder="Airport ↔ Hotel / Home">
+                                <input type="time" class="form-control" name="cab_time">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="attached-service-card" data-target="#insuranceDetails">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div>
+                                    <i class="bi bi-shield-check me-1 text-success"></i>
+                                    <strong>Travel Insurance</strong>
+                                </div>
+                                <input type="checkbox" class="form-check-input mt-0" name="attach_insurance">
+                            </div>
+                            <p class="form-text mb-1">
+                                Note if you pitched insurance / protection.
+                            </p>
+                            <div id="insuranceDetails" class="collapse mt-2">
+                                <select class="form-select form-select-sm mb-2" name="insurance_type">
+                                    <option>Not offered</option>
+                                    <option>Offered – customer accepted</option>
+                                    <option>Offered – customer declined</option>
+                                </select>
+                                <textarea class="form-control form-control-sm" rows="2"
+                                          name="insurance_notes"
+                                          placeholder="Provider, approx. cost, coverage notes..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-text">
+                    In your real Laravel form you can map these attached services to JSON, separate tables, or remarks.
+                </div>
+            </div>
+
+            <!-- STEP 3: CUSTOMER + PASSENGERS -->
+            <div class="form-step" data-step="2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="form-section-title mb-0">Customer & Passenger Details</h2>
+                    <span class="badge bg-primary-subtle text-primary-emphasis badge-step">
+                        Step 3 of 4
+                    </span>
+                </div>
+                <p class="text-muted small mb-3">
+                    Maps to your <code>customer_email</code>, <code>customer_phone</code>, <code>billing_phone</code> and passengers table.[file:84][file:85]
+                </p>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Primary customer email</label>
+                        <input type="email" class="form-control" name="customer_email" placeholder="customer@example.com">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">WhatsApp / mobile</label>
+                        <input type="tel" class="form-control" name="customer_phone" placeholder="10-digit number">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Billing phone</label>
+                        <input type="tel" class="form-control" name="billing_phone" placeholder="Card holder phone">
+                    </div>
+                </div>
+
+                <h6 class="text-muted mb-2">Passenger list (sample layout)</h6>
+                <div id="passengerContainer"></div>
+
+                <div class="alert alert-light border small mt-2">
+                    In real implementation, you can dynamically add/remove passengers using repeater components (like you already do in Filament).
+                </div>
+            </div>
+
+            <!-- STEP 4: PRICING + NOTES -->
+            <div class="form-step" data-step="3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="form-section-title mb-0">Pricing & Internal Notes</h2>
+                    <span class="badge bg-primary-subtle text-primary-emphasis badge-step">
+                        Step 4 of 4
+                    </span>
+                </div>
+                <p class="text-muted small mb-3">
+                    Mirrors your financial columns: <code>currency</code>, <code>amount_charged</code>, <code>amount_paid_airline</code>, <code>total_mco</code>, <code>card_last_four</code>, <code>agent_remarks</code>, <code>mis_remarks</code>.[file:149]
+                </p>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Currency</label>
+                        <select class="form-select" name="currency">
+                            <option value="USD">USD</option>
+                            <option value="INR">INR</option>
+                            <option value="CAD">CAD</option>
+                            <option value="AUD">AUD</option>
+                            <option value="EUR">EUR</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Amount charged</label>
+                        <input type="number" step="0.01" class="form-control" name="amount_charged" id="amountCharged">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Paid to airline</label>
+                        <input type="number" step="0.01" class="form-control" name="amount_paid_airline" id="amountPaidAirline">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Total MCO</label>
+                        <input type="number" step="0.01" class="form-control" name="total_mco" id="totalMco" readonly>
+                        <div class="form-text">Auto: charged − airline.</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Card last 4</label>
+                        <input type="text" maxlength="4" class="form-control" name="card_last_four">
+                    </div>
+
+                    <div class="col-md-9">
+                        <label class="form-label">Agent remarks (what you promised)</label>
+                        <textarea class="form-control" rows="3" name="agent_remarks"
+                                  placeholder="Fare rules, baggage, what was verbally agreed, any discounts, etc."></textarea>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">MIS / QC notes</label>
+                        <textarea class="form-control" rows="3" name="mis_remarks"
+                                  placeholder="Leave blank for now – to be updated later by MIS."></textarea>
+                    </div>
+                </div>
+
+                <div class="summary-box">
+                    <h6 class="mb-2 text-muted">
+                        <i class="bi bi-info-circle me-1"></i>Booking snapshot (for quick view)
+                    </h6>
+                    <ul id="summaryList" class="list-unstyled small mb-0"></ul>
+                </div>
+            </div>
+        </form>
+
+        <!-- FOOTER (NAV BUTTONS) -->
+        <div class="booking-footer">
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="prevBtn" onclick="nextPrev(-1)" disabled>
+                <i class="bi bi-arrow-left-short me-1"></i> Previous
+            </button>
+
+            <div class="d-flex align-items-center gap-2">
+                <span class="small text-muted d-none d-md-inline" id="stepHelper">
+                    Step 1: Call & core service
+                </span>
+                <button class="btn btn-gradient btn-sm px-4" type="button" id="nextBtn" onclick="nextPrev(1)">
+                    Next step <i class="bi bi-arrow-right-short ms-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let currentStep = 0;
+    const formSteps = document.querySelectorAll('.form-step');
+    const stepIndicatorItems = document.querySelectorAll('.step-indicator-item');
+    const stepHelper = document.getElementById('stepHelper');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    const stepLabels = [
+        'Step 1: Call & core service',
+        'Step 2: Flight & attached services',
+        'Step 3: Customer & passengers',
+        'Step 4: Pricing & notes',
+    ];
+
+    function showStep(n) {
+        formSteps.forEach((step, idx) => {
+            step.classList.toggle('active', idx === n);
+        });
+        stepIndicatorItems.forEach((item, idx) => {
+            item.classList.toggle('active', idx === n);
+            item.classList.toggle('completed', idx < n);
+        });
+        stepHelper.textContent = stepLabels[n];
+
+        prevBtn.disabled = n === 0;
+        if (n === formSteps.length - 1) {
+            nextBtn.innerHTML = 'Finish booking <i class="bi bi-check2 ms-1"></i>';
+        } else {
+            nextBtn.innerHTML = 'Next step <i class="bi bi-arrow-right-short ms-1"></i>';
+        }
+
+        if (n === 2) {
+            generatePassengerCards();
+        }
+        if (n === 3) {
+            buildSummary();
+        }
+    }
+
+    function nextPrev(direction) {
+        const newStep = currentStep + direction;
+        if (newStep < 0 || newStep >= formSteps.length) {
+            if (newStep >= formSteps.length) {
+                alert('Demo only. In your Laravel app, submit the form here.');
+            }
+            return;
+        }
+        currentStep = newStep;
+        showStep(currentStep);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updatePax(type, delta) {
+        const idMap = {
+            adults: 'adultsCount',
+            children: 'childrenCount',
+            infants: 'infantsCount',
+        };
+        const input = document.getElementById(idMap[type]);
+        let value = parseInt(input.value || '0', 10);
+        value += delta;
+        if (type === 'adults') {
+            if (value < 1) value = 1;
+        } else {
+            if (value < 0) value = 0;
+        }
+        if (value > 9) value = 9;
+        input.value = value;
+    }
+
+    // Attached service cards toggle their collapse targets
+    document.querySelectorAll('.attached-service-card').forEach(card => {
+        const targetSelector = card.getAttribute('data-target');
+        const target = document.querySelector(targetSelector);
+        const checkbox = card.querySelector('input[type="checkbox"]');
+
+        card.addEventListener('click', (e) => {
+            if (e.target.tagName.toLowerCase() !== 'input') {
+                checkbox.checked = !checkbox.checked;
+            }
+            card.classList.toggle('active', checkbox.checked);
+            const bsCollapse = new bootstrap.Collapse(target, {
+                toggle: checkbox.checked
+            });
+            if (!checkbox.checked) {
+                bsCollapse.hide();
+            }
+        });
+    });
+
+    function generatePassengerCards() {
+        const container = document.getElementById('passengerContainer');
+        container.innerHTML = '';
+
+        const adults = parseInt(document.getElementById('adultsCount').value || '0', 10);
+        const children = parseInt(document.getElementById('childrenCount').value || '0', 10);
+        const infants = parseInt(document.getElementById('infantsCount').value || '0', 10);
+        const total = adults + children + infants || 1;
+        let index = 1;
+
+        function addPassengerCard(typeLabel) {
+            const card = document.createElement('div');
+            card.className = 'passenger-card';
+            card.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <span class="badge text-bg-light text-uppercase small">${typeLabel}</span>
+                        <span class="ms-2 fw-semibold">Passenger ${index}</span>
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-3 col-md-2">
+                        <label class="form-label">Title</label>
+                        <select class="form-select form-select-sm" name="passengers[${index}][title]">
+                            <option>Mr</option>
+                            <option>Ms</option>
+                            <option>Mrs</option>
+                            <option>Dr</option>
+                            <option>Master</option>
+                            <option>Miss</option>
+                        </select>
+                    </div>
+                    <div class="col-9 col-md-4">
+                        <label class="form-label">First name</label>
+                        <input type="text" class="form-control form-control-sm" name="passengers[${index}][first_name]">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Middle name</label>
+                        <input type="text" class="form-control form-control-sm" name="passengers[${index}][middle_name]">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Last name</label>
+                        <input type="text" class="form-control form-control-sm" name="passengers[${index}][last_name]">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">DOB</label>
+                        <input type="date" class="form-control form-control-sm" name="passengers[${index}][dob]">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Gender</label>
+                        <select class="form-select form-select-sm" name="passengers[${index}][gender]">
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select form-select-sm" name="passengers[${index}][type]">
+                            <option ${typeLabel === 'Adult' ? 'selected' : ''}>Adult</option>
+                            <option ${typeLabel === 'Child' ? 'selected' : ''}>Child</option>
+                            <option ${typeLabel === 'Infant' ? 'selected' : ''}>Infant</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Seat pref.</label>
+                        <select class="form-select form-select-sm" name="passengers[${index}][seat_pref]">
+                            <option>Same as booking</option>
+                            <option>Window</option>
+                            <option>Aisle</option>
+                            <option>No preference</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+            index++;
+        }
+
+        for (let i = 0; i < adults; i++) addPassengerCard('Adult');
+        for (let i = 0; i < children; i++) addPassengerCard('Child');
+        for (let i = 0; i < infants; i++) addPassengerCard('Infant');
+        if (total === 0) addPassengerCard('Adult');
+    }
+
+    // Auto-calc MCO
+    document.getElementById('amountCharged').addEventListener('input', calcMco);
+    document.getElementById('amountPaidAirline').addEventListener('input', calcMco);
+
+    function calcMco() {
+        const charged = parseFloat(document.getElementById('amountCharged').value || '0');
+        const paid = parseFloat(document.getElementById('amountPaidAirline').value || '0');
+        document.getElementById('totalMco').value = (charged - paid).toFixed(2);
+    }
+
+    function buildSummary() {
+        const list = document.getElementById('summaryList');
+        list.innerHTML = '';
+
+        function li(label, value) {
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="text-muted">${label}:</span> <span class="ms-1">${value || '-'}</span>`;
+            list.appendChild(li);
+        }
+
+        const from = document.querySelector('input[name="from_airport"]').value;
+        const to = document.querySelector('input[name="to_airport"]').value;
+        const dep = document.querySelector('input[name="departure_date"]').value;
+        const ret = document.querySelector('input[name="return_date"]').value;
+        const flightType = document.querySelector('select[name="flight_type"]').value;
+        const cabin = document.querySelector('select[name="cabin_type"]').value;
+        const service = document.querySelector('select[name="service_provided"]').value;
+        const serviceType = document.querySelector('select[name="service_type"]').value;
+
+        const adults = document.getElementById('adultsCount').value;
+        const children = document.getElementById('childrenCount').value;
+        const infants = document.getElementById('infantsCount').value;
+
+        li('Service', `${service} (${serviceType})`);
+        li('Route', `${from || 'TBD'} → ${to || 'TBD'} (${flightType})`);
+        li('Dates', ret ? `${dep || 'TBD'} to ${ret}` : (dep || 'TBD'));
+        li('Cabin', cabin);
+        li('Pax', `${adults}A / ${children}C / ${infants}I`);
+
+        const charged = document.getElementById('amountCharged').value;
+        const paid = document.getElementById('amountPaidAirline').value;
+        const mco = document.getElementById('totalMco').value;
+        li('Amounts', `Charged: ${charged || '0'}, Airline: ${paid || '0'}, MCO: ${mco || '0'}`);
+    }
+
+    showStep(currentStep);
+</script>
+
+</body>
+</html>

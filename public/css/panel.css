@@ -1,0 +1,107 @@
+a.brand-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-size: 16px;
+    gap: 8px;
+}
+section.content {
+    margin-top: 24px;
+}
+.main-header {
+    border-bottom: 0 !important;
+    z-index: 1034;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+table#usersTable tr td span,
+table#bookingsTable tr td span {
+    font-weight: 400;
+}
+.nav-link:focus,
+.nav-link:hover {
+    color: #ffc107;
+}
+.sidebar a.active {
+    background: rgba(52, 152, 219, 0.3);
+    color: #ffc107 !important;
+    border-left: 4px solid #3498db;
+}
+.sidebar a {
+    font-size: 14px;
+}
+.sidebar {
+    min-height: 100vh;
+    background: #1e1f27 !important;
+    color: white;
+    box-shadow: 0 0.0625rem 0.125rem rgba(76, 76, 92, 0.15);
+    z-index: 1005;
+    position: fixed;
+    bottom: 0;
+    top: 0;
+    transition: width 0.25s ease-in-out;
+}
+#bookingsTable tr th {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin: 0;
+}
+.table tr th {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+[class*="sidebar-dark-"] .nav-treeview > .nav-item > .nav-link.active,
+[class*="sidebar-dark-"] .nav-treeview > .nav-item > .nav-link.active:focus,
+[class*="sidebar-dark-"] .nav-treeview > .nav-item > .nav-link.active:hover {
+    background-color: transparent;
+}
+.btn-primary {
+    color: #fff;
+}
+.table-hover .table-dark:hover {
+    background-color: #000;
+}
+badge.badge-ticketed {
+    color: #fff;
+    background-color: #3c8dbc;
+    min-width: 90px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    border-right: 6px double #fff;
+    border-left: 3px dotted #fff;
+}
+.flight-row{
+    background: linear-gradient(90deg,rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
+
+    display: flex;
+    justify-content: center;
+    padding: 32px 0;
+}
+div#segments_container {
+    margin: 32px 0;
+    box-shadow: 0 0 5px -1px #ccc;
+}
+#segments_container > .card-body{
+    margin: 0;
+    background-color: transparent !important;
+    box-shadow: 0;
+}

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Authorization - Booking Confirmation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+
+        .header .pnr {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .authorization-text {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 25px 0;
+            font-size: 16px;
+        }
+
+        .charges-table,
+        .passengers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .charges-table th,
+        .charges-table td,
+        .passengers-table th,
+        .passengers-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .charges-table th,
+        .passengers-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: right;
+            color: #28a745;
+            margin: 20px 0;
+        }
+
+        .payment-details {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .payment-details h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+
+        .payment-details dl {
+            margin: 0;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+        }
+
+        .payment-details dt {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .payment-details dd {
+            margin: 0 0 10px 0;
+        }
+
+        .support {
+            background-color: #0d6efd;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .support a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: #adb5bd;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .footer p {
+            margin: 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Booking Confirmation</h1>
+            <div class="pnr">{{ $pnr_number }}</div>
+            <p><a href="tel:{{ $support_phone }}" style="color: white; text-decoration: underline;">Support: {{
+                    $support_phone }}</a></p>
+        </div>
+
+        <div class="content">
+            <p class="greeting"><strong>Dear {{ $customer_name }},</strong></p>
+
+            <p>Greetings of the day!</p>
+
+            <p>As per our conversation and agreement, we have booked your reservation under Confirmation Number
+                <strong>{{ $confirmation_number }}</strong>. Total Cost: <strong>{{ $total_amount }}</strong> (including
+                all taxes and fees).</p>
+
+            <div class="authorization-text">
+                <p>I, <strong>{{ $customer_name }}</strong>, authorize {{ $company_name }} to process the charges for
+                    the amount of <strong>{{ $total_amount }}</strong> using my card ending in ****{{ $card_last_four }}
+                    for this booking. This authorization is for one-time use only. I confirm I am the authorized user
+                    and will not dispute this payment with my card issuer.</p>
+            </div>
+
+            <h3>Charges Breakdown</h3>
+            <table class="charges-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ $airline_charge_description }}</td>
+                        <td>{{ $airline_amount }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ $service_charge_description }}</td>
+                        <td>{{ $service_amount }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="total-amount">{{ $total_amount }}</div>
+
+            <h3>Passenger Details</h3>
+            <table class="passengers-table">
+                <thead>
+                    <tr>
+                        <th>S. No.</th>
+                        <th>Type</th>
+                        <th>First Name</th>
+                        <th>Middle Name</th>
+                        <th>Last Name</th>
+                        <th>Gender</th>
+                        <th>DOB</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- Loop for passengers --}}
+                    <tr>
+                        <td>1</td>
+                        <td>ADT</td>
+                        <td>{{ $passenger1_first_name }}</td>
+                        <td>{{ $passenger1_middle_name }}</td>
+                        <td>{{ $passenger1_last_name }}</td>
+                        <td>Male</td>
+                        <td>{{ $passenger1_dob }}</td>
+                        <td>{{ $passenger1_price }}</td>
+                    </tr>
+                    {{-- Add more rows as needed --}}
+                </tbody>
+            </table>
+
+            <h3>Payment Details</h3>
+            <div class="payment-details">
+                <dl>
+                    <dt>Card Holder:</dt>
+                    <dd>{{ $card_holder_name }}</dd>
+                    <dt>Card Number:</dt>
+                    <dd>**** {{ $card_last_four }}</dd>
+                    <dt>Card Type:</dt>
+                    <dd>{{ $card_type }}</dd>
+                    <dt>Expiration:</dt>
+                    <dd>{{ $card_expiry }}</dd>
+                    <dt>Billing Address:</dt>
+                    <dd>{{ $billing_address }}</dd>
+                    <dt>Transaction Date:</dt>
+                    <dd>{{ $transaction_date }}</dd>
+                </dl>
+            </div>
+
+            <h3>Flight Details</h3>
+            <p>{{ $flight_details }}</p>
+        </div>
+
+        <div class="support">
+            <h3>Customer Support</h3>
+            <p>Phone: <a href="tel:{{ $support_phone }}">{{ $support_phone }}</a> | Email: <a
+                    href="mailto:{{ $support_email }}">{{ $support_email }}</a></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 {{ $company_name }}. All rights reserved. Please review your booking details
+                carefully.[file:1]</p>
+        </div>
+    </div>
+</body>
+</html>
