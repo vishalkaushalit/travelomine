@@ -26,6 +26,9 @@ use App\Http\Controllers\Charge\ChargeController;
 use App\Http\Controllers\Charge\ChargingDashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPaymentController;
+use App\Http\Controllers\Mis\MisLoginController;
+use App\Http\Controllers\Mis\MisDashboardController;
+use App\Http\Controllers\Mis\MisBookingsController;
 // payment contollers
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StatusController;
@@ -69,6 +72,11 @@ Route::post('/support/logout', [CsLoginController::class, 'logout'])->name('supp
 Route::get('/charge/login', [ChargeLoginController::class, 'showLoginForm'])->name('charge.login');
 Route::post('/charge/login', [ChargeLoginController::class, 'login']);
 Route::post('/charge/logout', [ChargeLoginController::class, 'logout'])->name('charge.logout');
+
+// MIS routes
+Route::get('/mis/login', [MisLoginController::class, 'showLoginForm'])->name('mis.login');
+Route::post('/mis/login', [MisLoginController::class, 'login']);
+Route::post('/mis/logout', [MisLoginController::class, 'logout'])->name('mis.logout');
 
 // CHARGING TEAM
 Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->group(function () {
@@ -314,4 +322,16 @@ Route::get('/clear-all-cache', function () {
     Artisan::call('optimize:clear');
 
     return 'Configuration, Routes, and all other caches cleared and application optimized!';
+});
+
+// MIS PANEL ROUTES - Role: mis
+Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(function () {
+    Route::get('/dashboard', [MisDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/bookings/all', [MisBookingsController::class, 'all'])->name('bookings.all');
+    // Route::get('/agents-list', [\App\Http\Controllers\Admin\AdminAgentsController::class, 'index'])->name('agents.index');
+    Route::get('/bookings', [MisBookingsController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{id}', [MisBookingsController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/edit', [MisBookingsController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{id}', [MisBookingsController::class, 'update'])->name('bookings.update');
+    Route::delete('/bookings/{id}', [MisBookingsController::class, 'destroy'])->name('bookings.destroy');
 });
