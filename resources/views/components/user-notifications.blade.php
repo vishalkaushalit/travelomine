@@ -75,7 +75,9 @@
                         </small>
                     </div>
                     @if($notification->can_dismiss)
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                            <i class="bi bi-x"></i>
+                        </button>
                     @endif
                 </div>
             </div>
