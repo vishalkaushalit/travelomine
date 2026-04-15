@@ -215,7 +215,7 @@
                                             <div>
                                                 <div class="fw-semibold">MIS</div>
                                                 <small class="text-secondary">
-                                                    Manage bookingn
+                                                    Manage bookings
                                                 </small>
                                             </div>
                                         </div>

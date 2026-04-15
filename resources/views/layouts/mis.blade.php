@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Agent Panel | Flight Booking CRM</title>
+    <title>MIS Panel | Flight Booking CRM</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -33,17 +33,17 @@
                 </li>
 
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ route('agent.dashboard') }}" class="nav-link">Dashboard</a>
+                    <a href="{{ route('mis.dashboard') }}" class="nav-link">Dashboard</a>
                 </li>
 
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ route('agent.bookings.index') }}" class="nav-link">Bookings</a>
+                    <a href="{{ route('mis.bookings.index') }}" class="nav-link">Bookings</a>
                 </li>
             @endauth
 
             @guest
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ route('agent.login') }}" class="nav-link">Agent Login</a>
+                    <a href="{{ route('mis.login') }}" class="nav-link">MIS Login</a>
                 </li>
             @endguest
         </ul>
@@ -69,7 +69,7 @@
 
                         <div class="dropdown-divider"></div>
 
-                        <form method="POST" action="{{ route('agent.logout') }}">
+                        <form method="POST" action="{{ route('mis.logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Logout
@@ -81,7 +81,7 @@
 
             @guest
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('agent.login') }}">
+                    <a class="nav-link" href="{{ route('mis.login') }}">
                         <i class="fas fa-sign-in-alt"></i>
                         <span class="d-none d-md-inline ml-1">Login</span>
                     </a>
@@ -93,9 +93,9 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
-        <a href="{{ auth()->check() ? route('agent.dashboard') : route('agent.login') }}" class="brand-link">
+        <a href="{{ auth()->check() ? route('mis.dashboard') : route('mis.login') }}" class="brand-link">
             <i class="fas fa-plane-departure brand-image ml-3"></i>
-            <span class="brand-text font-weight-light">Agent Panel</span>
+            <span class="brand-text font-weight-light">MIS Panel</span>
         </a>
 
         <!-- Sidebar -->
@@ -109,7 +109,7 @@
                     </div>
                     <div class="info">
                         <a href="#" class="d-block">{{ auth()->user()->name }}</a>
-                        <small class="text-muted">Agent</small>
+                        <small class="text-muted">mis</small>
                     </div>
                 </div>
 
@@ -119,15 +119,15 @@
 
                         <!-- Dashboard -->
                         <li class="nav-item">
-                            <a href="{{ route('agent.dashboard') }}" class="nav-link {{ request()->routeIs('agent.dashboard') ? 'active' : '' }}">
+                            <a href="{{ route('mis.dashboard') }}" class="nav-link {{ request()->routeIs('mis.dashboard') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>Dashboard</p>
                             </a>
                         </li>
 
                         <!-- Bookings -->
-                        <li class="nav-item {{ request()->routeIs('agent.bookings.*') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link {{ request()->routeIs('agent.bookings.*') ? 'active' : '' }}">
+                        <li class="nav-item {{ request()->routeIs('mis.bookings.*') ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link {{ request()->routeIs('mis.bookings.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-clipboard-list"></i>
                                 <p>
                                     Bookings
@@ -137,18 +137,18 @@
 
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('agent.bookings.index') }}" class="nav-link {{ request()->routeIs('agent.bookings.index') ? 'active' : '' }}">
+                                    <a href="{{ route('mis.bookings.index') }}" class="nav-link {{ request()->routeIs('mis.bookings.index') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>All Bookings</p>
                                     </a>
                                 </li>
 
-                                <li class="nav-item">
-                                    <a href="{{ route('agent.bookings.create') }}" class="nav-link {{ request()->routeIs('agent.bookings.create') ? 'active' : '' }}">
+                                {{-- <li class="nav-item">
+                                    <a href="{{ route('mis.bookings.create') }}" class="nav-link {{ request()->routeIs('mis.bookings.create') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Create Booking</p>
                                     </a>
-                                </li>
+                                </li> --}}
                             </ul>
                         </li>
 
