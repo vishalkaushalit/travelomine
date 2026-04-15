@@ -7,12 +7,13 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    {{-- Bootstrap Icons --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+    {{-- Bootstrap Icons CDN --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
     @stack('styles')
 </head>
@@ -39,7 +40,7 @@
                 </li>
 
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ route('mis.bookings.index') }}" class="nav-link">Bookings</a>
+                    <a href="{{ route('mis.bookings.all') }}" class="nav-link">Bookings</a>
                 </li>
             @endauth
 
@@ -111,7 +112,7 @@
                     </div>
                     <div class="info">
                         <a href="#" class="d-block">{{ auth()->user()->name }}</a>
-                        <small class="text-muted">mis</small>
+                        <small class="text-muted">MIS</small>
                     </div>
                 </div>
 
@@ -139,18 +140,11 @@
 
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('mis.bookings.index') }}" class="nav-link {{ request()->routeIs('mis.bookings.index') ? 'active' : '' }}">
+                                    <a href="{{ route('mis.bookings.all') }}" class="nav-link {{ request()->routeIs('mis.bookings.index') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>All Bookings</p>
                                     </a>
                                 </li>
-
-                                {{-- <li class="nav-item">
-                                    <a href="{{ route('mis.bookings.create') }}" class="nav-link {{ request()->routeIs('mis.bookings.create') ? 'active' : '' }}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Create Booking</p>
-                                    </a>
-                                </li> --}}
                             </ul>
                         </li>
 
