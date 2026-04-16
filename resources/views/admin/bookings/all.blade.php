@@ -147,7 +147,10 @@
                                         <td>${{ number_format($booking->total_mco, 2) }}</td>
                                         <td>{{ ucfirst($booking->status) }}</td>
                                         <td>
-                                            {{-- existing action buttons --}}
+                                            <a href="{{ route('admin.bookings.show', $booking->id) }}"
+                                                class="btn btn-sm btn-info">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty

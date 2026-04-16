@@ -23,8 +23,9 @@
         @endif
 
         <form action="{{ route('agent.bookings.store') }}" method="POST" id="bookingForm">
+            <input type="hidden" name="source_booking_id" id="source_booking_id" value="{{ old('source_booking_id') }}">
+            <input type="hidden" id="bookingFlowMode" value="{{ old('source_booking_id') ? 'update' : 'new' }}">
             @csrf
-
             {{-- 1. Booking Information --}}
             <div class="card mb-4">
                 <div class="card-header"><strong>1. Booking Information</strong></div>
@@ -465,6 +466,8 @@
                 <button type="submit" class="btn btn-success btn-lg">Create Booking</button>
             </div>
         </form>
+        @include('agent.bookings.partials.pnr-prefill-modal')
+
     </div>
 @endsection
 
@@ -492,12 +495,6 @@
             const splitPaymentBlock = document.getElementById('split_payment_block');
 
             const fullPaymentChargeAmount = document.getElementById('full_payment_charge_amount');
-
-            // function calculateMco() {
-            //     const charged = parseFloat(amountCharged?.value || 0);
-            //     const paidAirline = parseFloat(amountPaidAirline?.value || 0);
-            //     totalMco.value = (charged - paidAirline).toFixed(2);
-            // }
 
             let segmentIndex = 0;
 
@@ -647,12 +644,12 @@
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label class="form-label" for="passenger_dob_${index}">Date of Birth </label>
-                                <input type="date" name="passengers[${index}][dob]" class="form-control" required>
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" name="passengers[${index}][dob]" class="form-control">
                             </div>
 
                             <div class="col-md-3 mb-3">
-                                <label class="form-label" for="passenger_passport_number_${index}">Passport Number</label>
+                                <label class="form-label">Passport Number</label>
                                 <input type="text" name="passengers[${index}][passport_number]" class="form-control">
                             </div>
 
@@ -696,7 +693,9 @@
             function calculateMco() {
                 const charged = parseFloat(amountCharged.value || 0);
                 const paidAirline = parseFloat(amountPaidAirline.value || 0);
-                totalMco.value = (charged - paidAirline).toFixed(2);
+                if (!isNaN(charged - paidAirline)) {
+                    totalMco.value = (charged - paidAirline).toFixed(2);
+                }
             }
 
             function togglePaymentBlocks() {
@@ -710,6 +709,7 @@
                     splitPaymentBlock.style.display = 'none';
                 }
             }
+
             if (amountCharged && fullPaymentChargeAmount) {
                 amountCharged.addEventListener('input', function() {
                     fullPaymentChargeAmount.value = this.value;
@@ -717,37 +717,21 @@
                 });
             }
 
-            function syncBillingFields() {
-                const phone = document.getElementById('main_billing_phone').value;
-                const address = document.getElementById('main_billing_address').value;
-                const email = document.querySelector('input[name="customer_email"]').value;
-
-                document.querySelectorAll('.billing-phone-sync').forEach(el => {
-                    if (!el.value) el.value = phone;
-                });
-
-                document.querySelectorAll('.billing-address-sync').forEach(el => {
-                    if (!el.value) el.value = address;
-                });
-
-                document.querySelectorAll('.billing-email-sync').forEach(el => {
-                    if (!el.value) el.value = email;
-                });
-            }
-
             flightType.addEventListener('change', buildSegments);
 
-            addSegmentBtn.addEventListener('click', function() {
-                const currentCount = segmentsContainer.querySelectorAll('.segment-item').length;
-                if (currentCount >= 10) {
-                    alert('Maximum 10 flight segments are allowed for multi city booking.');
-                    return;
-                }
+            if (addSegmentBtn) {
+                addSegmentBtn.addEventListener('click', function() {
+                    const currentCount = segmentsContainer.querySelectorAll('.segment-item').length;
+                    if (currentCount >= 10) {
+                        alert('Maximum 10 flight segments are allowed for multi city booking.');
+                        return;
+                    }
 
-                segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false,
-                    true));
-                segmentIndex++;
-            });
+                    segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false,
+                        true));
+                    segmentIndex++;
+                });
+            }
 
             segmentsContainer.addEventListener('click', function(e) {
                 if (e.target.classList.contains('remove-segment-btn')) {
@@ -761,13 +745,17 @@
             });
 
             [adultsCount, childrenCount, infantsCount, infantInLapCount].forEach(input => {
-                input.addEventListener('input', updatePassengerForms);
+                if (input) input.addEventListener('input', updatePassengerForms);
             });
 
-            amountCharged.addEventListener('input', function() {
-                calculateMco();
-                document.getElementById('full_payment_charge_amount').value = this.value;
-            });
+            if (amountCharged) {
+                amountCharged.addEventListener('input', function() {
+                    calculateMco();
+                    if (fullPaymentChargeAmount) {
+                        fullPaymentChargeAmount.value = this.value;
+                    }
+                });
+            }
 
             if (amountPaidAirline) {
                 amountPaidAirline.addEventListener('input', calculateMco);
@@ -779,22 +767,8 @@
 
             calculateMco();
             togglePaymentBlocks();
-
-            amountPaidAirline.addEventListener('input', calculateMco);
-
-            paymentTypeRadios.forEach(radio => {
-                radio.addEventListener('change', togglePaymentBlocks);
-            });
-
-            document.getElementById('main_billing_phone').addEventListener('blur', syncBillingFields);
-            document.getElementById('main_billing_address').addEventListener('blur', syncBillingFields);
-            document.querySelector('input[name="customer_email"]').addEventListener('blur', syncBillingFields);
-
             buildSegments();
             updatePassengerForms();
-            calculateMco();
-            togglePaymentBlocks();
-            syncBillingFields();
         });
     </script>
 @endpush

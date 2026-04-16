@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Admin\OldBookingUploadController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Agent\AgentBookingUpdatesController;
 use App\Http\Controllers\Agent\Auth\AgentAuthController;
 use App\Http\Controllers\Agent\bookings\AgentBookingSearchController;
 use App\Http\Controllers\Agent\ChargingController;
@@ -24,11 +25,11 @@ use App\Http\Controllers\Charge\BookingPaymentLinkController;
 use App\Http\Controllers\Charge\ChargeBookingStatusController;
 use App\Http\Controllers\Charge\ChargeController;
 use App\Http\Controllers\Charge\ChargingDashboardController;
+use App\Http\Controllers\Mis\MisBookingsController;
+use App\Http\Controllers\Mis\MisDashboardController;
+use App\Http\Controllers\Mis\MisLoginController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPaymentController;
-use App\Http\Controllers\Mis\MisLoginController;
-use App\Http\Controllers\Mis\MisDashboardController;
-use App\Http\Controllers\Mis\MisBookingsController;
 // payment contollers
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StatusController;
@@ -148,6 +149,12 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 
     Route::get('/booking-search', [AgentBookingSearchController::class, 'index'])->name('bookings.search');
     Route::get('/booking-search/results', [AgentBookingSearchController::class, 'search'])->name('bookings.search.results');
+
+    Route::post('/booking-updates/search', [AgentBookingUpdatesController::class, 'searchByPnr'])
+        ->name('agent.booking-updates.search');
+
+    Route::post('/booking-updates', [AgentBookingUpdatesController::class, 'store'])
+        ->name('agent.booking-updates.store');
 });
 
 // ADMIN ROUTES
@@ -206,8 +213,8 @@ Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(func
     Route::get('/bookings/{id}/edit', [AdminBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [AdminBookingsController::class, 'update'])->name('bookings.update');
 
-    Route::get('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'create'])->name('bookings.import.form');
-    Route::post('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'store'])->name('bookings.import.store');
+    // Route::get('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'create'])->name('bookings.import.form');
+    // Route::post('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'store'])->name('bookings.import.store');
 });
 
 // GENERAL LOGOUT
