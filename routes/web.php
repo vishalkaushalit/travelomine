@@ -56,6 +56,7 @@ Route::get('/consent/{id}', [AuthConsentController::class, 'customerConsentView'
 
 // agent auth routes
 Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
+// Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
 Route::post('/agent/login', [AgentAuthController::class, 'login']);
 Route::post('/agent/logout', [AgentAuthController::class, 'logout'])->name('agent.logout');
 
