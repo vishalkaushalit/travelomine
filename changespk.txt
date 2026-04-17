@@ -1,0 +1,6 @@
+Working on dynamic auth mail creation 
+
+files which are updated added and changed - 
+
+1. AuthConsentController.php
+2. 
