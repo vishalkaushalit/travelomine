@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
@@ -70,6 +71,10 @@ class UserController extends Controller
 
         // Assign Spatie role
         $user->assignRole($request->role);
+
+        if($user && $user->email) {
+            Mail::to($user->email)->send(new WelcomeMail($user));
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User created successfully.');
