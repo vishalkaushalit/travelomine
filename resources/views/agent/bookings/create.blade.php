@@ -4,7 +4,6 @@
     <div class="container-fluid py-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h1 class="h3 mb-0">Create Booking</h1>
-
         </div>
 
         @if (session('success'))
@@ -24,7 +23,8 @@
 
         <form action="{{ route('agent.bookings.store') }}" method="POST" id="bookingForm">
             @csrf
-
+            
+            <!-- Hidden fields for PNR lookup -->
             <input type="hidden" name="source_booking_id" id="source_booking_id" value="{{ old('source_booking_id') }}">
             <input type="hidden" id="bookingFlowMode" value="{{ old('source_booking_id') ? 'update' : 'new' }}">
 
@@ -67,7 +67,7 @@
 
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Service Type <span class="text-danger">*</span></label>
-                            <select name="service_type" class="form-control" required>
+                            <select name="service_type" id="service_type" class="form-control" required>
                                 <option value="">Select Service Type</option>
                                 @foreach ($serviceTypes as $type)
                                     <option value="{{ $type->type_name }}"
@@ -84,7 +84,7 @@
                             <label class="form-label">Booking Portal <span class="text-danger">*</span></label>
                             <select name="booking_portal" class="form-control" required>
                                 <option value="">Select Portal</option>
-                                @foreach (['amadeus', 'sabre', 'gds', 'website'] as $portal)
+                                @foreach (['amadeus', 'sabre', 'worldspan', 'gds', 'website'] as $portal)
                                     <option value="{{ $portal }}"
                                         {{ old('booking_portal') == $portal ? 'selected' : '' }}>
                                         {{ strtoupper($portal) }}
@@ -467,41 +467,74 @@
             <div class="text-end mb-5">
                 <button type="submit" class="btn btn-success btn-lg">Create Booking</button>
             </div>
-            @include('agent.bookings.partials.pnr-prefill-modal')
         </form>
+    </div>
+
+    <!-- PNR Lookup Modal - Place it OUTSIDE the form -->
+    <div class="modal fade" id="pnrLookupModal" tabindex="-1" aria-labelledby="pnrLookupModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pnrLookupModalLabel">Find Existing Booking</h5>
+                    <button type="button" class="btn-close pnr-modal-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        Select any non-New Booking service type, then search using GK PNR or Airline PNR.
+                    </div>
+
+                    <div id="pnrLookupMessage"></div>
+
+                    <div class="mb-3">
+                        <label for="lookup_service_type" class="form-label">Selected Service Type</label>
+                        <input type="text" id="lookup_service_type" class="form-control" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lookup_pnr" class="form-label">Enter GK PNR / Airline PNR <span class="text-danger">*</span></label>
+                        <input type="text" id="lookup_pnr" class="form-control" placeholder="Example: ABC123 / GK9876">
+                        <small class="text-muted">Only your own existing booking should be matched.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary pnr-modal-close" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="lookupPnrBtn">Search Booking</button>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 
-
 @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const flightType = document.getElementById('flight_type');
-            const segmentsContainer = document.getElementById('segments_container');
-            const addSegmentWrapper = document.getElementById('add_segment_wrapper');
-            const addSegmentBtn = document.getElementById('add_segment_btn');
+<script>
+// Main form functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const flightType = document.getElementById('flight_type');
+    const segmentsContainer = document.getElementById('segments_container');
+    const addSegmentWrapper = document.getElementById('add_segment_wrapper');
+    const addSegmentBtn = document.getElementById('add_segment_btn');
 
-            const adultsCount = document.getElementById('adults_count');
-            const childrenCount = document.getElementById('children_count');
-            const infantsCount = document.getElementById('infants_count');
-            const infantInLapCount = document.getElementById('infant_in_lap_count');
-            const totalPassengerDisplay = document.getElementById('total_passenger_display');
-            const passengersContainer = document.getElementById('passengers_container');
+    const adultsCount = document.getElementById('adults_count');
+    const childrenCount = document.getElementById('children_count');
+    const infantsCount = document.getElementById('infants_count');
+    const infantInLapCount = document.getElementById('infant_in_lap_count');
+    const totalPassengerDisplay = document.getElementById('total_passenger_display');
+    const passengersContainer = document.getElementById('passengers_container');
 
-            const amountCharged = document.getElementById('amount_charged');
-            const amountPaidAirline = document.getElementById('amount_paid_airline');
-            const totalMco = document.getElementById('total_mco');
+    const amountCharged = document.getElementById('amount_charged');
+    const amountPaidAirline = document.getElementById('amount_paid_airline');
+    const totalMco = document.getElementById('total_mco');
 
-            const paymentTypeRadios = document.querySelectorAll('.payment-type-radio');
-            const fullPaymentBlock = document.getElementById('full_payment_block');
-            const splitPaymentBlock = document.getElementById('split_payment_block');
+    const paymentTypeRadios = document.querySelectorAll('.payment-type-radio');
+    const fullPaymentBlock = document.getElementById('full_payment_block');
+    const splitPaymentBlock = document.getElementById('split_payment_block');
 
-            const fullPaymentChargeAmount = document.getElementById('full_payment_charge_amount');
+    const fullPaymentChargeAmount = document.getElementById('full_payment_charge_amount');
 
-            let segmentIndex = 0;
+    let segmentIndex = 0;
 
-            function makeSegmentCard(index, showReturnDate = false, removable = false, swapCities = false) {
-                return `
+    function makeSegmentCard(index, showReturnDate = false, removable = false, swapCities = false) {
+        return `
         <div class="border rounded p-3 mb-3 segment-item">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="mb-0">Flight Segment ${index + 1}</h6>
@@ -558,53 +591,53 @@
             </div>
         </div>
     `;
-            }
+    }
 
-            function buildSegments() {
-                const type = flightType.value;
-                segmentsContainer.innerHTML = '';
-                segmentIndex = 0;
+    function buildSegments() {
+        const type = flightType.value;
+        segmentsContainer.innerHTML = '';
+        segmentIndex = 0;
 
-                if (!type) {
-                    addSegmentWrapper.style.display = 'none';
-                    return;
-                }
+        if (!type) {
+            addSegmentWrapper.style.display = 'none';
+            return;
+        }
 
-                if (type === 'oneway') {
-                    segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
-                    segmentIndex++;
-                    addSegmentWrapper.style.display = 'none';
-                } else if (type === 'roundtrip') {
-                    segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, true, false));
-                    segmentIndex++;
-                    segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
-                    segmentIndex++;
-                    addSegmentWrapper.style.display = 'none';
-                } else if (type === 'multicity') {
-                    segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
-                    segmentIndex++;
-                    segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
-                    segmentIndex++;
-                    addSegmentWrapper.style.display = 'block';
-                }
-            }
+        if (type === 'oneway') {
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+            segmentIndex++;
+            addSegmentWrapper.style.display = 'none';
+        } else if (type === 'roundtrip') {
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, true, false));
+            segmentIndex++;
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+            segmentIndex++;
+            addSegmentWrapper.style.display = 'none';
+        } else if (type === 'multicity') {
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+            segmentIndex++;
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+            segmentIndex++;
+            addSegmentWrapper.style.display = 'block';
+        }
+    }
 
-            function updatePassengerForms() {
-                const adults = parseInt(adultsCount.value || 0);
-                const children = parseInt(childrenCount.value || 0);
-                const infants = parseInt(infantsCount.value || 0);
-                const infantInLap = parseInt(infantInLapCount.value || 0);
+    function updatePassengerForms() {
+        const adults = parseInt(adultsCount.value || 0);
+        const children = parseInt(childrenCount.value || 0);
+        const infants = parseInt(infantsCount.value || 0);
+        const infantInLap = parseInt(infantInLapCount.value || 0);
 
-                const total = adults + children + infants + infantInLap;
-                totalPassengerDisplay.textContent = total;
+        const total = adults + children + infants + infantInLap;
+        totalPassengerDisplay.textContent = total;
 
-                passengersContainer.innerHTML = '';
+        passengersContainer.innerHTML = '';
 
-                let index = 0;
+        let index = 0;
 
-                function addPassengerRows(count, typeCode, label) {
-                    for (let i = 0; i < count; i++) {
-                        passengersContainer.insertAdjacentHTML('beforeend', `
+        function addPassengerRows(count, typeCode, label) {
+            for (let i = 0; i < count; i++) {
+                passengersContainer.insertAdjacentHTML('beforeend', `
                     <div class="border rounded p-3 mb-3">
                         <h6>${label} ${i + 1}</h6>
                         <input type="hidden" name="passengers[${index}][passenger_type]" value="${typeCode}">
@@ -682,95 +715,336 @@
                         </div>
                     </div>
                 `);
-                        index++;
-                    }
-                }
-
-                addPassengerRows(adults, 'ADT', 'Adult');
-                addPassengerRows(children, 'CHD', 'Child');
-                addPassengerRows(infants, 'INF', 'Infant');
-                addPassengerRows(infantInLap, 'INL', 'Infant In Lap');
+                index++;
             }
+        }
 
-            function calculateMco() {
-                const charged = parseFloat(amountCharged.value || 0);
-                const paidAirline = parseFloat(amountPaidAirline.value || 0);
-                if (!isNaN(charged - paidAirline)) {
-                    totalMco.value = (charged - paidAirline).toFixed(2);
-                }
-            }
+        addPassengerRows(adults, 'ADT', 'Adult');
+        addPassengerRows(children, 'CHD', 'Child');
+        addPassengerRows(infants, 'INF', 'Infant');
+        addPassengerRows(infantInLap, 'INL', 'Infant In Lap');
+    }
 
-            function togglePaymentBlocks() {
-                const selected = document.querySelector('input[name="payment_type"]:checked')?.value;
+    function calculateMco() {
+        const charged = parseFloat(amountCharged.value || 0);
+        const paidAirline = parseFloat(amountPaidAirline.value || 0);
+        if (!isNaN(charged - paidAirline)) {
+            totalMco.value = (charged - paidAirline).toFixed(2);
+        }
+    }
 
-                if (selected === 'split') {
-                    fullPaymentBlock.style.display = 'none';
-                    splitPaymentBlock.style.display = 'block';
-                } else {
-                    fullPaymentBlock.style.display = 'block';
-                    splitPaymentBlock.style.display = 'none';
-                }
-            }
+    function togglePaymentBlocks() {
+        const selected = document.querySelector('input[name="payment_type"]:checked')?.value;
 
-            if (amountCharged && fullPaymentChargeAmount) {
-                amountCharged.addEventListener('input', function() {
-                    fullPaymentChargeAmount.value = this.value;
-                    calculateMco();
-                });
-            }
+        if (selected === 'split') {
+            fullPaymentBlock.style.display = 'none';
+            splitPaymentBlock.style.display = 'block';
+        } else {
+            fullPaymentBlock.style.display = 'block';
+            splitPaymentBlock.style.display = 'none';
+        }
+    }
 
-            flightType.addEventListener('change', buildSegments);
-
-            if (addSegmentBtn) {
-                addSegmentBtn.addEventListener('click', function() {
-                    const currentCount = segmentsContainer.querySelectorAll('.segment-item').length;
-                    if (currentCount >= 10) {
-                        alert('Maximum 10 flight segments are allowed for multi city booking.');
-                        return;
-                    }
-
-                    segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false,
-                        true));
-                    segmentIndex++;
-                });
-            }
-
-            segmentsContainer.addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-segment-btn')) {
-                    const items = segmentsContainer.querySelectorAll('.segment-item');
-                    if (items.length > 2) {
-                        e.target.closest('.segment-item').remove();
-                    } else {
-                        alert('At least 2 flight segments are required for multi city booking.');
-                    }
-                }
-            });
-
-            [adultsCount, childrenCount, infantsCount, infantInLapCount].forEach(input => {
-                if (input) input.addEventListener('input', updatePassengerForms);
-            });
-
-            if (amountCharged) {
-                amountCharged.addEventListener('input', function() {
-                    calculateMco();
-                    if (fullPaymentChargeAmount) {
-                        fullPaymentChargeAmount.value = this.value;
-                    }
-                });
-            }
-
-            if (amountPaidAirline) {
-                amountPaidAirline.addEventListener('input', calculateMco);
-            }
-
-            paymentTypeRadios.forEach(radio => {
-                radio.addEventListener('change', togglePaymentBlocks);
-            });
-
+    if (amountCharged && fullPaymentChargeAmount) {
+        amountCharged.addEventListener('input', function() {
+            fullPaymentChargeAmount.value = this.value;
             calculateMco();
-            togglePaymentBlocks();
-            buildSegments();
-            updatePassengerForms();
         });
-    </script>
+    }
+
+    flightType.addEventListener('change', buildSegments);
+
+    if (addSegmentBtn) {
+        addSegmentBtn.addEventListener('click', function() {
+            const currentCount = segmentsContainer.querySelectorAll('.segment-item').length;
+            if (currentCount >= 10) {
+                alert('Maximum 10 flight segments are allowed for multi city booking.');
+                return;
+            }
+
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, true));
+            segmentIndex++;
+        });
+    }
+
+    segmentsContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-segment-btn')) {
+            const items = segmentsContainer.querySelectorAll('.segment-item');
+            if (items.length > 2) {
+                e.target.closest('.segment-item').remove();
+            } else {
+                alert('At least 2 flight segments are required for multi city booking.');
+            }
+        }
+    });
+
+    [adultsCount, childrenCount, infantsCount, infantInLapCount].forEach(input => {
+        if (input) input.addEventListener('input', updatePassengerForms);
+    });
+
+    if (amountCharged) {
+        amountCharged.addEventListener('input', function() {
+            calculateMco();
+            if (fullPaymentChargeAmount) {
+                fullPaymentChargeAmount.value = this.value;
+            }
+        });
+    }
+
+    if (amountPaidAirline) {
+        amountPaidAirline.addEventListener('input', calculateMco);
+    }
+
+    paymentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', togglePaymentBlocks);
+    });
+
+    calculateMco();
+    togglePaymentBlocks();
+    buildSegments();
+    updatePassengerForms();
+});
+
+// PNR Lookup Modal Functionality
+document.addEventListener('DOMContentLoaded', function () {
+    const SERVICE_TYPE_NEW = 'New Booking';
+    const form = document.getElementById('bookingForm');
+    const serviceTypeSelect = document.getElementById('service_type');
+    const serviceProvidedSelect = document.getElementById('service_provided');
+    const sourceBookingIdInput = document.getElementById('source_booking_id');
+    const flowModeInput = document.getElementById('bookingFlowMode');
+    const modalElement = document.getElementById('pnrLookupModal');
+    
+    // Check if modal element exists
+    if (!modalElement) {
+        console.warn('Modal element not found - modal functionality disabled');
+        return;
+    }
+    
+    console.log('Modal element found, initializing...');
+    
+    const lookupServiceType = document.getElementById('lookup_service_type');
+    const lookupPnr = document.getElementById('lookup_pnr');
+    const lookupBtn = document.getElementById('lookupPnrBtn');
+    const lookupMessage = document.getElementById('pnrLookupMessage');
+    
+    if (!form) {
+        console.warn('Booking form not found');
+        return;
+    }
+    
+    if (!serviceTypeSelect) {
+        console.warn('Service type select not found');
+        return;
+    }
+    
+    // Routes
+    const formActionForUpdate = '{{ route("agent.booking-updates.store") }}';
+    const formActionForNew = '{{ route("agent.bookings.store") }}';
+    const searchUrl = '{{ route("agent.booking-updates.search") }}';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+    
+    console.log('Search URL:', searchUrl);
+    
+    let previousServiceType = serviceTypeSelect.value;
+    let modalInstance = null;
+    let lookupLocked = false;
+    
+    // Initialize Bootstrap modal
+    if (window.bootstrap) {
+        modalInstance = new bootstrap.Modal(modalElement);
+    }
+    
+    function showMessage(type, text) {
+        if (lookupMessage) {
+            lookupMessage.innerHTML = '<div class="alert alert-' + type + ' mb-3">' + text + '</div>';
+        }
+    }
+    
+    function clearMessage() {
+        if (lookupMessage) {
+            lookupMessage.innerHTML = '';
+        }
+    }
+    
+    function setFormActionByMode(mode) {
+        if (form) {
+            form.action = mode === 'update' ? formActionForUpdate : formActionForNew;
+        }
+        if (flowModeInput) {
+            flowModeInput.value = mode;
+        }
+        console.log('Form action set to:', mode === 'update' ? formActionForUpdate : formActionForNew);
+    }
+    
+    function setInputValue(selector, value) {
+        const el = document.querySelector(selector);
+        if (!el) return;
+        
+        if (el.type === 'checkbox') {
+            el.checked = !!value;
+        } else {
+            el.value = value ?? '';
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+    
+    async function searchBookingByPnr() {
+        const selectedServiceType = serviceTypeSelect.value;
+        const pnr = (lookupPnr?.value || '').trim();
+        
+        if (lookupMessage) clearMessage();
+        
+        if (!pnr) {
+            showMessage('danger', 'Please enter a PNR first.');
+            return;
+        }
+        
+        if (lookupBtn) {
+            lookupBtn.disabled = true;
+            lookupBtn.innerText = 'Searching...';
+        }
+        
+        try {
+            const response = await fetch(searchUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    pnr: pnr,
+                    service_type: selectedServiceType
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Booking not found.');
+            }
+            
+            // Booking found
+            if (sourceBookingIdInput) {
+                sourceBookingIdInput.value = result.data.source_booking_id;
+            }
+            setFormActionByMode('update');
+            
+            // Fill basic info
+            const booking = result.data.booking;
+            setInputValue('[name="booking_date"]', booking.booking_date);
+            setInputValue('[name="call_type"]', booking.call_type);
+            setInputValue('[name="service_provided"]', booking.service_provided);
+            setInputValue('[name="service_type"]', selectedServiceType);
+            setInputValue('[name="booking_portal"]', booking.booking_portal);
+            setInputValue('[name="language"]', booking.language);
+            setInputValue('[name="customer_name"]', booking.customer_name);
+            setInputValue('[name="customer_email"]', booking.customer_email);
+            setInputValue('[name="customer_phone"]', booking.customer_phone);
+            setInputValue('[name="billing_phone"]', booking.billing_phone);
+            setInputValue('[name="billing_address"]', booking.billing_address);
+            setInputValue('[name="gk_pnr"]', booking.gk_pnr);
+            setInputValue('[name="airline_pnr"]', booking.airline_pnr);
+            
+            // Trigger service provided change
+            if (serviceProvidedSelect) {
+                serviceProvidedSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            
+            // Clear payment fields
+            const paymentFields = ['currency', 'amount_charged', 'amount_paid_airline', 'total_mco', 'full_payment_charge_amount'];
+            paymentFields.forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            
+            setInputValue('[name="agent_remarks"]', '');
+            
+            showMessage('success', 'Booking found! Form has been prefilled. Please review and update payment details.');
+            lookupLocked = true;
+            previousServiceType = selectedServiceType;
+            
+            setTimeout(function () {
+                if (modalInstance) modalInstance.hide();
+            }, 1500);
+            
+        } catch (error) {
+            // Booking not found - allow manual entry
+            console.log('Booking not found:', error.message);
+            
+            if (sourceBookingIdInput) sourceBookingIdInput.value = '';
+            setFormActionByMode('new');
+            previousServiceType = selectedServiceType;
+            lookupLocked = false;
+            
+            showMessage('warning', 'No existing booking found for PNR: ' + pnr + '. You can manually enter all details for this new booking. The selected service type "' + selectedServiceType + '" has been kept.');
+            
+            setTimeout(function () {
+                if (modalInstance) modalInstance.hide();
+            }, 2000);
+        } finally {
+            if (lookupBtn) {
+                lookupBtn.disabled = false;
+                lookupBtn.innerText = 'Search Booking';
+            }
+        }
+    }
+    
+    function openLookupModal() {
+        if (lookupServiceType && serviceTypeSelect) {
+            lookupServiceType.value = serviceTypeSelect.value;
+        }
+        if (lookupPnr) lookupPnr.value = '';
+        if (lookupMessage) clearMessage();
+        if (modalInstance) {
+            modalInstance.show();
+        }
+    }
+    
+    function revertToNewBookingMode() {
+        if (sourceBookingIdInput) sourceBookingIdInput.value = '';
+        lookupLocked = false;
+        setFormActionByMode('new');
+    }
+    
+    // Initialize
+    setFormActionByMode(flowModeInput && flowModeInput.value === 'update' ? 'update' : 'new');
+    
+    // Watch for service type changes
+    serviceTypeSelect.addEventListener('change', function () {
+        const selected = this.value;
+        
+        if (!selected || selected === SERVICE_TYPE_NEW) {
+            previousServiceType = selected;
+            revertToNewBookingMode();
+            return;
+        }
+        
+        if (lookupLocked && sourceBookingIdInput && sourceBookingIdInput.value) {
+            previousServiceType = selected;
+            setFormActionByMode('update');
+            return;
+        }
+        
+        openLookupModal();
+    });
+    
+    if (lookupBtn) {
+        lookupBtn.addEventListener('click', searchBookingByPnr);
+    }
+    
+    if (lookupPnr) {
+        lookupPnr.addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchBookingByPnr();
+            }
+        });
+    }
+    
+    console.log('Modal script setup complete');
+});
+</script>
 @endpush

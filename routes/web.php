@@ -151,11 +151,8 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
     Route::get('/booking-search', [AgentBookingSearchController::class, 'index'])->name('bookings.search');
     Route::get('/booking-search/results', [AgentBookingSearchController::class, 'search'])->name('bookings.search.results');
 
-    Route::post('/booking-updates/search', [AgentBookingUpdatesController::class, 'searchByPnr'])
-        ->name('agent.booking-updates.search');
-
-    Route::post('/booking-updates', [AgentBookingUpdatesController::class, 'store'])
-        ->name('agent.booking-updates.store');
+    Route::post('/booking-updates/search', [AgentBookingUpdatesController::class, 'searchByPnr'])->name('booking-updates.search');
+    Route::post('/booking-updates', [AgentBookingUpdatesController::class, 'store'])->name('booking-updates.store');
 });
 
 // ADMIN ROUTES
