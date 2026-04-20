@@ -7,6 +7,7 @@ use App\Models\BookingCard;
 use App\Models\CallType;
 use App\Models\Merchant;
 use App\Models\ServiceType;
+use App\Services\BookingNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -278,6 +279,10 @@ public function store(Request $request)
         }
 
         DB::commit();
+
+        // Send notifications to CRM and MIS users
+        $notificationService = new BookingNotificationService();
+        $notificationService->notifyNewBooking($booking);
 
         return redirect()
             ->route('agent.bookings.show', $booking->id)
