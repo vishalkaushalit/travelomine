@@ -43,7 +43,7 @@
                         @enderror
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
                         <input type="email" 
@@ -56,9 +56,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                </div>
 
-                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="phone" class="form-label">Phone Number</label>
                         <input type="text" 
@@ -70,7 +68,9 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+                </div>
 
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
                         <select class="form-select @error('role') is-invalid @enderror" 
@@ -85,6 +85,20 @@
                             @endforeach
                         </select>
                         @error('role')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6 extension-field" style="display: {{ old('role') === 'agent' ? 'block' : 'none' }};">
+                        <label for="extension_number" class="form-label">Extension Number <span class="text-muted">(Agent Only)</span></label>
+                        <input type="text" 
+                               class="form-control @error('extension_number') is-invalid @enderror" 
+                               id="extension_number" 
+                               name="extension_number" 
+                               value="{{ old('extension_number') }}" 
+                               placeholder="e.g. ABC1234">
+                        <div class="form-text">Enter a unique extension number for this agent</div>
+                        @error('extension_number')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -144,4 +158,16 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('role').addEventListener('change', function() {
+    const extensionField = document.querySelector('.extension-field');
+    if (this.value === 'agent') {
+        extensionField.style.display = 'block';
+    } else {
+        extensionField.style.display = 'none';
+        document.getElementById('extension_number').value = '';
+    }
+});
+</script>
 @endsection

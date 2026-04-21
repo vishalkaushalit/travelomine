@@ -27,6 +27,10 @@
                             <span class="fw-semibold d-block">{{ $profileData['agent_id'] }}</span>
                         </div>
                         <div class="info-item">
+                            <span class="text-muted small">Extension</span>
+                            <span class="fw-semibold d-block">{{ $profileData['extension_number'] ?? 'N/A' }}</span>
+                        </div>
+                        <div class="info-item">
                             <span class="text-muted small">Joined</span>
                             <span class="fw-semibold d-block">{{ $profileData['joined_date'] }}</span>
                         </div>
