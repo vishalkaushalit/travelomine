@@ -7,10 +7,10 @@
     
     {{-- Header / Profile Card --}}
     <div class="row g-4 mb-4">
-        <div class="col-12 col-lg-3">
-            <div class="card border-0 shadow-sm h-100 overflow-hidden">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm overflow-hidden">
                 <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
                         <div>
                             <h4 class="fw-bold mb-1">{{ $profileData['name'] }}</h4>
                             <div class="d-flex align-items-center">
@@ -19,15 +19,12 @@
                                 </span>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="info-grid mb-4">
                         <div class="info-item">
                             <span class="text-muted small">Agent ID</span>
                             <span class="fw-semibold d-block">{{ $profileData['agent_id'] }}</span>
                         </div>
                         <div class="info-item">
-                            <span class="text-muted small">Extension</span>
+                            <span class="text-muted small">Extension Number</span>
                             <span class="fw-semibold d-block">{{ $profileData['extension_number'] ?? 'N/A' }}</span>
                         </div>
                         <div class="info-item">
@@ -47,7 +44,7 @@
         </div>
 
         {{-- KPI Cards --}}
-        <div class="col-12 col-lg-8">
+        <div class="col-12">
             <div class="row g-4">
                 <div class="col-6 col-md-3">
                     <div class="card border-0 shadow-sm h-100 stat-card">
