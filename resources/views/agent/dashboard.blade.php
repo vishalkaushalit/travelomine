@@ -31,7 +31,6 @@
                             <span class="text-muted small">Joined</span>
                             <span class="fw-semibold d-block">{{ $profileData['joined_date'] }}</span>
                         </div>
-                       
                     </div>
 
                     <div class="border-top pt-3">
