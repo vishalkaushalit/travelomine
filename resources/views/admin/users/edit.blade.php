@@ -16,7 +16,6 @@
             <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
                 @csrf
                 @method('PUT')
-
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
