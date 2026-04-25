@@ -31,8 +31,13 @@ class AuthConsentController extends Controller
         // Map service_type to a specific body template
         $templateMap = [
             'New Booking'           => 'emails.charge.auth.new-booking',
-            'Cancellation & Refund' => 'emails.charge.auth.cancellation',
-            'Seat Assignment'       => 'emails.charge.auth.seat-assignment',
+            'Exchange'              => 'emails.charge.auth.exchange',
+            'Exchange & Upgrade'    => 'emails.charge.auth.exchange-upgrade',
+            'Cancellation'          => 'emails.charge.auth.cancellation',
+            'Refund'                => 'emails.charge.auth.refund',
+            'Seat selection'        => 'emails.charge.auth.seat-assignment',
+            'Baggage edition'       => 'emails.charge.auth.baggage-edition',
+            'Pet edition'           => 'emails.charge.auth.pet-edition',
             // add more as needed...
         ];
 
@@ -170,8 +175,10 @@ class AuthConsentController extends Controller
             // fallback to default body for current service_type
             $templateMap = [
                 'New Booking'           => 'emails.charge.auth.new-booking',
-                'Cancellation & Refund' => 'emails.charge.auth.cancellation',
-                'Seat Assignment'       => 'emails.charge.auth.seat-assignment',
+                'Exchange'              => 'emails.charge.auth.exchange',
+                'Exchange & Upgrade'    => 'emails.charge.auth.exchange-upgrade',
+                'Cancellation' => 'emails.charge.auth.cancellation',
+                'Refund' => 'emails.charge.auth.refund',
             ];
 
             $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';

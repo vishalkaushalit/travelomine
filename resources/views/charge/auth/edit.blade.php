@@ -56,18 +56,18 @@
         <!-- Email Content Editor Area -->
         <div class="col-md-9">
             <form action="{{ route('charge.authorize.preview', $booking->id) }}" method="POST">
-    @csrf
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <!-- Ensure $emailContent is exactly as named in the Controller -->
-            <textarea name="email_body" id="editor">{!! $emailContent !!}</textarea>
-            
-            <div class="mt-3 text-end">
-                <button type="submit" class="btn btn-success px-4">Preview & Proceed</button>
-            </div>
-        </div>
-    </div>
-</form>
+                @csrf
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <!-- Ensure $emailContent is exactly as named in the Controller -->
+                        <textarea name="email_body" id="editor">{!! $emailContent !!}</textarea>
+                        
+                        <div class="mt-3 text-end">
+                            <button type="submit" class="btn btn-success px-4">Preview & Proceed</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
