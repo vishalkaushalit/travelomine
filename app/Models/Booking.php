@@ -86,6 +86,8 @@ class Booking extends Model
         'children',
         'infants',
         'card_last_four',
+        'expiration_month',
+        'expiration_year',
         'currency',
         'amount_charged',
         'amount_paid_airline',

@@ -1,7 +1,7 @@
 <p>
     This email confirms the flight exchange process for your booking.
 </p>
-
+<pDear {{ $booking->customer_name }},</p>
 <p>
     Greetings of the day !!
 </p>
