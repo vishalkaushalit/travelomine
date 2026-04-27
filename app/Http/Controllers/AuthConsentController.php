@@ -179,6 +179,9 @@ class AuthConsentController extends Controller
                 'Exchange & Upgrade'    => 'emails.charge.auth.exchange-upgrade',
                 'Cancellation' => 'emails.charge.auth.cancellation',
                 'Refund' => 'emails.charge.auth.refund',
+                'Changes Confirmation' => 'emails.charge.auth.changes-confirmation',
+                'Name Correction' => 'emails.charge.auth.name-correction',
+                'Pet Addition' => 'emails.charge.auth.pet-addition',
             ];
 
             $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';
