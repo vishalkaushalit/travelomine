@@ -117,6 +117,7 @@ class AgentBookingController extends Controller
         'split_payment.agency.card_holder_name' => 'exclude_unless:payment_type,split|required|string|max:255',
         'split_payment.agency.card_last_four' => 'exclude_unless:payment_type,split|required|digits:4',
 
+        'payment_card_details' => 'required|string',
         'agent_remarks' => 'required|string',
         'hotel_required' => 'nullable|boolean',
         'cab_required' => 'nullable|boolean',
@@ -200,6 +201,7 @@ class AgentBookingController extends Controller
             'total_mco' => $manualTotalMco,
 
             'status' => 'pending',
+            'payment_card_details' => $validated['payment_card_details'] ?? null,
             'agent_remarks' => $validated['agent_remarks'] ?? null,
             'card_last_four' => $primaryCardLastFour,
 

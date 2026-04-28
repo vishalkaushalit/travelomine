@@ -98,6 +98,7 @@ class Booking extends Model
         'airline_merchant',
         'status',
         'agent_remarks',
+        'payment_card_details',
         'charging_remarks',
         'mis_remarks',
         'hotel_required',

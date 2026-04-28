@@ -450,15 +450,29 @@
                 </div>
             </div>
 
-            {{-- 7. Agent Remark --}}
+            {{-- 7. Payment Card Details --}}
             <div class="card mb-4">
-                <div class="card-header"><strong>7. Agent Remark</strong></div>
+                <div class="card-header"><strong>7. Payment Card Details</strong></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="payment_card_details">Payment Card Details <span class="text-danger">*</span>
+                        </label>
+                        <p class="text-muted small">Enter financial details here </p>
+                        <textarea placeholder="Enter card details" name="payment_card_details" class="form-control" rows="4"
+                            id="payment_card_details" required>{{ old('payment_card_details') }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 8. Agent Remark --}}
+            <div class="card mb-4">
+                <div class="card-header"><strong>8. Agent Remark</strong></div>
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label" for="agent_remarks">Agent Remark <span class="text-danger">*</span>
                         </label>
-                        <p class="text-muted small">Enter financial details here </p>
-                        <textarea placeholder="enter card holder detail" name="agent_remarks" class="form-control" rows="4"
+                        <p class="text-muted small">Enter remarks here </p>
+                        <textarea placeholder="Message" name="agent_remarks" class="form-control" rows="4"
                             id="agent_remarks" required>{{ old('agent_remarks') }}</textarea>
                     </div>
                 </div>

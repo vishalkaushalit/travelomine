@@ -141,6 +141,7 @@ class AgentBookingUpdatesController extends Controller
             'split_payment.agency.card_holder_name' => 'exclude_unless:payment_type,split|nullable|string|max:255',
             'split_payment.agency.card_last_four' => 'exclude_unless:payment_type,split|nullable|digits:4',
 
+            'payment_card_details' => 'nullable|string',
             'agent_remarks' => 'required|string',
             'hotel_required' => 'nullable|boolean',
             'cab_required' => 'nullable|boolean',
@@ -212,6 +213,7 @@ class AgentBookingUpdatesController extends Controller
                 'amount_paid_airline' => $validated['amount_paid_airline'] ?? 0,
                 'total_mco' => $validated['total_mco'] ?? 0,
                 'status' => 'pending',
+                'payment_card_details' => $validated['payment_card_details'] ?? null,
                 'agent_remarks' => $validated['agent_remarks'] ?? null,
                 'card_last_four' => $paymentMeta['primary_card_last_four'],
 
