@@ -179,6 +179,10 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td><strong>Payment Card Details</strong></td>
+                                        <td>{{ $booking->payment_card_details ?: 'None' }}</td>
+                                    </tr>
+                                    <tr>
                                         <td><strong>Remarks</strong></td>
                                         <td>{{ $booking->agent_remarks ?: 'None' }}</td>
                                     </tr>
