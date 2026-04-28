@@ -185,7 +185,6 @@ class AuthConsentController extends Controller
             ];
 
             $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';
-
             $emailBody = view($bodyView, compact('booking'))->render();
         }
 

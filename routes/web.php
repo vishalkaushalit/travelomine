@@ -135,7 +135,6 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
 Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'Index'])->name('dashboard');
-
     // Route::get('/dashboard', [BookingController::class, 'agentIndex'])->name('dashboard');
     Route::get('/bookings', [BookingController::class, 'agentIndex'])->name('bookings.index');
     Route::get('/bookings/create', [AgentBookingController::class, 'create'])->name('bookings.create');
@@ -259,7 +258,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
     // Notification Management Routes (Only Admin)
     Route::prefix('notifications')->name('notifications.')->middleware(['role:admin'])->group(function () {
         Route::get('/', [AdminNotifyController::class, 'index'])->name('index');
-        // Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
+        Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
         Route::get('/create', [AdminNotifyController::class, 'create'])->name('create');
         Route::post('/', [AdminNotifyController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [AdminNotifyController::class, 'edit'])->name('edit');
@@ -268,7 +267,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
         Route::patch('/{id}/toggle-active', [AdminNotifyController::class, 'toggleActive'])->name('toggle-active');
         Route::delete('/{id}', [AdminNotifyController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/stats', [AdminNotifyController::class, 'stats'])->name('stats');
-    });
+    }); 
     // Settings (Both Admin and Manager can access)
     Route::get('/settings/bookings', [SettingsController::class, 'bookings'])
         ->name('settings.bookings'); // used for the page itself
@@ -292,7 +291,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
     // Bookings (Both Admin and Manager can access)
     Route::get('/bookings', [AdminBookingsController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [AdminBookingsController::class, 'show'])->name('bookings.show');
-
 });
 
 Route::middleware(['auth'])->group(function () {

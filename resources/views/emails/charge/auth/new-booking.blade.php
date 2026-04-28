@@ -1,6 +1,4 @@
-<h3>New Booking - Payment Authorization</h3>
-
-<br>
+<h3><strong>{{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}</strong> New Booking Confirmation</h3>
 
 <p>Dear {{ $booking->customer_name }},</p>
 
@@ -36,7 +34,7 @@ I certify that I {{ $booking->customer_name }} am an authorized user of this car
 
 <p>
 Charge : {{ $booking->currency ?? 'USD' }} {{ number_format($booking->amount_paid_airline, 2) }} - 
-({{ $booking->airline_merchant ?? 'Airline' }}, includes all the taxes and service fee)
+({{ $booking->airline_merchant_name ?? 'Airline' }}, includes all the taxes and service fee)
 </p>
 
 <p>
@@ -54,9 +52,8 @@ Charge : {{ $booking->currency ?? 'USD' }} {{ number_format($booking->total_mco,
             <th>First Name</th>
             <th>Middle Name</th>
             <th>Last Name</th>
-            <th>GND</th>
+            <th>Gender</th>
             <th>DOB</th>
-            <th>Price</th>
         </tr>
     </thead>
     <tbody>
@@ -69,7 +66,6 @@ Charge : {{ $booking->currency ?? 'USD' }} {{ number_format($booking->total_mco,
                 <td>{{ $pax->last_name }}</td>
                 <td>{{ $pax->gender }}</td>
                 <td>{{ \Carbon\Carbon::parse($pax->dob)->format('M-d-Y') }}</td>
-                <td>{{ number_format($booking->amount_charged, 2) }}</td>
             </tr>
         @endforeach
     </tbody>
@@ -77,18 +73,16 @@ Charge : {{ $booking->currency ?? 'USD' }} {{ number_format($booking->total_mco,
 
 <p><strong>Total Amount: USD {{ number_format($booking->amount_charged, 2) }}</strong></p>
 
-<br>
-
 <h4>Payment Details:</h4>
 
 <table border="1" cellpadding="8" cellspacing="0" width="100%">
     <tr>
         <td>Card Holder Name:</td>
-        <td>{{ $booking->customer_name }}</td>
+        <td>{{ $booking->customer_name }} {{ $booking->customer_middle_name }} {{ $booking->customer_last_name }}</td>
     </tr>
     <tr>
         <td>Card Number:</td>
-        <td>{{ $booking->card_last_four }}</td>
+        <td>{{ $booking->card_last_four }} </td>
     </tr>
     <tr>
         <td>Card Type:</td>
@@ -108,15 +102,13 @@ Charge : {{ $booking->currency ?? 'USD' }} {{ number_format($booking->total_mco,
     </tr>
     <tr>
         <td>Phone Number:</td>
-        <td>{{ $booking->phone }}</td>
+        <td>{{ $booking->billing_phone }}</td>
     </tr>
     <tr>
         <td>Email:</td>
-        <td>{{ $booking->email }}</td>
+        <td>{{ $booking->customer_email }}</td>
     </tr>
 </table>
-
-<br>
 
 <h4>Customer Support Details</h4>
 
@@ -126,14 +118,13 @@ Charge : {{ $booking->currency ?? 'USD' }} {{ number_format($booking->total_mco,
         <th>Email</th>
     </tr>
     <tr>
-        <td>{{ $booking->support_phone ?? '+1-888-575-5053' }}</td>
+        <td>{{ $booking->support_phone ?? '+1-888-hasd-5053' }}</td>
         <td>{{ $booking->support_email ?? 'reservation@travelomile.com' }}</td>
     </tr>
 </table>
-
-<br>
 
 <p>
 Make sure that the displayed flight information is correct. Please review the Names, Dates,
 Cities, and Departure – Arrival times properly.
 </p>
+

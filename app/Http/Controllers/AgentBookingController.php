@@ -42,8 +42,8 @@ class AgentBookingController extends Controller
         ));
     }
 
-public function store(Request $request)
-{
+    public function store(Request $request)
+    {
     $request = $this->normalizePaymentRequest($request);
 
     $validated = $request->validate([
@@ -295,7 +295,7 @@ public function store(Request $request)
             ->withErrors(['error' => $e->getMessage()])
             ->withInput();
     }
-}
+    }
 
     protected function trimArrayRecursive(array $data): array
     {
