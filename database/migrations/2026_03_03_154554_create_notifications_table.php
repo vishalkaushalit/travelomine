@@ -30,7 +30,7 @@ return new class extends Migration
             $table->id();
             $table->integer('notification_id');
             $table->integer('user_id');
-            $table->timestamp('read_at');
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
             $table->unique(['notification_id', 'user_id']);
         });
