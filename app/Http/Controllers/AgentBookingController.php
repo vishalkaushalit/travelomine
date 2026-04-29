@@ -284,7 +284,7 @@ class AgentBookingController extends Controller
     'chargeamount'   => $validated['splitpayment']['agency']['chargeamount'] ?? null,
     'cardorder'      => 2,
 ]));
-        }
+
         DB::commit();
 
         // Send notifications to CRM and MIS users
