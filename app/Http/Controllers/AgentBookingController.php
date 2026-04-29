@@ -285,6 +285,8 @@ class AgentBookingController extends Controller
     'cardorder'      => 2,
 ]));
 
+        }
+
         DB::commit();
 
         // Send notifications to CRM and MIS users
