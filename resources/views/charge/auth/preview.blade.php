@@ -433,7 +433,6 @@
                         
                         <div>
                             <div class="brand-text-title">Payment Authorization</div>
-                            <div class="brand-text-main">Flight Payment Consent</div>
                         </div>
                     </div>
 
@@ -454,7 +453,8 @@
                     </span>
                 </div>
             </div>
-
+            <hr>
+            <br>
             <div class="email-body">
                 <div class="editable-content-area">
                     {!! $finalContent !!}
@@ -463,7 +463,7 @@
                 <div class="itinerary-card">
                     <div class="itinerary-header">
                         <span>Flight details</span>
-                        <span>PNR: {{ $booking->gk_pnr }}</span>
+                        <span>PNR: {{ $booking->airline_pnr ?  $booking->airline_pnr : $booking->gk_pnr }}</span>
                     </div>
 
                     @foreach($booking->segments as $segment)

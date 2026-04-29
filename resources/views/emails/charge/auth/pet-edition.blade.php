@@ -1,8 +1,14 @@
-<h3>Pet Addition - Payment Authorization</h3> <br>
-<p>Dear {{ $booking->customer_name }},</p>
+<h3><strong>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} Pet Addition</strong>
+</h3>
+
+<p>Dear {{ $booking->customer_name ?? 'Passeneger' }},</p>
 <p>Greetings of the day !!</p>
+<p>As per our conversation and as agreed, we have added your pet toyour reservation with United Airlines under
+    Confirmation #CHE7BS. Please see the details below.
+</p>
 <p> As per our conversation, we have added a pet to your existing flight reservation under Confirmation number
-    <strong>{{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}</strong>. </p>
+    <strong>{{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}</strong>.
+</p>
 <p> <strong> Total Pet Addition Cost - {{ $booking->currency ?? 'USD' }} {{ number_format($booking->pet_amount, 2) }}
         (Including all taxes and fees). </strong> </p>
 <p> As discussed, I {{ $booking->customer_name }} authorize {{ $booking->company_name ?? 'Travelomile' }} to process the
@@ -10,28 +16,10 @@
     amount of {{ $booking->currency ?? 'USD' }} {{ number_format($booking->pet_amount, 2) }}. </p>
 <p> This authorization is valid for one-time use only. I confirm that I am an authorized user of this card and will not
     dispute this transaction. </p>
-<h4>Pet Details:</h4>
-<table border="1" cellpadding="8" cellspacing="0" width="100%">
-    <thead>
-        <tr>
-            <th>S. No.</th>
-            <th>Pet Type</th>
-            <th>Breed</th>
-            <th>Weight</th>
-            <th>Carrier Details</th>
-        </tr>
-    </thead>
-    <tbody> @foreach($booking->pets as $index => $pet) <tr>
-            <td>{{ $index + 1 }}</td>
-            <td>{{ $pet->type }}</td>
-            <td>{{ $pet->breed }}</td>
-            <td>{{ $pet->weight }} kg</td>
-            <td>{{ $pet->carrier_details }}</td>
-        </tr> @endforeach </tbody>
-</table> <br>
+
 <h4>Charges Description:</h4>
-<p> Charge : {{ $booking->currency ?? 'USD' }} {{ number_format($booking->pet_amount, 2) }} - ({{ $booking->pet_merchant
-    ?? 'Airline Pet Fee' }}, includes all taxes and service fee) </p> <br>
+<p> Charge : {{ $booking->currency ?? 'USD' }} {{ number_format($booking->pet_amount, 2) }} -
+    ({{ $booking->pet_merchant ?? 'Airline Pet Fee' }}, includes all taxes and service fee) </p> <br>
 <h4>Payment Details:</h4>
 <table border="1" cellpadding="8" cellspacing="0" width="100%">
     <tr>

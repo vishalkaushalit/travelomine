@@ -25,28 +25,13 @@ return new class extends Migration
             });
         }
 
-<<<<<<< Updated upstream
-    if (!Schema::hasTable('user_notification_reads')) {
-        Schema::create('user_notification_reads', function (Blueprint $table) {
-            $table->id();
-            $table->integer('notification_id');
-            $table->integer('user_id');
-            $table->timestamp('read_at')->nullable();
-            $table->timestamps();
-            $table->unique(['notification_id', 'user_id']);
-        });
-    }
-}
-=======
         if (!Schema::hasTable('user_notification_reads')) {
             Schema::create('user_notification_reads', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('notification_id')->constrained('admin_notifications')->cascadeOnDelete();
                 $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-                $table->timestamp('read_at'); // keep NOT NULL for read-log design
+                $table->timestamp('read_at')->nullable(); // Changed to nullable for read-log design
                 $table->timestamps();
->>>>>>> Stashed changes
-
                 $table->unique(['notification_id', 'user_id']);
             });
         }

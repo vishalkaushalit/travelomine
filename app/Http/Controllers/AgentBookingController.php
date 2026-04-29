@@ -255,6 +255,8 @@ class AgentBookingController extends Controller
         if ($validated['payment_type'] === 'full') {
             BookingCard::create(array_merge($commonCardData, [
                 'merchant_id' => $validated['full_payment']['merchant_id'] ?? null,
+                'merchantname'   => $agencyMerchantName,
+                'merchanttype'   => 'agency',
                 'card_holder_name' => $validated['full_payment']['card_holder_name'] ?? null,
                 'card_last_four' => $validated['full_payment']['card_last_four'] ?? null,
                 'charge_amount' => $validated['full_payment']['charge_amount'] ?? null,
@@ -265,6 +267,8 @@ class AgentBookingController extends Controller
         if ($validated['payment_type'] === 'split') {
             BookingCard::create(array_merge($commonCardData, [
                 'merchant_id' => null,
+                'merchantname'   => $validated['splitpayment']['airlinemerchantname'] ?? null,
+                'merchanttype'   => 'airline',
                 'card_holder_name' => $validated['split_payment']['airline']['card_holder_name'] ?? null,
                 'card_last_four' => $validated['split_payment']['airline']['card_last_four'] ?? null,
                 'charge_amount' => $validated['split_payment']['airline']['charge_amount'] ?? null,
@@ -272,13 +276,14 @@ class AgentBookingController extends Controller
             ]));
 
             BookingCard::create(array_merge($commonCardData, [
-                'merchant_id' => $validated['split_payment']['agency']['merchant_id'] ?? null,
-                'card_holder_name' => $validated['split_payment']['agency']['card_holder_name'] ?? null,
-                'card_last_four' => $validated['split_payment']['agency']['card_last_four'] ?? null,
-                'charge_amount' => $validated['split_payment']['agency']['charge_amount'] ?? null,
-                'card_order' => 2,
-            ]));
-        }
+    'merchantid'     => $agencyMerchantId,
+    'merchantname'   => $agencyMerchantName,
+    'merchanttype'   => 'agency',
+    'cardholdername' => $validated['splitpayment']['agency']['cardholdername'] ?? null,
+    'cardlastfour'   => $validated['splitpayment']['agency']['cardlastfour'] ?? null,
+    'chargeamount'   => $validated['splitpayment']['agency']['chargeamount'] ?? null,
+    'cardorder'      => 2,
+]));
 
         DB::commit();
 

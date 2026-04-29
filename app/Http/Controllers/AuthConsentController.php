@@ -38,7 +38,6 @@ class AuthConsentController extends Controller
             'Seat selection'        => 'emails.charge.auth.seat-assignment',
             'Baggage edition'       => 'emails.charge.auth.baggage-edition',
             'Pet edition'           => 'emails.charge.auth.pet-edition',
-            // add more as needed...
         ];
 
         $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';

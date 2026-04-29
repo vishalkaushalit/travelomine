@@ -9,26 +9,28 @@ class BookingCard extends Model
 {
     protected $table = 'booking_cards';
 
-    protected $fillable = [
-        'booking_id',
-        'merchant_id',
-        'card_holder_name',
-        'card_number',
-        'card_type',
-        'card_last_four',
-        'expiration_month',
-        'expiration_year',
-        'cvv',
-        'billing_address',
-        'billing_phone',
-        'billing_email',
-        'charge_amount',
-        'is_charged',
-        'charged_at',
-        'transaction_id',
-        'payment_status',
-        'card_order',
-    ];
+        protected $fillable = [
+            'bookingid',
+            'merchantid',
+            'merchantname',
+            'merchanttype',
+            'cardholdername',
+            'cardnumber',
+            'cardtype',
+            'cardlastfour',
+            'expirationmonth',
+            'expirationyear',
+            'cvv',
+            'billingaddress',
+            'billingphone',
+            'billingemail',
+            'chargeamount',
+            'ischarged',
+            'chargedat',
+            'transactionid',
+            'paymentstatus',
+            'cardorder',
+        ];
 
     protected $casts = [
         'is_charged'   => 'boolean',
@@ -74,3 +76,4 @@ public function getFullCvvAttribute() {
 }
 
 }
+

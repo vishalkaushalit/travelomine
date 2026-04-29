@@ -1,78 +1,87 @@
-<p>
-    This email confirms the cancellation process for your booking.
-</p>
-
+<h3><strong>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} Flight
+        Cancellation</strong>
+</h3>
+<p>Dear {{ $booking->customer_name ?? 'Passeneger' }}
+    ,</p>
 <p>
     Greetings of the day !!
 </p>
 
 <p>
-    As per our conversation and as agreed, we have cancelled your reservation with <strong>{{
-        $booking->segments->first()?->airline_name ?? 'the airline' }}</strong> under Confirmation <strong>#{{
-        $booking->booking_reference }}</strong>. Please see the details below.
+    As per our conversation and as agreed, we have cancelled your reservation with
+    <strong>{{ $booking->segments->first()?->airline_name ?? 'the airline' }}</strong> under Confirmation
+    <strong>#{{ $booking->booking_reference }}</strong>. Please see the details below.
 </p>
-
-<p><br></p>
-
 <p>
-    <strong>Total cost for all passengers:</strong> USD {{ number_format($booking->total_cost, 2) }} (all incl. taxes
+    <strong>Total cost for all passengers:</strong> {{ $booking->currency ?? 'USD' }}
+    {{ number_format($booking->amount_charged, 2) }} (all incl. taxes
     and fees).
 </p>
 
-<p><br></p>
-
 <p>
-    <strong>Please Note:</strong> You will get a refund for USD {{ number_format($booking->refund_amount ??
-    $booking->total_cost, 2) }} back to the same form of payment within 7-14 business days.
+    <strong>Please Note:</strong> You will get a refund for {{ $booking->currency ?? 'USD' }}
+    {{ number_format($booking->amount_charged, 2) }}
+    back to the same form of payment within 7-14 business days.
 </p>
 
-<p><br></p>
-
 <p>
-    As per our telephonic conversation I, <strong>{{ $booking->passengers->first()?->first_name ?? 'Name' }} {{
-        $booking->passengers->first()?->last_name ?? 'Last' }}</strong>, authorize <strong>{{
-        $booking->segments->first()?->airline_name ?? 'the airline' }}/TraveloMile</strong> to process the
-    above-mentioned charges under their respective merchants for charging my <strong>{{
-        $booking->cards->first()?->card_number ?? '****' }}</strong> card for the booking the below-mentioned itinerary
+    As per our telephonic conversation I, <strong>{{ $booking->passengers->first()?->first_name ?? 'Name' }}
+        {{ $booking->passengers->first()?->last_name ?? 'Last' }}</strong>, authorize
+    <strong>{{ $booking->segments->first()?->airline_name ?? 'the airline' }}/
+        {{ $booking->agency_merchant_name ?? 'na' }}</strong> to process the
+    above-mentioned charges under their respective merchants for charging my
+    <strong>******{{ $booking->cards->first()?->card_last_four ?? '****' }}</strong> card for the booking the
+    below-mentioned
+    itinerary
     with <strong>{{ $booking->segments->first()?->airline_name ?? 'the airline' }}</strong>.
 </p>
-
-<p><br></p>
-
 <p>
     This payment authorization is for the amount indicated above and is valid for one-time use only. I certify that I am
-    <strong>{{ $booking->passengers->first()?->first_name ?? 'Name' }} {{ $booking->passengers->first()?->last_name ??
-        'Last' }}</strong>, an authorized user of this card and that I will not dispute the payment with my credit/debit
+    <strong>{{ $booking->passengers->first()?->first_name ?? 'Name' }}
+        {{ $booking->passengers->first()?->last_name ?? 'Last' }}</strong>, an authorized user of this card and
+    that I will not dispute the payment with my credit/debit
     card company/bank.
 </p>
 
-<p><br></p>
 
 <p>
     <strong>Kindly confirm your acceptance of the terms and agreement to the declaration by replying to this email with
         'I Agree' or 'I Authorize'.</strong>
 </p>
 
-<p><br></p>
-
 <h4><strong>Charges Description:</strong></h4>
 
-<p><br></p>
+@foreach ($booking->cards as $index => $card)
+    @php
+        $cardOrder = $card->card_order ?? ($card->cardorder ?? $index + 1);
 
-@foreach($booking->cards as $index => $card)
-<p>
-    {{ $index + 1 }}. USD {{ number_format($card->amount ?? 0, 2) }} ({{ $card->merchant?->name ?? 'Merchant' }}, incl.
-    the taxes and fees)
-</p>
+        $amount =
+            $card->charge_amount ??
+            ($card->chargeamount ??
+                ($cardOrder == 1
+                    ? $booking->amount_paid_airline ?? 0
+                    : (float) ($booking->amount_charged ?? 0) - (float) ($booking->amount_paid_airline ?? 0)));
+
+        $merchantName =
+            $card->merchant_name ??
+            ($card->merchantname ??
+                (optional($card->merchant)->merchant_name ??
+                    (optional($card->merchant)->merchantname ??
+                        (optional($card->merchant)->name ??
+                            ($cardOrder == 1
+                                ? $booking->airline_merchant_name ?? 'Airline Merchant'
+                                : $booking->agency_merchant_name ??
+                                    ($booking->agencymerchantname ?? 'Agency Merchant'))))));
+    @endphp
+
+    <p>
+        {{ $index + 1 }}.
+        {{ $booking->currency ?? 'USD' }} {{ number_format((float) $amount, 2) }}
+        ({{ $merchantName }}, incl. the taxes and fees)
+    </p>
 @endforeach
 
-<p><br></p>
-
-<p><br></p>
-
 <h4><strong>Passenger Details:</strong></h4>
-
-<p><br></p>
 
 <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
     <thead>
@@ -88,33 +97,28 @@
         </tr>
     </thead>
     <tbody>
-        @foreach($booking->passengers as $index => $passenger)
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px;">{{ $index + 1 }}</td>
-            <td style="padding: 12px 16px;">{{ $passenger->type ?? 'ADT' }}</td>
-            <td style="padding: 12px 16px;">{{ $passenger->first_name }}</td>
-            <td style="padding: 12px 16px;">{{ $passenger->middle_name ?? '-' }}</td>
-            <td style="padding: 12px 16px;">{{ $passenger->last_name }}</td>
-            <td style="padding: 12px 16px;">{{ $passenger->gender ?? '-' }}</td>
-            <td style="padding: 12px 16px;">{{ $passenger->dob ? \Carbon\Carbon::parse($passenger->dob)->format('M-d-Y')
-                : '-' }}</td>
-            <td style="padding: 12px 16px;">USD {{ number_format($passenger->price ?? 0, 2) }}</td>
-        </tr>
+        @foreach ($booking->passengers as $index => $passenger)
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px;">{{ $index + 1 }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->type ?? 'ADT' }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->first_name }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->middle_name ?? '-' }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->last_name }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->gender ?? '-' }}</td>
+                <td style="padding: 12px 16px;">
+                    {{ $passenger->dob ? \Carbon\Carbon::parse($passenger->dob)->format('M-d-Y') : '-' }}
+                </td>
+                <td style="padding: 12px 16px;">USD
+                    {{ number_format(($booking->amount_charged ?? 0) / max($booking->passengers->count(), 1), 2) }}
+                </td>
+            </tr>
         @endforeach
     </tbody>
 </table>
 
-<p><br></p>
-
-<p><br></p>
-
 <h4><strong>Purchase Summary:</strong></h4>
 
-<p><br></p>
-
-<h4><strong>Payment Type - Credit/Debit Card Authorization</strong></h4>
-
-<p><br></p>
+<h6><strong>Payment Type - Credit/Debit Card Authorization</strong></h6>
 
 <table style="width: 100%; border-collapse: collapse; margin: 16px 0; background-color: #f9fafb;">
     <tbody>
@@ -141,7 +145,7 @@
         </tr>
         <tr style="border-bottom: 1px solid #e5e7eb;">
             <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Phone Number:</td>
-            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->phone ?? 'N/A' }}</td>
+            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->billing_phone ?? 'N/A' }}</td>
         </tr>
         <tr style="border-bottom: 1px solid #e5e7eb;">
             <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Email:</td>
@@ -149,8 +153,8 @@
         </tr>
         <tr style="border-bottom: 1px solid #e5e7eb;">
             <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Total Amount:</td>
-            <td style="padding: 12px 16px; font-weight: 600; color: #059669;">USD {{ number_format($booking->total_cost,
-                2) }}</td>
+            <td style="padding: 12px 16px; font-weight: 600; color: #059669;">USD
+                {{ number_format($booking->amount_charged, 2) }}</td>
         </tr>
         <tr style="border-bottom: 1px solid #e5e7eb;">
             <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Transaction Date:</td>
@@ -159,8 +163,6 @@
     </tbody>
 </table>
 
-<p><br></p>
-
 <h4><strong>Please Note:</strong></h4>
 
 <p>
@@ -168,7 +170,6 @@
     • <strong>Baggage fees may apply.</strong> Please check with the airline for the most up-to-date baggage policies.
 </p>
 
-<p><br></p>
 
 <h4><strong>Important:</strong></h4>
 
@@ -179,8 +180,6 @@
     request, you must contact us immediately at <strong>+1 888-476-0932</strong>.
 </p>
 
-<p><br></p>
-
 <h4><strong>Note:</strong></h4>
 
 <p>
@@ -189,34 +188,30 @@
     cancellation policy, you may be eligible for a partial or full refund.
 </p>
 
-<p><br></p>
-
 <h4><strong>Disclaimer:</strong></h4>
-
 <p>
-    Travelomile is an independent travel Agency with no third-party association. We shall not be associated or
-    considered as an airline or an ally of any of the airlines or brands. Travelomile is shown on your bank account
-    details in most cases. However, sometimes we have to split the payment with the airline. Travelomile and the airline
+    {{ $booking->agency_merchant_name }} is an independent travel Agency with no third-party association. We shall not
+    be associated or
+    considered as an airline or an ally of any of the airlines or brands. {{ $booking->agency_merchant_name }} is shown
+    on your bank account
+    details in most cases. However, sometimes we have to split the payment with the airline.
+    {{ $booking->agency_merchant_name }} and the airline
     or another company of that organization both will appear as recipients on your account. All the service fee and
     convenience fee are non-refundable.
 </p>
-
-<p><br></p>
-
 <h4><strong>For Assistance:</strong></h4>
 
 <p>
-    In case of any discrepancies or if an amendment is required, please contact us within 24 hours at <strong>+1
-        888-476-0932</strong> or email us at <strong>reservation@travelomile.com</strong>. We will be happy to assist
-    you.
+    In case of any discrepancies or if an amendment is required, please contact us within 24 hours at
+    <strong>{{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}</strong>
+    or email us at <strong>{{ $booking->agencyMerchant->support_mail ?? '' }}.</strong>
+    We will be happy to assist you.
 </p>
-
-<p><br></p>
-
 <h4><strong>For Cancellations and Refunds:</strong></h4>
 
 <p>
-    Call us at <strong>+1 888-476-0932</strong>. Bookings must be canceled at least 24 hours before the scheduled
+    Call us at <strong>{{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}</strong>. Bookings must be
+    canceled at least 24 hours before the scheduled
     departure time. Cancellations can only be processed over the phone. Please note that some reservations are
     non-refundable and non-changeable. Refunds depend on the fare rules, cancellation penalties, and supplier fees.
 </p>
@@ -227,23 +222,18 @@
     statements, depending on your bank and credit card company.
 </p>
 
-<p><br></p>
-
 <p>
-    Still have questions? Call us at <strong>+1 888-476-0932</strong>. Our agents are available 24 hours a day, 7 days a
-    week to assist you. You can also email us at <strong>reservation@travelomile.com</strong>.
+    Still have questions? Call us at
+    <strong>{{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}</strong>. Our agents are available 24
+    hours a day, 7 days a
+    week to assist you. You can also email us at <strong>{{ $booking->agencyMerchant->support_mail ?? '' }}</strong>.
 </p>
-
-<p><br></p>
-
 <p>
     We value your business and look forward to serving your travel needs soon.
 </p>
-
-<p><br></p>
-
 <p>
     Best Regards<br>
     <strong>Reservation Desk</strong><br>
-    <strong>Travelomile</strong>
+    <strong>{{ $booking->user->alias_name ?? '' }}</strong><br>
+    <strong>{{ $booking->user->extension_number ?? '' }}</strong><br>
 </p>

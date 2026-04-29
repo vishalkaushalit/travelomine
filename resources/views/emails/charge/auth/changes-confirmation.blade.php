@@ -1,12 +1,11 @@
-<p>
-    This email confirms the changes made to your flight reservation.
-</p>
+<h3>
+    <strong>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} Flight
+        Changes</strong>
+</h3>
 
 <p>
     Dear {{ $booking->passengers->first()?->first_name ?? 'Valued Customer' }},
 </p>
-
-<p><br></p>
 
 <p>
     Greetings of the day !!
