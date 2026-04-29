@@ -25,7 +25,7 @@
     {!! $emailBody !!}
 
     {{-- Common authorization text --}}
-    <p>
+    {{-- <p>
         @if($isAgencyOnly)
             As per our telephonic conversation I, {{ $booking->customer_name }},
             authorize {{ $merchantName }} to process the above-mentioned charges
@@ -38,7 +38,7 @@
             ************{{ $booking->card_last_four }} card for the
             {{ $booking->service_type }} itinerary with {{ $airlineName }}.
         @endif
-    </p>
+    </p> --}}
 
     <p>
         This payment authorization is for the amount indicated above and is valid for one-time use only.
@@ -54,7 +54,7 @@
     {{-- Here you can add any shared “Please Note / Important / For Assistance” blocks as you had earlier --}}
 
     {{-- Footer --}}
-    <p>
+    {{-- <p>
         Best Regards<br>
         Reservation Desk<br>
         {{ $booking->agent_name ?? 'Agent Name' }}<br>
@@ -62,6 +62,6 @@
         @if(!empty($booking->agent_extension))
             || Ext: {{ $booking->agent_extension }}
         @endif
-    </p>
+    </p> --}}
 </body>
 </html>

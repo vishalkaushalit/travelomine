@@ -284,7 +284,7 @@ class AgentBookingController extends Controller
     'chargeamount'   => $validated['splitpayment']['agency']['chargeamount'] ?? null,
     'cardorder'      => 2,
 ]));
-
+        }
         DB::commit();
 
         // Send notifications to CRM and MIS users
@@ -609,11 +609,6 @@ class AgentBookingController extends Controller
 
             $splitTotal = (float) ($airline['charge_amount'] ?? 0) + (float) ($agency['charge_amount'] ?? 0);
 
-            // if (round($splitTotal, 2) != round((float) $validated['amount_charged'], 2)) {
-            //     throw ValidationException::withMessages([
-            //         'split_payment.agency.charge_amount' => 'Airline amount + agency amount must equal total amount charged.',
-            //     ]);
-            // }
         }
     }
 
