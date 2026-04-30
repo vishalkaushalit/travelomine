@@ -221,6 +221,23 @@
                                         </div>
                                     </div>
                                 </a>
+
+                                {{-- MIS MANAGER placeholder --}}
+                                <a href="{{ route('mis-manager.login') }}" class="text-decoration-none text-light">
+                                    <div class="role-card p-3 h-100">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="role-icon bg-danger bg-opacity-10 text-danger border border-danger border-opacity-50">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">MIS Manager</div>
+                                                <small class="text-secondary">
+                                                    Manage bookings and team performance
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
                                 
                             </div>
 

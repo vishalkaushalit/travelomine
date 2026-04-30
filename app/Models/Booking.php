@@ -194,6 +194,11 @@ class Booking extends Model
         return $this->hasOne(BookingInsurance::class);
     }
 
+    public function changes(): HasMany
+    {
+        return $this->hasMany(BookingChange::class);
+    }
+
     public function flightSegments()
     {
         return $this->hasMany(\App\Models\FlightSegment::class);

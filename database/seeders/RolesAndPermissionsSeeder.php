@@ -38,6 +38,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'admin' => Permission::all()->pluck('name')->toArray(),
             'agent' => ['view_bookings', 'create_bookings'],
             'mis' => ['view_bookings', 'edit_bookings', 'view_agents'],
+            'mis-manager' => ['view_bookings', 'edit_bookings', 'view_agents', 'view_reports', 'export_data'],
             'charge' => ['view_bookings', 'edit_bookings', 'view_agents'],
             'manager' => ['view_bookings', 'view_agents', 'view_reports', 'export_data'],
             'support' => ['view_bookings', 'view_agents', 'view_reports'],
