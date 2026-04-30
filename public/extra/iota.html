@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SkyGlide · IATA Airport Code Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e9f0fc 0%, #d9e4f5 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        /* main card container */
+        .converter-card {
+            max-width: 680px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(2px);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .converter-card:hover {
+            transform: scale(1.01);
+        }
+
+        /* header banner */
+        .header {
+            background: #0b2b40;
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-weight: 700;
+            font-size: 1.9rem;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .header h1 span {
+            background: #f5b042;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            color: #1e2a32;
+            letter-spacing: 0;
+        }
+
+        .sub {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        /* main content */
+        .content {
+            padding: 2rem 2rem 2rem 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.75rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: #1f3b4c;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+        }
+
+        .code-input-wrapper {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input {
+            flex: 2;
+            min-width: 180px;
+            padding: 0.9rem 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border: 2px solid #cfdfed;
+            border-radius: 2rem;
+            background: white;
+            transition: 0.2s;
+            font-family: monospace, 'Fira Code', monospace;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.2);
+        }
+
+        input::placeholder {
+            text-transform: none;
+            font-family: system-ui, sans-serif;
+            font-weight: 400;
+            color: #a0bbcc;
+            letter-spacing: normal;
+        }
+
+        button {
+            background: #2c7da0;
+            border: none;
+            padding: 0.85rem 1.8rem;
+            border-radius: 3rem;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background: #1f5e7a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .result-box {
+            background: #f2f7fc;
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            margin: 1rem 0 1rem 0;
+            border-left: 6px solid #2c7da0;
+            transition: all 0.2s;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            color: #2c7da0;
+            margin-bottom: 0.5rem;
+        }
+
+        .airport-name {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0a2f3f;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+
+        .airport-meta {
+            font-size: 0.85rem;
+            color: #557c8c;
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .error-message {
+            background: #ffe7e5;
+            border-left-color: #d1453b;
+            color: #b13e35;
+        }
+
+        .error-message .airport-name {
+            color: #b13e35;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .loading-spinner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #2c7da0;
+            font-weight: 500;
+        }
+
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid #cfe3ef;
+            border-top: 3px solid #2c7da0;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: #5c7f8c;
+            margin-top: 1.2rem;
+            text-align: center;
+            background: #eef3f9;
+            padding: 0.75rem;
+            border-radius: 2rem;
+        }
+
+        .footer-note {
+            background: #e2ecf3;
+            padding: 0.9rem 2rem;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #3f6e82;
+            border-top: 1px solid #cbdbe2;
+        }
+
+        .example-badge {
+            display: inline-block;
+            background: #dde9f2;
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-left: 0.6rem;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .example-badge:hover {
+            background: #c2d8e6;
+        }
+
+        @media (max-width: 550px) {
+            .content {
+                padding: 1.5rem;
+            }
+            .airport-name {
+                font-size: 1.3rem;
+            }
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            .code-input-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="converter-card">
+    <div class="header">
+        <h1>
+            ✈️ Airport IATA Converter
+            <span>IATA → Name</span>
+        </h1>
+        <div class="sub">Real-time airport lookup · Global aviation data</div>
+    </div>
+
+    <div class="content">
+        <div class="input-group">
+            <label>🔍 Enter IATA airport code (3 letters)</label>
+            <div class="code-input-wrapper">
+                <input type="text" id="airportCode" placeholder="e.g., JFK, LHR, CDG, SYD" maxlength="3" autocomplete="off" autocapitalize="characters">
+                <button id="convertBtn">
+                    <span>⟳</span> Convert & Lookup
+                </button>
+            </div>
+        </div>
+
+        <!-- dynamic result panel -->
+        <div id="resultContainer">
+            <!-- initial idle state -->
+            <div class="result-box">
+                <div class="result-label">⸻ AIRPORT INFORMATION ⸻</div>
+                <div class="airport-name">— waiting for code —</div>
+                <div class="airport-meta">Enter a valid 3‑letter IATA code</div>
+            </div>
+        </div>
+
+        <div class="hint">
+            💡 Try: <span class="example-badge" data-code="JFK">JFK</span>   
+            <span class="example-badge" data-code="LHR">LHR</span>   
+            <span class="example-badge" data-code="DXB">DXB</span>   
+            <span class="example-badge" data-code="NRT">NRT</span>   
+            <span class="example-badge" data-code="GRU">GRU</span>
+            <span style="display:inline-block; margin-left: 8px;">✨ Real API data</span>
+        </div>
+    </div>
+    <div class="footer-note">
+        🌐 Powered by IATA Codes API (aviation-reference) · Accurate worldwide airport names
+    </div>
+</div>
+
+<script>
+    // ------------------------------------------------------------------
+    // AIRPORT CONVERTER using IATA (public) API
+    // Endpoint:  https://api.iata-codes.com/  (free tier with CORS)
+    // We use the reliable & open aviation reference API: 
+    // "https://api.iata-codes.com/iata/airport/{code}"
+    // Alternative fallback: if primary fails, we use a backup public service 
+    // for maximum robustness: https://apiairport.vercel.app/api/airport?iata=XXX
+    // Both support CORS and no API key required for basic usage.
+    // ------------------------------------------------------------------
+
+    const inputElement = document.getElementById('airportCode');
+    const convertButton = document.getElementById('convertBtn');
+    const resultContainer = document.getElementById('resultContainer');
+
+    // Helper: uppercase & trim IATA code
+    function sanitizeCode(raw) {
+        if (!raw) return '';
+        let cleaned = raw.trim().toUpperCase();
+        // remove any non-letter characters, keep only A-Z
+        cleaned = cleaned.replace(/[^A-Z]/g, '');
+        if (cleaned.length > 3) cleaned = cleaned.slice(0, 3);
+        return cleaned;
+    }
+
+    // Show loading state UI
+    function showLoading() {
+        resultContainer.innerHTML = `
+            <div class="result-box">
+                <div class="result-label">🔄 FETCHING DATA</div>
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <span>Looking up airport code ...</span>
+                </div>
+                <div class="airport-meta">querying global IATA registry</div>
+            </div>
+        `;
+    }
+
+    // Display success result with airport name + extra info if available
+    function displaySuccess(airportCode, airportName, city = null, country = null, timezone = null) {
+        let metaPieces = [];
+        if (city) metaPieces.push(`📍 ${city}`);
+        if (country) metaPieces.push(`🌍 ${country}`);
+        if (timezone) metaPieces.push(`⏱️ ${timezone}`);
+        if (metaPieces.length === 0) metaPieces.push('🏷️ IATA official record');
+
+        resultContainer.innerHTML = `
+            <div class="result-box">
+                <div class="result-label">✈️ IATA CODE: ${airportCode}</div>
+                <div class="airport-name">${escapeHtml(airportName)}</div>
+                <div class="airport-meta">${metaPieces.join(' · ')}</div>
+            </div>
+        `;
+    }
+
+    // Display error message with helpful suggestion
+    function displayError(code, errorDetail = '') {
+        resultContainer.innerHTML = `
+            <div class="result-box error-message">
+                <div class="result-label">⚠️ CODE NOT FOUND</div>
+                <div class="airport-name">"${escapeHtml(code)}" is not a known IATA airport code</div>
+                <div class="airport-meta">• Verify spelling (3 letters, e.g., CDG, LAX) <br>
+                • ${errorDetail || 'The airport code might be invalid or used only for cargo/private fields.'}</div>
+            </div>
+        `;
+    }
+
+    // simple XSS protection
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // ----- PRIMARY API: IATA CODES API (free, no key, reliable) -----
+    async function fetchAirportViaIataCodesApi(code) {
+        // endpoint: https://api.iata-codes.com/iata/airport/{code}
+        const url = `https://api.iata-codes.com/iata/airport/${code}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            if (response.status === 404) throw new Error('NOT_FOUND');
+            throw new Error(`API error ${response.status}`);
+        }
+        const data = await response.json();
+        // data structure example: { status: "ok", data: { iata: "JFK", name: "John F Kennedy Intl", city: "New York", country: "USA" } }
+        if (data && data.status === 'ok' && data.data) {
+            const airportData = data.data;
+            if (airportData.iata && airportData.name) {
+                return {
+                    name: airportData.name,
+                    city: airportData.city || null,
+                    country: airportData.country || null,
+                    timezone: airportData.timezone || null
+                };
+            }
+        }
+        // fallback if structure unexpected but exists
+        if (data && data.name) {
+            return {
+                name: data.name,
+                city: data.city || null,
+                country: data.country || null,
+                timezone: data.timezone || null
+            };
+        }
+        throw new Error('INVALID_RESPONSE');
+    }
+
+    // ----- BACKUP API: AviationStack alternative (via public proxy like airport.vercel) -----
+    // Using free community API: https://airport.vercel.app/api/airport?iata=JFK
+    async function fetchAirportViaBackupApi(code) {
+        const fallbackUrl = `https://airport.vercel.app/api/airport?iata=${code}`;
+        const resp = await fetch(fallbackUrl);
+        if (!resp.ok) {
+            if (resp.status === 404) throw new Error('NOT_FOUND');
+            throw new Error(`Backup API error ${resp.status}`);
+        }
+        const result = await resp.json();
+        // expected structure: { iata: "JFK", name: "John F. Kennedy International Airport", city: "New York", country: "United States", ... }
+        if (result && result.name && result.iata) {
+            return {
+                name: result.name,
+                city: result.city || null,
+                country: result.country || null,
+                timezone: result.timezone || null
+            };
+        } else if (result && result.error) {
+            throw new Error('NOT_FOUND');
+        } else {
+            throw new Error('INVALID_DATA');
+        }
+    }
+
+    // Main lookup with retry logic: try primary API, if fails try backup
+    async function lookupAirportByCode(code) {
+        if (!code || code.length !== 3) {
+            throw new Error('INVALID_CODE_LENGTH');
+        }
+        // first attempt: primary IATA API (most accurate)
+        try {
+            return await fetchAirportViaIataCodesApi(code);
+        } catch (primaryErr) {
+            console.warn(`Primary API failed for ${code}:`, primaryErr);
+            // if primary fails with 404 (not found) we try backup before final error
+            if (primaryErr.message === 'NOT_FOUND' || primaryErr.message.includes('404')) {
+                try {
+                    return await fetchAirportViaBackupApi(code);
+                } catch (backupErr) {
+                    console.warn(`Backup also failed:`, backupErr);
+                    throw new Error(`Airport code "${code}" not found in any registry`);
+                }
+            }
+            // other errors (network, CORS, etc) try backup
+            try {
+                return await fetchAirportViaBackupApi(code);
+            } catch (backupErr) {
+                throw new Error(`Lookup failed: ${primaryErr.message} / backup unavailable`);
+            }
+        }
+    }
+
+    // core conversion action handler
+    async function performConversion() {
+        let rawCode = inputElement.value;
+        const cleanCode = sanitizeCode(rawCode);
+        
+        if (!cleanCode || cleanCode.length !== 3) {
+            // show validation error inline
+            resultContainer.innerHTML = `
+                <div class="result-box error-message">
+                    <div class="result-label">⚠️ INVALID FORMAT</div>
+                    <div class="airport-name">Enter a valid 3‑letter IATA code</div>
+                    <div class="airport-meta">Example: JFK, LHR, CDG, SYD · No numbers or special chars</div>
+                </div>
+            `;
+            return;
+        }
+        
+        // update input field to show uppercase clean code
+        inputElement.value = cleanCode;
+        
+        showLoading();
+        try {
+            const airportInfo = await lookupAirportByCode(cleanCode);
+            // success: display name, city, country
+            displaySuccess(
+                cleanCode,
+                airportInfo.name,
+                airportInfo.city,
+                airportInfo.country,
+                airportInfo.timezone
+            );
+        } catch (err) {
+            console.error('Conversion error:', err);
+            let friendlyMsg = 'The IATA code does not correspond to a commercial airport.';
+            if (err.message.includes('network') || err.message.includes('fetch')) {
+                friendlyMsg = 'Network issue or API rate limit. Please try again later.';
+            } else if (err.message.includes('not found')) {
+                friendlyMsg = `"${cleanCode}" is not registered as an IATA airport code.`;
+            } else {
+                friendlyMsg = err.message || 'Airport lookup failed.';
+            }
+            displayError(cleanCode, friendlyMsg);
+        }
+    }
+
+    // event binding
+    convertButton.addEventListener('click', performConversion);
+    
+    // handle Enter key in input field
+    inputElement.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            performConversion();
+        }
+    });
+    
+    // Automatically uppercase and sanitize while typing (real-time UI polish)
+    inputElement.addEventListener('input', (e) => {
+        let val = e.target.value;
+        let upperLetters = val.toUpperCase().replace(/[^A-Z]/g, '');
+        if (upperLetters.length > 3) upperLetters = upperLetters.slice(0, 3);
+        e.target.value = upperLetters;
+    });
+    
+    // Example badges click => fill and auto-convert
+    const exampleBadges = document.querySelectorAll('.example-badge');
+    exampleBadges.forEach(badge => {
+        badge.addEventListener('click', (e) => {
+            const code = badge.getAttribute('data-code');
+            if (code) {
+                inputElement.value = code;
+                performConversion();
+            }
+        });
+    });
+    
+    // Optional: if page loads, set a demo placeholder but do not auto-fetch (better UX)
+    // but we can prefetch an example? not needed to avoid unnecessary calls. 
+    // however show initial status ready.
+    // set default code suggestion on first focus? nothing intrusive.
+    
+    // quick note to handle any possible CORS issues: both used APIs support cross-origin
+    console.log('✈️ IATA converter ready — Convert any airport code to full name!');
+</script>
+</body>
+</html>

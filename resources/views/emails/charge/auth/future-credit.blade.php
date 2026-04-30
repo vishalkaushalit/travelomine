@@ -1,37 +1,36 @@
-<h3>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }}New Booking Confirmation.</h3>
+<h3>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} Ecredit Refund
+</h3>
 
 <p>Dear {{ $booking->customer_name ?? 'Passeneger' }},</p>
 <p>Greetings of the day !!</p>
-<p>As per our conversation and as agreed,  we have booked your reservation with
-    {{ $booking->segments->first()?->airline_name ?? 'the airline' }} under
-    Confirmation {{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}. Please see the details below.
+<p>As per our conversation and agreement, we have processed a refund for your
+    {{ $booking->segments->first()?->airline_name ?? 'the airline' }} Ecredits under Confirmation
+    #{{ $segment->airline_pnr ?? $booking->gk_pnr }}.
+    <br> Please see the details below.
 </p>
 <p>
     Total cost for all passengers: {{ $booking->currency ?? 'USD' }}
-    {{ number_format($booking->amount_charged, 2) }} (all incl. taxes and fees).
+    {{ number_format($booking->amount_charged, 2) }} (all incl. taxes
+    and fees).
 </p>
 
 <p>
-    As per our telephonic conversation I,<b> {{ $booking->customer_name ?? '' }}</b>, authorize
-    <b>
+    As per our telephonic conversation I, {{ $booking->customer_name ?? '' }}, authorize
     {{ $booking->segments->first()?->airline_name ?? 'the airline' }}/
-        {{ $booking->agency_merchant_name ?? '' }}
-    </b> 
-    to process the above-mentioned charges under their respective merchants for charging my
-    ******{{ $booking->cards->first()?->card_last_four ?? '****' }} card for the booking the
-    below-mentioned
-    itinerary
-    with {{ $booking->segments->first()?->airline_name ?? 'the airline' }}.
+    {{ $booking->agency_merchant_name ?? 'na' }} to process the
+    above-mentioned charges under their respective merchants for charging my
+    ******{{ $booking->cards->first()?->card_last_four ?? '****' }} card for refund process the below-mentioned
+    Ecredit with {{ $booking->segments->first()?->airline_name ?? 'the airline' }}.
 </p>
 <p>
     This payment authorization is for the amount indicated above and is valid for one-time use only. I certify that I am
-    <b>{{ $booking->customer_name ?? '' }}</b>, an authorized user of this card and
+    {{ $booking->customer_name ?? '' }}, an authorized user of this card and
     that I will not dispute the payment with my credit/debit
     card company/bank.
 </p>
 <p>
     Kindly confirm your acceptance of the terms and agreement to the declaration by replying to this email with
-        'I Agree' or 'I Authorize'.
+    'I Agree' or 'I Authorize'.
 </p>
 
 <h4>Charges Description:</h4>
@@ -67,6 +66,8 @@
 @endforeach
 
 <h4>Passenger Details:</h4>
+<p><b>{{ $booking->customer_name ?? '' }}</b></p>
+
 
 <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
     <thead>
@@ -100,6 +101,8 @@
         @endforeach
     </tbody>
 </table>
+<h5>Delta E Credit Refund: </h5>
+
 <h4>Itinerary Details:</h4>
 <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
     <thead>
@@ -107,8 +110,8 @@
             <th style="padding: 12px 16px; text-align: left; font-weight: 600;">S. No.</th>
             <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Airline</th>
             <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Flight Number</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Departure </th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Arrival </th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Departure City</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Arrival City</th>
             <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Departure Date </th>
             <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Arrival Date </th>
             <th style="padding: 12px 16px; text-align: left; font-weight: 600;">PNR</th>
@@ -128,7 +131,8 @@
                 <td style="padding: 12px 16px;">
                     {{ $segment->arrival_date ? \Carbon\Carbon::parse($segment->arrival_date)->format('M-d-Y') : '-' }}
                 </td>
-                <td style="padding: 12px 16px;">{{ $segment->airline_pnr ? $segment->airline_pnr : $booking->gk_pnr }}</td>
+                <td style="padding: 12px 16px;">{{ $segment->airline_pnr ? $segment->airline_pnr : $booking->gk_pnr }}
+                </td>
             </tr>
         @endforeach
     </tbody>
@@ -181,7 +185,8 @@
     </tbody>
 </table>
 
-<h6>Please Note:</h6>
+<h4>Please Note:</h4>
+
 <p>
     • Review the names, dates, cities, and departure/arrival times carefully.<br>
     • Baggage fees may apply. Please check with the airline for the most up-to-date baggage policies.

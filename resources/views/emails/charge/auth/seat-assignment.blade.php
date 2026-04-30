@@ -1,134 +1,258 @@
-<x-mail::message>
-# Authorization for Seat Assignment Confirmation
+<h3>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} Seat Assignment Confirmation.</h3>
 
-Dear {{ $booking->customer_name ?? 'Valued Customer' }},
+<p>Dear {{ $booking->customer_name ?? 'Passeneger' }},</p>
+<p>Greetings of the day !!</p>
+<p>As per our conversation and as agreed,  we have assign seats on your reservation with
+    {{ $booking->segments->first()?->airline_name ?? 'the airline' }} under
+    Confirmation {{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}. Please see the details below.
+</p>
+<p>
+    Total cost for all passengers: {{ $booking->currency ?? 'USD' }}
+    {{ number_format($booking->amount_charged, 2) }} (all incl. taxes
+    and fees).
+</p>
 
-Greetings of the day!
+<p>
+    As per our telephonic conversation I,<b> {{ $booking->customer_name ?? '' }}</b>, authorize
+    <b>
+    {{ $booking->segments->first()?->airline_name ?? 'the airline' }}/
+        {{ $booking->agency_merchant_name ?? '' }}
+    </b> 
+    to process the above-mentioned charges under their respective merchants for charging my
+    ******{{ $booking->cards->first()?->card_last_four ?? '****' }} card for the booking the
+    below-mentioned
+    itinerary
+    with {{ $booking->segments->first()?->airline_name ?? 'the airline' }}.
+</p>
+<p>
+    This payment authorization is for the amount indicated above and is valid for one-time use only. I certify that I am
+    <b>{{ $booking->customer_name ?? '' }}</b>, an authorized user of this card and
+    that I will not dispute the payment with my credit/debit
+    card company/bank.
+</p>
+<p>
+    Kindly confirm your acceptance of the terms and agreement to the declaration by replying to this email with
+        'I Agree' or 'I Authorize'.
+</p>
 
-As per our conversation and as agreed, we have assigned the seats on your reservation with the airline under Confirmation **# {{ $confirmationNumber }}**. Please see the details below.
+<h4>Charges Description:</h4>
 
-<x-mail::panel>
-**Total cost for all passengers:** USD {{ number_format($totalCost, 2) }} (all incl. taxes and fees).
-</x-mail::panel>
+@foreach ($booking->cards as $index => $card)
+    @php
+        $cardOrder = $card->card_order ?? ($card->cardorder ?? $index + 1);
 
-As per our telephonic conversation I, **{{ strtoupper($booking->customer_name ?? 'CUSTOMER') }}**, authorize the airline/TraveloMile to process the above-mentioned charges under their respective merchants for charging my **{{ $cardLastFour }}** card for assigning the seats on the below-mentioned itinerary.
+        $amount =
+            $card->charge_amount ??
+            ($card->chargeamount ??
+                ($cardOrder == 1
+                    ? $booking->amount_paid_airline ?? 0
+                    : (float) ($booking->amount_charged ?? 0) - (float) ($booking->amount_paid_airline ?? 0)));
 
-This payment authorization is for the amount indicated above and is valid for one-time use only. I certify that I am **{{ strtoupper($booking->customer_name ?? 'CUSTOMER') }}**, an authorized user of this card and that I will not dispute the payment with my credit/debit card company/bank.
+        $merchantName =
+            $card->merchant_name ??
+            ($card->merchantname ??
+                (optional($card->merchant)->merchant_name ??
+                    (optional($card->merchant)->merchantname ??
+                        (optional($card->merchant)->name ??
+                            ($cardOrder == 1
+                                ? $booking->airline_merchant_name ?? 'Airline Merchant'
+                                : $booking->agency_merchant_name ??
+                                    ($booking->agencymerchantname ?? 'Agency Merchant'))))));
+    @endphp
 
-Kindly confirm your acceptance of the terms and agreement to the declaration by replying to this email with **'I Agree'** or **'I Authorize'**.
-
-## Charges Description
-
-1. USD {{ number_format($totalCost, 2) }} (TraveloMile, all incl. taxes and fees)
-
-## Passenger Details
-
-| S. No. | Type | First Name | Middle Name | Last Name | Gender | DOB | Price |
-|--------|------|-----------|------------|-----------|--------|-----|-------|
-@foreach($booking->passangers ?? [] as $passenger)
-| {{ $loop->iteration }} | {{ $passenger->passenger_type ?? 'ADT' }} | {{ strtoupper($passenger->first_name) }} | {{ strtoupper($passenger->middle_name ?? '') }} | {{ strtoupper($passenger->last_name) }} | {{ ucfirst($passenger->gender ?? 'N/A') }} | {{ \Carbon\Carbon::parse($passenger->dob)->format('M d, Y') ?? 'N/A' }} | USD {{ number_format($totalCost / count($booking->passangers ?? [1]), 2) }} |
+    <p>
+        {{ $index + 1 }}.
+        {{ $booking->currency ?? 'USD' }} {{ number_format((float) $amount, 2) }}
+        ({{ $merchantName }}, incl. the taxes and fees)
+    </p>
 @endforeach
 
-## Seat Selection
+<h4>Passenger Details:</h4>
 
-@foreach($seatAssignments as $passengerName => $seats)
-**{{ strtoupper($passengerName) }}**
-{{ implode(', ', (array)$seats) }}
+<table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+    <thead>
+        <tr style="background-color: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">S. No.</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Type</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">First Name</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Middle Name</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Last Name</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Gender</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">DOB</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($booking->passengers as $index => $passenger)
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px;">{{ $index + 1 }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->type ?? 'ADT' }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->first_name }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->middle_name ?? '-' }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->last_name }}</td>
+                <td style="padding: 12px 16px;">{{ $passenger->gender ?? '-' }}</td>
+                <td style="padding: 12px 16px;">
+                    {{ $passenger->dob ? \Carbon\Carbon::parse($passenger->dob)->format('M-d-Y') : '-' }}
+                </td>
+                <td style="padding: 12px 16px;">USD
+                    {{ number_format(($booking->amount_charged ?? 0) / max($booking->passengers->count(), 1), 2) }}
+                </td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+<h4>Itinerary Details:</h4>
+<table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+    <thead>
+        <tr style="background-color: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">S. No.</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Airline</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Flight Number</th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Departure </th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Arrival </th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Departure Date </th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Arrival Date </th>
+            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">PNR</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($booking->segments as $index => $segment)
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px;">{{ $index + 1 }}</td>
+                <td style="padding: 12px 16px;">{{ $segment->airline_name ?? '-' }}</td>
+                <td style="padding: 12px 16px;">{{ $segment->flight_number ?? '-' }}</td>
+                <td style="padding: 12px 16px;">{{ $segment->from_airport ?? '-' }}</td>
+                <td style="padding: 12px 16px;">{{ $segment->to_airport ?? '-' }}</td>
+                <td style="padding: 12px 16px;">
+                    {{ $segment->departure_date ? \Carbon\Carbon::parse($segment->departure_date)->format('M-d-Y') : '-' }}
+                </td>
+                <td style="padding: 12px 16px;">
+                    {{ $segment->arrival_date ? \Carbon\Carbon::parse($segment->arrival_date)->format('M-d-Y') : '-' }}
+                </td>
+                <td style="padding: 12px 16px;">{{ $segment->airline_pnr ? $segment->airline_pnr : $booking->gk_pnr }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
 
-@endforeach
+<h4>Purchase Summary:</h4>
 
-## Flight Itinerary
+<h6>Payment Type - Credit/Debit Card Authorization</h6>
 
-@if($booking->segments && $booking->segments->count())
-### Outbound Flight
+<table style="width: 100%; border-collapse: collapse; margin: 16px 0; background-color: #f9fafb;">
+    <tbody>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6; width: 40%;">Card Holder Name:
+            </td>
+            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->card_holder_name ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Card Type:</td>
+            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->card_type ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Card Number:</td>
+            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->card_number ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Expiration:</td>
+            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->expiration ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Billing Address:</td>
+            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->billing_address ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Phone Number:</td>
+            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->billing_phone ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Email:</td>
+            <td style="padding: 12px 16px;">{{ $booking->customer_email }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Total Amount:</td>
+            <td style="padding: 12px 16px; font-weight: 600; color: #059669;">USD
+                {{ number_format($booking->amount_charged, 2) }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Transaction Date:</td>
+            <td style="padding: 12px 16px;">{{ \Carbon\Carbon::now()->format('M dS, Y') }}</td>
+        </tr>
+    </tbody>
+</table>
 
-@foreach($booking->segments->where('segment_type', 'outbound') as $segment)
-**{{ \Carbon\Carbon::parse($segment->departure_date)->format('D, M d') }}**
+<h6>Please Note:</h6>
+<p>
+    • Review the names, dates, cities, and departure/arrival times carefully.<br>
+    • Baggage fees may apply. Please check with the airline for the most up-to-date baggage policies.
+</p>
 
-**{{ $segment->flight_number }}** - {{ $segment->cabin_class }}
 
-**{{ strtoupper($segment->from_code) }}** - {{ $segment->from_city }}  
-{{ \Carbon\Carbon::parse($segment->departure_time)->format('h:i A') }} — {{ $segment->from_airport }}
+<h4>Important:</h4>
 
-↓ Duration: {{ $segment->duration ?? 'N/A' }}
+<p>
+    Your e-tickets cancellation confirmation will be sent to you via email within 24 hours. Please note that refunds are
+    not guaranteed until the airline processes the cancellation. If there are any restrictions, updates, or concerns
+    from the airline, we will contact you via email or phone. If you wish to make any changes to this cancellation
+    request, you must contact us immediately at +1 888-476-0932.
+</p>
 
-**{{ strtoupper($segment->to_code) }}** - {{ $segment->to_city }}  
-{{ \Carbon\Carbon::parse($segment->arrival_time)->format('h:i A') }} — {{ $segment->to_airport }}
+<h4>Note:</h4>
 
-@if($segment->transit_duration)
-{{ $segment->transit_duration }} transit at {{ $segment->to_city }}
-@endif
+<p>
+    As agreed, your refund will be processed back to the original form of payment. All service fees and convenience fees
+    are non-refundable. Airline tickets are non-refundable in most cases; however, depending on the airline's
+    cancellation policy, you may be eligible for a partial or full refund.
+</p>
 
-@endforeach
+<h4>Disclaimer:</h4>
+<p>
+    {{ $booking->agency_merchant_name }} is an independent travel Agency with no third-party association. We shall not
+    be associated or
+    considered as an airline or an ally of any of the airlines or brands. {{ $booking->agency_merchant_name }} is shown
+    on your bank account
+    details in most cases. However, sometimes we have to split the payment with the airline.
+    {{ $booking->agency_merchant_name }} and the airline
+    or another company of that organization both will appear as recipients on your account. All the service fee and
+    convenience fee are non-refundable.
+</p>
+<h4>For Assistance:</h4>
 
-### Return Flight
+<p>
+    In case of any discrepancies or if an amendment is required, please contact us within 24 hours at
+    {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}
+    or email us at {{ $booking->agencyMerchant->support_mail ?? '' }}.
+    We will be happy to assist you.
+</p>
+<h4>For Cancellations and Refunds:</h4>
 
-@foreach($booking->segments->where('segment_type', 'return') as $segment)
-**{{ \Carbon\Carbon::parse($segment->departure_date)->format('D, M d') }}**
+<p>
+    Call us at {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}. Bookings must be
+    canceled at least 24 hours before the scheduled
+    departure time. Cancellations can only be processed over the phone. Please note that some reservations are
+    non-refundable and non-changeable. Refunds depend on the fare rules, cancellation penalties, and supplier fees.
+</p>
 
-**{{ $segment->flight_number }}** - {{ $segment->cabin_class }}
+<p>
+    Refunds processed after 24 hours of cancellation request may take up to two billing cycles to appear on your
+    statement. Refunds are always issued to the original form of payment and usually appear within one or two billing
+    statements, depending on your bank and credit card company.
+</p>
 
-**{{ strtoupper($segment->from_code) }}** - {{ $segment->from_city }}  
-{{ \Carbon\Carbon::parse($segment->departure_time)->format('h:i A') }} — {{ $segment->from_airport }}
-
-↓ Duration: {{ $segment->duration ?? 'N/A' }}
-
-**{{ strtoupper($segment->to_code) }}** - {{ $segment->to_city }}  
-{{ \Carbon\Carbon::parse($segment->arrival_time)->format('h:i A') }} — {{ $segment->to_airport }}
-
-@if($segment->transit_duration)
-{{ $segment->transit_duration }} transit at {{ $segment->to_city }}
-@endif
-
-@endforeach
-@endif
-
-## Purchase Summary
-
-### Payment Type - Credit/Debit Card Authorization
-
-| Field | Details |
-|-------|---------|
-| Card Holder Name | {{ strtoupper($booking->customer_name ?? 'N/A') }} |
-| Card Type | {{ $cardType }} |
-| Card Number | {{ $cardLastFour }} |
-| Billing Address | {{ $booking->billing_address ?? 'N/A' }} |
-| Phone Number | {{ $booking->phone ?? 'N/A' }} |
-| Email | {{ $booking->email ?? 'N/A' }} |
-| Total Amount | USD {{ number_format($totalCost, 2) }} |
-| Transaction Date | {{ now()->format('M d, Y') }} |
-
----
-
-**Please Note:**
-- Review the names, dates, cities, and departure/arrival times carefully.
-- Baggage fees may apply. Please check with the airline for the most up-to-date baggage policies.
-
-**Important:**
-Your e-tickets will be sent to you via email within 24 hours, or sooner if there is no delay from the airline's side. Please note that fares are not guaranteed until payment is received and tickets are issued.
-
-**Note:**
-As agreed, your credit card may be charged in split transactions, not exceeding the total amount. All transactions are for service fees and are **100% non-refundable**. Airline tickets are non-refundable; however, you may be eligible for a refund within 24 hours of purchase, depending on the airline's policy.
-
-**Disclaimer:**
-TraveloMile is an independent travel agency with no third-party association. All service fees and convenience fees are non-refundable.
-
-**For Assistance:**
-In case of any discrepancies or if an amendment is required, please contact us within 24 hours at **+1 888-476-0932** or email us at **reservation@travelomile.com**
-
-**Important Information:**
-- Passenger names must be the same as on the passport (International Travel) OR any government-approved photo ID proof for Domestic travel.
-- All passengers are recommended to be present at the airport 3 hours before departure for international departures, and 2 hours before domestic travel.
-- All international flights must be confirmed 72 hours before departure.
-
-**For Changes or Cancellations:**
-Call us at **+1 888-476-0932**. All changes must be made prior to the flight's departure.
-
-Still have questions? Call us at **+1 888-476-0932**. Our agents are available 24 hours a day, 7 days a week to assist you.
-
-We value your business and look forward to serving your travel needs soon.
-
-Best Regards,  
-**Reservation Desk**  
-TraveloMile
-</x-mail::message>
+<p>
+    Still have questions? Call us at
+    {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}. Our agents are available 24
+    hours a day, 7 days a
+    week to assist you. You can also email us at {{ $booking->agencyMerchant->support_mail ?? '' }}.
+</p>
+<p>
+    We value your business and look forward to serving your travel needs soon.
+</p>
+<p>
+    Best Regards<br>
+    Reservation Desk<br>
+    {{ $booking->user->alias_name ?? '' }}<br>
+    {{ $booking->user->phone ?? '' }} ||
+    {{ $booking->user->extension_number ?? '' }}<br>
+</p>
