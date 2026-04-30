@@ -14,8 +14,26 @@ use Illuminate\Validation\ValidationException;
 
 class AgentBookingController extends Controller
 {
+    // get values for enum column from database
+    private function getEnumValues($table, $column): array
+    {
+        $result = DB::selectOne("
+        SHOW COLUMNS FROM {$table} WHERE Field = ?
+    ", [$column]);
+
+        preg_match('/^enum\\((.*)\\)$/', $result->Type, $matches);
+
+        $enum = [];
+        foreach (explode(',', $matches[1]) as $value) {
+            $enum[] = trim($value, "'");
+        }
+
+        return $enum;
+    }
+
     public function create()
     {
+        $cabinClasses = $this->getEnumValues('bookings', 'cabin_class');
 
         $callTypes = CallType::where('is_active', true)
             ->orderBy('type_name')
@@ -36,6 +54,7 @@ class AgentBookingController extends Controller
         return view('agent.bookings.create', compact(
             'callTypes',
             'serviceTypes',
+            'cabinClasses',
             'merchants',
             'currencies',
             'serviceProvidedOptions'
@@ -44,264 +63,264 @@ class AgentBookingController extends Controller
 
     public function store(Request $request)
     {
-    $request = $this->normalizePaymentRequest($request);
+        $request = $this->normalizePaymentRequest($request);
 
-    $validated = $request->validate([
-        'booking_date' => 'required|date',
-        'call_type' => 'required|string|exists:call_type,type_name',
-        'service_provided' => 'required|string|in:Flight,Hotel,Package',
-        'service_type' => 'required|string|exists:service_type,type_name',
-        'booking_portal' => 'required|string|in:amadeus,sabre,worldspan,gds,website',
-        'email_auth_taken' => 'nullable|boolean',
-        'language' => ['required', 'in:English-Flight,Spanish-Flight'],
+        $validated = $request->validate([
+            'booking_date' => 'required|date',
+            'call_type' => 'required|string|exists:call_type,type_name',
+            'service_provided' => 'required|string|in:Flight,Hotel,Package',
+            'service_type' => 'required|string|exists:service_type,type_name',
+            'booking_portal' => 'required|string|in:amadeus,sabre,worldspan,gds,website',
+            'email_auth_taken' => 'nullable|boolean',
+            'language' => ['required', 'in:English-Flight,Spanish-Flight'],
 
-        'customer_name' => 'required|string|max:255',
-        'customer_email' => 'required|email|max:255',
-        'customer_phone' => 'required|string|max:30',
-        'billing_phone' => 'required|string|max:30',
-        'billing_address' => 'required|string',
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'customer_phone' => 'required|string|max:30',
+            'billing_phone' => 'required|string|max:30',
+            'billing_address' => 'required|string',
 
-        'flight_type' => 'required_if:service_provided,Flight|nullable|in:oneway,roundtrip,multicity',
-        'gk_pnr' => 'nullable|string|max:50|required_without:airline_pnr',
-        'airline_pnr' => 'nullable|string|max:50|required_without:gk_pnr',
+            'flight_type' => 'required_if:service_provided,Flight|nullable|in:oneway,roundtrip,multicity',
+            'gk_pnr' => 'nullable|string|max:50|required_without:airline_pnr',
+            'airline_pnr' => 'nullable|string|max:50|required_without:gk_pnr',
 
-        'segments' => 'required_if:service_provided,Flight|array|min:1',
-        'segments.*.from_city' => 'required|string|max:100',
-        'segments.*.to_city' => 'required|string|max:100',
-        'segments.*.departure_date' => 'required|date',
-        'segments.*.return_date' => 'nullable|date',
-        'segments.*.airline_name' => 'required|string|max:100',
-        'segments.*.flight_number' => 'nullable|string|max:10',
-        'segments.*.segment_pnr' => 'nullable|string|max:50',
-        'segments.*.cabin_class' => 'required|string|max:50',
+            'segments' => 'required_if:service_provided,Flight|array|min:1',
+            'segments.*.from_city' => 'required|string|max:100',
+            'segments.*.to_city' => 'required|string|max:100',
+            'segments.*.departure_date' => 'required|date',
+            'segments.*.return_date' => 'nullable|date',
+            'segments.*.airline_name' => 'required|string|max:100',
+            'segments.*.flight_number' => 'nullable|string|max:10',
+            'segments.*.segment_pnr' => 'nullable|string|max:50',
+            'segments.*.cabin_class' => 'required|string|max:50',
 
-        'adults' => 'required|integer|min:1|max:9',
-        'children' => 'required|integer|min:0|max:9',
-        'infants' => 'required|integer|min:0|max:9',
-        'infant_in_lap' => 'required|integer|min:0|max:9',
+            'adults' => 'required|integer|min:1|max:9',
+            'children' => 'required|integer|min:0|max:9',
+            'infants' => 'required|integer|min:0|max:9',
+            'infant_in_lap' => 'required|integer|min:0|max:9',
 
-        'passengers' => 'required|array|min:1|max:9',
-        'passengers.*.passenger_type' => 'required|string|in:ADT,CHD,INF,INL',
-        'passengers.*.title' => 'required|string|in:Mr,Mrs,Ms,Miss,Dr,Master',
-        'passengers.*.first_name' => 'required|string|max:100',
-        'passengers.*.middle_name' => 'nullable|string|max:100',
-        'passengers.*.last_name' => 'required|string|max:100',
-        'passengers.*.gender' => 'required|string|in:male,female,other',
-        'passengers.*.dob' => 'nullable|date',
-        'passengers.*.passport_number' => 'nullable|string|max:50',
-        'passengers.*.passport_expiry' => 'nullable|date',
-        'passengers.*.nationality' => 'nullable|string|max:100',
-        'passengers.*.seat_preference' => 'nullable|string|max:100',
-        'passengers.*.meal_preference' => 'nullable|string|max:100',
-        'passengers.*.special_assistance' => 'nullable|string|max:255',
+            'passengers' => 'required|array|min:1|max:9',
+            'passengers.*.passenger_type' => 'required|string|in:ADT,CHD,INF,INL',
+            'passengers.*.title' => 'required|string|in:Mr,Mrs,Ms,Miss,Dr,Master',
+            'passengers.*.first_name' => 'required|string|max:100',
+            'passengers.*.middle_name' => 'nullable|string|max:100',
+            'passengers.*.last_name' => 'required|string|max:100',
+            'passengers.*.gender' => 'required|string|in:male,female,other',
+            'passengers.*.dob' => 'nullable|date',
+            'passengers.*.passport_number' => 'nullable|string|max:50',
+            'passengers.*.passport_expiry' => 'nullable|date',
+            'passengers.*.nationality' => 'nullable|string|max:100',
+            'passengers.*.seat_preference' => 'nullable|string|max:100',
+            'passengers.*.meal_preference' => 'nullable|string|max:100',
+            'passengers.*.special_assistance' => 'nullable|string|max:255',
 
-        'currency' => 'required|string|max:10',
-        'amount_charged' => 'required|numeric|min:0',
-        'amount_paid_airline' => 'required|numeric|min:0',
-        'total_mco' => 'nullable|numeric|min:0',
+            'currency' => 'required|string|max:10',
+            'amount_charged' => 'required|numeric|min:0',
+            'amount_paid_airline' => 'required|numeric|min:0',
+            'total_mco' => 'nullable|numeric|min:0',
 
-        'payment_type' => 'required|string|in:full,split',
+            'payment_type' => 'required|string|in:full,split',
 
-        'full_payment.agency_merchant_id' => 'exclude_unless:payment_type,full|required|exists:merchants,id',
-        'full_payment.charge_amount' => 'exclude_unless:payment_type,full|required|numeric|min:0.01',
-        'full_payment.card_holder_name' => 'exclude_unless:payment_type,full|required|string|max:255',
-        'full_payment.card_last_four' => 'exclude_unless:payment_type,full|required|digits:4',
+            'full_payment.agency_merchant_id' => 'exclude_unless:payment_type,full|required|exists:merchants,id',
+            'full_payment.charge_amount' => 'exclude_unless:payment_type,full|required|numeric|min:0.01',
+            'full_payment.card_holder_name' => 'exclude_unless:payment_type,full|required|string|max:255',
+            'full_payment.card_last_four' => 'exclude_unless:payment_type,full|required|digits:4',
 
-        'split_payment.airline_merchant_name' => 'exclude_unless:payment_type,split|required|string|max:255',
-        'split_payment.airline.charge_amount' => 'exclude_unless:payment_type,split|required|numeric|min:0.01',
-        'split_payment.airline.card_holder_name' => 'exclude_unless:payment_type,split|required|string|max:255',
-        'split_payment.airline.card_last_four' => 'exclude_unless:payment_type,split|required|digits:4',
+            'split_payment.airline_merchant_name' => 'exclude_unless:payment_type,split|required|string|max:255',
+            'split_payment.airline.charge_amount' => 'exclude_unless:payment_type,split|required|numeric|min:0.01',
+            'split_payment.airline.card_holder_name' => 'exclude_unless:payment_type,split|required|string|max:255',
+            'split_payment.airline.card_last_four' => 'exclude_unless:payment_type,split|required|digits:4',
 
-        'split_payment.agency.agency_merchant_id' => 'exclude_unless:payment_type,split|required|exists:merchants,id',
-        'split_payment.agency.charge_amount' => 'exclude_unless:payment_type,split|required|numeric|min:0.01',
-        'split_payment.agency.card_holder_name' => 'exclude_unless:payment_type,split|required|string|max:255',
-        'split_payment.agency.card_last_four' => 'exclude_unless:payment_type,split|required|digits:4',
+            'split_payment.agency.agency_merchant_id' => 'exclude_unless:payment_type,split|required|exists:merchants,id',
+            'split_payment.agency.charge_amount' => 'exclude_unless:payment_type,split|required|numeric|min:0.01',
+            'split_payment.agency.card_holder_name' => 'exclude_unless:payment_type,split|required|string|max:255',
+            'split_payment.agency.card_last_four' => 'exclude_unless:payment_type,split|required|digits:4',
 
-        'payment_card_details' => 'required|string',
-        'agent_remarks' => 'required|string',
-        'hotel_required' => 'nullable|boolean',
-        'cab_required' => 'nullable|boolean',
-        'insurance_required' => 'nullable|boolean',
-    ]);
+            'payment_card_details' => 'required|string',
+            'agent_remarks' => 'required|string',
+            'hotel_required' => 'nullable|boolean',
+            'cab_required' => 'nullable|boolean',
+            'insurance_required' => 'nullable|boolean',
+        ]);
 
-    $this->validateBusinessRules($validated);
+        $this->validateBusinessRules($validated);
 
-    DB::beginTransaction();
+        DB::beginTransaction();
 
-    try {
-        $segments = $validated['segments'] ?? [];
-        $firstSegment = $segments[0] ?? null;
-        $lastSegment = !empty($segments) ? $segments[count($segments) - 1] : null;
+        try {
+            $segments = $validated['segments'] ?? [];
+            $firstSegment = $segments[0] ?? null;
+            $lastSegment = ! empty($segments) ? $segments[count($segments) - 1] : null;
 
-        $manualTotalMco = isset($validated['total_mco']) && $validated['total_mco'] !== null
-            ? (float) $validated['total_mco']
-            : 0;
+            $manualTotalMco = isset($validated['total_mco']) && $validated['total_mco'] !== null
+                ? (float) $validated['total_mco']
+                : 0;
 
-        $primaryCardLastFour = null;
-        if ($validated['payment_type'] === 'full') {
-            $primaryCardLastFour = $validated['full_payment']['card_last_four'] ?? null;
-        } elseif ($validated['payment_type'] === 'split') {
-            $primaryCardLastFour = $validated['split_payment']['airline']['card_last_four']
-                ?? $validated['split_payment']['agency']['card_last_four']
-                ?? null;
+            $primaryCardLastFour = null;
+            if ($validated['payment_type'] === 'full') {
+                $primaryCardLastFour = $validated['full_payment']['card_last_four'] ?? null;
+            } elseif ($validated['payment_type'] === 'split') {
+                $primaryCardLastFour = $validated['split_payment']['airline']['card_last_four']
+                    ?? $validated['split_payment']['agency']['card_last_four']
+                    ?? null;
+            }
+
+            $agencyMerchantId = null;
+            if ($validated['payment_type'] === 'full') {
+                $agencyMerchantId = $validated['full_payment']['agency_merchant_id'] ?? null;
+            } elseif ($validated['payment_type'] === 'split') {
+                $agencyMerchantId = $validated['split_payment']['agency']['agency_merchant_id'] ?? null;
+            }
+
+            $merchant = $agencyMerchantId ? \App\Models\Merchant::find($agencyMerchantId) : null;
+            $agencyMerchantName = $merchant?->merchant_name ?? $merchant?->name;
+
+            $bookingData = [
+                'user_id' => auth()->id(),
+                'agent_custom_id' => auth()->user()->agent_custom_id ?? ('AG'.auth()->id()),
+
+                'language' => $validated['language'] ?? null,
+                'agency_merchant_id' => $agencyMerchantId,
+                'agency_merchant_name' => $agencyMerchantName,
+
+                'booking_date' => $validated['booking_date'],
+                'call_type' => $validated['call_type'],
+                'service_provided' => $validated['service_provided'],
+                'service_type' => $validated['service_type'],
+                'booking_portal' => $validated['booking_portal'],
+                'email_auth_taken' => $request->boolean('email_auth_taken'),
+
+                'customer_name' => $validated['customer_name'],
+                'customer_email' => $validated['customer_email'],
+                'customer_phone' => $validated['customer_phone'],
+                'billing_phone' => $validated['billing_phone'],
+                'billing_address' => $validated['billing_address'],
+
+                'flight_type' => $validated['flight_type'] ?? null,
+                'departure_city' => $firstSegment['from_city'] ?? null,
+                'arrival_city' => $lastSegment['to_city'] ?? null,
+                'departure_date' => $firstSegment['departure_date'] ?? null,
+                'return_date' => ($validated['flight_type'] ?? null) === 'roundtrip'
+                    ? ($firstSegment['return_date'] ?? null)
+                    : null,
+                'airline_name' => $firstSegment['airline_name'] ?? null,
+                'flight_number' => $firstSegment['flight_number'] ?? null,
+                'cabin_class' => $firstSegment['cabin_class'] ?? null,
+
+                'adults' => $validated['adults'],
+                'children' => $validated['children'],
+                'infants' => $validated['infants'] + $validated['infant_in_lap'],
+
+                'gk_pnr' => $validated['gk_pnr'] ?? null,
+                'airline_pnr' => $validated['airline_pnr'] ?? null,
+
+                'currency' => $validated['currency'],
+                'amount_charged' => $validated['amount_charged'],
+                'amount_paid_airline' => $validated['amount_paid_airline'],
+                'total_mco' => $manualTotalMco,
+
+                'status' => 'pending',
+                'payment_card_details' => $validated['payment_card_details'] ?? null,
+                'agent_remarks' => $validated['agent_remarks'] ?? null,
+                'card_last_four' => $primaryCardLastFour,
+
+                'hotel_required' => $request->boolean('hotel_required'),
+                'cab_required' => $request->boolean('cab_required'),
+                'insurance_required' => $request->boolean('insurance_required'),
+            ];
+
+            $booking = Booking::create($bookingData);
+
+            foreach ($segments as $segment) {
+                $booking->flightSegments()->create([
+                    'from_city' => $segment['from_city'],
+                    'to_city' => $segment['to_city'],
+                    'from_airport' => $segment['from_city'],
+                    'to_airport' => $segment['to_city'],
+                    'departure_date' => $segment['departure_date'],
+                    'return_date' => $segment['return_date'] ?? null,
+                    'airline_name' => $segment['airline_name'],
+                    'flight_number' => $segment['flight_number'] ?? null,
+                    'cabin_class' => $segment['cabin_class'],
+                    'airline_code' => $segment['airline_name'],
+                ]);
+            }
+
+            foreach ($validated['passengers'] as $passenger) {
+                $booking->passengers()->create([
+                    'passenger_type' => $passenger['passenger_type'],
+                    'title' => $passenger['title'],
+                    'first_name' => $passenger['first_name'],
+                    'middle_name' => $passenger['middle_name'] ?? null,
+                    'last_name' => $passenger['last_name'],
+                    'gender' => $passenger['gender'],
+                    'dob' => $passenger['dob'],
+                    'passport_number' => $passenger['passport_number'] ?? null,
+                    'passport_expiry' => $passenger['passport_expiry'] ?? null,
+                    'nationality' => $passenger['nationality'] ?? null,
+                    'seat_preference' => $passenger['seat_preference'] ?? null,
+                    'meal_preference' => $passenger['meal_preference'] ?? null,
+                    'special_assistance' => $passenger['special_assistance'] ?? null,
+                ]);
+            }
+
+            $commonCardData = [
+                'booking_id' => $booking->id,
+                'billing_address' => $validated['billing_address'] ?? null,
+                'billing_phone' => $validated['billing_phone'] ?? null,
+                'billing_email' => $validated['customer_email'] ?? null,
+            ];
+
+            if ($validated['payment_type'] === 'full') {
+                BookingCard::create(array_merge($commonCardData, [
+                    'merchant_id' => $validated['full_payment']['merchant_id'] ?? null,
+                    'merchantname' => $agencyMerchantName,
+                    'merchanttype' => 'agency',
+                    'card_holder_name' => $validated['full_payment']['card_holder_name'] ?? null,
+                    'card_last_four' => $validated['full_payment']['card_last_four'] ?? null,
+                    'charge_amount' => $validated['full_payment']['charge_amount'] ?? null,
+                    'card_order' => 1,
+                ]));
+            }
+
+            if ($validated['payment_type'] === 'split') {
+                BookingCard::create(array_merge($commonCardData, [
+                    'merchant_id' => null,
+                    'merchantname' => $validated['splitpayment']['airlinemerchantname'] ?? null,
+                    'merchanttype' => 'airline',
+                    'card_holder_name' => $validated['split_payment']['airline']['card_holder_name'] ?? null,
+                    'card_last_four' => $validated['split_payment']['airline']['card_last_four'] ?? null,
+                    'charge_amount' => $validated['split_payment']['airline']['charge_amount'] ?? null,
+                    'card_order' => 1,
+                ]));
+
+                BookingCard::create(array_merge($commonCardData, [
+                    'merchantid' => $agencyMerchantId,
+                    'merchantname' => $agencyMerchantName,
+                    'merchanttype' => 'agency',
+                    'cardholdername' => $validated['splitpayment']['agency']['cardholdername'] ?? null,
+                    'cardlastfour' => $validated['splitpayment']['agency']['cardlastfour'] ?? null,
+                    'chargeamount' => $validated['splitpayment']['agency']['chargeamount'] ?? null,
+                    'cardorder' => 2,
+                ]));
+            }
+            DB::commit();
+
+            // Send notifications to CRM and MIS users
+            $notificationService = new BookingNotificationService;
+            $notificationService->notifyNewBooking($booking);
+
+            return redirect()
+                ->route('agent.bookings.show', $booking->id)
+                ->with('success', 'Booking created successfully. Ref: '.$booking->booking_reference);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return back()
+                ->withErrors(['error' => $e->getMessage()])
+                ->withInput();
         }
-
-        $agencyMerchantId = null;
-        if ($validated['payment_type'] === 'full') {
-            $agencyMerchantId = $validated['full_payment']['agency_merchant_id'] ?? null;
-        } elseif ($validated['payment_type'] === 'split') {
-            $agencyMerchantId = $validated['split_payment']['agency']['agency_merchant_id'] ?? null;
-        }
-
-        $merchant = $agencyMerchantId ? \App\Models\Merchant::find($agencyMerchantId) : null;
-        $agencyMerchantName = $merchant?->merchant_name ?? $merchant?->name;
-
-        $bookingData = [
-            'user_id' => auth()->id(),
-            'agent_custom_id' => auth()->user()->agent_custom_id ?? ('AG' . auth()->id()),
-
-            'language' => $validated['language'] ?? null,
-            'agency_merchant_id' => $agencyMerchantId,
-            'agency_merchant_name' => $agencyMerchantName,
-
-            'booking_date' => $validated['booking_date'],
-            'call_type' => $validated['call_type'],
-            'service_provided' => $validated['service_provided'],
-            'service_type' => $validated['service_type'],
-            'booking_portal' => $validated['booking_portal'],
-            'email_auth_taken' => $request->boolean('email_auth_taken'),
-
-            'customer_name' => $validated['customer_name'],
-            'customer_email' => $validated['customer_email'],
-            'customer_phone' => $validated['customer_phone'],
-            'billing_phone' => $validated['billing_phone'],
-            'billing_address' => $validated['billing_address'],
-
-            'flight_type' => $validated['flight_type'] ?? null,
-            'departure_city' => $firstSegment['from_city'] ?? null,
-            'arrival_city' => $lastSegment['to_city'] ?? null,
-            'departure_date' => $firstSegment['departure_date'] ?? null,
-            'return_date' => ($validated['flight_type'] ?? null) === 'roundtrip'
-                ? ($firstSegment['return_date'] ?? null)
-                : null,
-            'airline_name' => $firstSegment['airline_name'] ?? null,
-            'flight_number' => $firstSegment['flight_number'] ?? null,
-            'cabin_class' => $firstSegment['cabin_class'] ?? null,
-
-            'adults' => $validated['adults'],
-            'children' => $validated['children'],
-            'infants' => $validated['infants'] + $validated['infant_in_lap'],
-
-            'gk_pnr' => $validated['gk_pnr'] ?? null,
-            'airline_pnr' => $validated['airline_pnr'] ?? null,
-
-            'currency' => $validated['currency'],
-            'amount_charged' => $validated['amount_charged'],
-            'amount_paid_airline' => $validated['amount_paid_airline'],
-            'total_mco' => $manualTotalMco,
-
-            'status' => 'pending',
-            'payment_card_details' => $validated['payment_card_details'] ?? null,
-            'agent_remarks' => $validated['agent_remarks'] ?? null,
-            'card_last_four' => $primaryCardLastFour,
-
-            'hotel_required' => $request->boolean('hotel_required'),
-            'cab_required' => $request->boolean('cab_required'),
-            'insurance_required' => $request->boolean('insurance_required'),
-        ];
-
-        $booking = Booking::create($bookingData);
-
-        foreach ($segments as $segment) {
-            $booking->flightSegments()->create([
-                'from_city' => $segment['from_city'],
-                'to_city' => $segment['to_city'],
-                'from_airport' => $segment['from_city'],
-                'to_airport' => $segment['to_city'],
-                'departure_date' => $segment['departure_date'],
-                'return_date' => $segment['return_date'] ?? null,
-                'airline_name' => $segment['airline_name'],
-                'flight_number' => $segment['flight_number'] ?? null,
-                'cabin_class' => $segment['cabin_class'],
-                'airline_code' => $segment['airline_name'],
-            ]);
-        }
-
-        foreach ($validated['passengers'] as $passenger) {
-            $booking->passengers()->create([
-                'passenger_type' => $passenger['passenger_type'],
-                'title' => $passenger['title'],
-                'first_name' => $passenger['first_name'],
-                'middle_name' => $passenger['middle_name'] ?? null,
-                'last_name' => $passenger['last_name'],
-                'gender' => $passenger['gender'],
-                'dob' => $passenger['dob'],
-                'passport_number' => $passenger['passport_number'] ?? null,
-                'passport_expiry' => $passenger['passport_expiry'] ?? null,
-                'nationality' => $passenger['nationality'] ?? null,
-                'seat_preference' => $passenger['seat_preference'] ?? null,
-                'meal_preference' => $passenger['meal_preference'] ?? null,
-                'special_assistance' => $passenger['special_assistance'] ?? null,
-            ]);
-        }
-
-        $commonCardData = [
-            'booking_id' => $booking->id,
-            'billing_address' => $validated['billing_address'] ?? null,
-            'billing_phone' => $validated['billing_phone'] ?? null,
-            'billing_email' => $validated['customer_email'] ?? null,
-        ];
-
-        if ($validated['payment_type'] === 'full') {
-            BookingCard::create(array_merge($commonCardData, [
-                'merchant_id' => $validated['full_payment']['merchant_id'] ?? null,
-                'merchantname'   => $agencyMerchantName,
-                'merchanttype'   => 'agency',
-                'card_holder_name' => $validated['full_payment']['card_holder_name'] ?? null,
-                'card_last_four' => $validated['full_payment']['card_last_four'] ?? null,
-                'charge_amount' => $validated['full_payment']['charge_amount'] ?? null,
-                'card_order' => 1,
-            ]));
-        }
-
-        if ($validated['payment_type'] === 'split') {
-            BookingCard::create(array_merge($commonCardData, [
-                'merchant_id' => null,
-                'merchantname'   => $validated['splitpayment']['airlinemerchantname'] ?? null,
-                'merchanttype'   => 'airline',
-                'card_holder_name' => $validated['split_payment']['airline']['card_holder_name'] ?? null,
-                'card_last_four' => $validated['split_payment']['airline']['card_last_four'] ?? null,
-                'charge_amount' => $validated['split_payment']['airline']['charge_amount'] ?? null,
-                'card_order' => 1,
-            ]));
-
-            BookingCard::create(array_merge($commonCardData, [
-    'merchantid'     => $agencyMerchantId,
-    'merchantname'   => $agencyMerchantName,
-    'merchanttype'   => 'agency',
-    'cardholdername' => $validated['splitpayment']['agency']['cardholdername'] ?? null,
-    'cardlastfour'   => $validated['splitpayment']['agency']['cardlastfour'] ?? null,
-    'chargeamount'   => $validated['splitpayment']['agency']['chargeamount'] ?? null,
-    'cardorder'      => 2,
-]));
-        }
-        DB::commit();
-
-        // Send notifications to CRM and MIS users
-        $notificationService = new BookingNotificationService();
-        $notificationService->notifyNewBooking($booking);
-
-        return redirect()
-            ->route('agent.bookings.show', $booking->id)
-            ->with('success', 'Booking created successfully. Ref: ' . $booking->booking_reference);
-
-    } catch (\Throwable $e) {
-        DB::rollBack();
-
-        return back()
-            ->withErrors(['error' => $e->getMessage()])
-            ->withInput();
-    }
     }
 
     protected function trimArrayRecursive(array $data): array
