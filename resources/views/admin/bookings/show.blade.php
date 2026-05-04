@@ -161,6 +161,7 @@
                     @endif
                 </p>
                 <p><strong>Agent Remarks:</strong><br>{{ $booking->agent_remarks ?? 'No remarks' }}</p>
+                <p><strong>Payment Details:</strong><br>{{ $booking->payment_card_details ?? 'No payment details' }}</p>
                 <p><strong>MIS Remarks:</strong><br>{{ $booking->mis_remarks ?? 'No remarks' }}</p>
             </div>
         </div>
