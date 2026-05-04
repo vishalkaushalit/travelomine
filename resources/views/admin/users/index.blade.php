@@ -27,6 +27,20 @@
         margin: 0 2px;
         border-radius: 4px;
     }
+    .extension-badge {
+        background-color: #e7f3ff;
+        color: #004085;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-block;
+    }
+    .no-extension {
+        color: #6c757d;
+        font-style: italic;
+        font-size: 0.85rem;
+    }
 </style>
 @endpush
 
@@ -65,6 +79,7 @@
                             <th>Alias</th>
                             <th>Email</th>
                             <th>Phone</th>
+                            <th>Extension No.</th>
                             <th>Role</th>
                             <th>Status</th>
                             <th>Last Login</th>
@@ -78,9 +93,18 @@
                             <td>{{ $user->id }}</td>
                             <td>{{ $user->agent_custom_id ?? 'N/A' }}</td>
                             <td>{{ $user->name }}</td>
-                            <td>{{ $user->alias_name }}</td>
+                            <td>{{ $user->alias_name ?? 'N/A' }}</td>
                             <td>{{ $user->email }}</td>
                             <td>{{ $user->phone ?? 'N/A' }}</td>
+                            <td>
+                                @if($user->extension_number)
+                                    <span class="extension-badge">
+                                        <i class="bi bi-telephone"></i> {{ $user->extension_number }}
+                                    </span>
+                                @else
+                                    <span class="no-extension">—</span>
+                                @endif
+                             </td>
                             <td>
                                 <span class="badge bg-{{ 
                                     $user->role === 'admin' ? 'danger' : 
@@ -89,7 +113,7 @@
                                 }}">
                                     {{ ucfirst($user->role) }}
                                 </span>
-                            </td>
+                             </td>
                             <td>
                                 @if($user->is_blocked)
                                     <span class="status-badge status-blocked">Blocked</span>
@@ -98,7 +122,7 @@
                                 @else
                                     <span class="status-badge status-inactive">Inactive</span>
                                 @endif
-                            </td>
+                             </td>
                             <td>{{ $user->last_login ? $user->last_login->format('Y-m-d H:i') : 'Never' }}</td>
                             <td>{{ $user->createdBy->name ?? 'System' }}</td>
                             <td>
@@ -180,7 +204,7 @@
                                         </form>
                                     @endif
                                 </div>
-                            </td>
+                             </td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -199,7 +223,7 @@
             pageLength: 25,
             order: [[0, 'desc']],
             columnDefs: [
-                { orderable: false, targets: 9 }
+                { orderable: false, targets: 10 } // Updated to 10 since we added a new column
             ]
         });
     });

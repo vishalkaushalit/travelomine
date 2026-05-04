@@ -1,6 +1,3 @@
-Working on dynamic auth mail creation 
+going to add a new extension and alias name feature in admin panel user create new user 
 
-files which are updated added and changed - 
-
-1. AuthConsentController.php
-2. 
+1. 

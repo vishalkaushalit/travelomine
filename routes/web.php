@@ -160,6 +160,10 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 
     Route::post('/booking-updates/search', [AgentBookingUpdatesController::class, 'searchByPnr'])->name('booking-updates.search');
     Route::post('/booking-updates', [AgentBookingUpdatesController::class, 'store'])->name('booking-updates.store');
+
+    // Add remark route
+    Route::post('/bookings/{bookingId}/add-remark', [AgentBookingController::class, 'addRemark'])
+         ->name('agent.bookings.add-remark');
 });
 
 // ADMIN ROUTES
@@ -275,7 +279,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
         Route::patch('/{id}/toggle-active', [AdminNotifyController::class, 'toggleActive'])->name('toggle-active');
         Route::delete('/{id}', [AdminNotifyController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/stats', [AdminNotifyController::class, 'stats'])->name('stats');
-    }); 
+    });
     // Settings (Both Admin and Manager can access)
     Route::get('/settings/bookings', [SettingsController::class, 'bookings'])
         ->name('settings.bookings'); // used for the page itself

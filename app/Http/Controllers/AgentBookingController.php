@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\BookingCard;
+use App\Models\BookingRemark;
 use App\Models\CallType;
 use App\Models\Merchant;
 use App\Models\ServiceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -375,83 +377,84 @@ class AgentBookingController extends Controller
     /**
      * Create payment cards based on payment type.
      */
-/**
- * Create payment cards based on payment type.
- */
-protected function createPaymentCards(Booking $booking, array $validated): void
-{
-    if ($validated['payment_type'] === 'full') {
-        $this->createFullPaymentCard($booking, $validated);
+    /**
+     * Create payment cards based on payment type.
+     */
+    protected function createPaymentCards(Booking $booking, array $validated): void
+    {
+        if ($validated['payment_type'] === 'full') {
+            $this->createFullPaymentCard($booking, $validated);
+        }
+
+        if ($validated['payment_type'] === 'split') {
+            $this->createSplitPaymentCards($booking, $validated);
+        }
     }
 
-    if ($validated['payment_type'] === 'split') {
-        $this->createSplitPaymentCards($booking, $validated);
+    /**
+     * Create full payment card.
+     */
+    protected function createFullPaymentCard(Booking $booking, array $validated): void
+    {
+        $fullPayment = $validated['full_payment'];
+
+        BookingCard::create([
+            'booking_id' => $booking->id,
+            'merchant_id' => $fullPayment['agency_merchant_id'] ?? null,
+            'card_holder_name' => $fullPayment['card_holder_name'] ?? null,
+            'card_last_four' => $fullPayment['card_last_four'] ?? null,
+            'charge_amount' => $fullPayment['charge_amount'] ?? null,
+            'card_order' => 1,
+            'billing_address' => $validated['billing_address'] ?? null,
+            'billing_phone' => $validated['billing_phone'] ?? null,
+            'billing_email' => $validated['customer_email'] ?? null,
+            'payment_status' => 'pending',
+            'is_charged' => false,
+        ]);
     }
-}
 
-/**
- * Create full payment card.
- */
-protected function createFullPaymentCard(Booking $booking, array $validated): void
-{
-    $fullPayment = $validated['full_payment'];
-    
-    BookingCard::create([
-        'booking_id' => $booking->id,
-        'merchant_id' => $fullPayment['agency_merchant_id'] ?? null,
-        'card_holder_name' => $fullPayment['card_holder_name'] ?? null,
-        'card_last_four' => $fullPayment['card_last_four'] ?? null,
-        'charge_amount' => $fullPayment['charge_amount'] ?? null,
-        'card_order' => 1,
-        'billing_address' => $validated['billing_address'] ?? null,
-        'billing_phone' => $validated['billing_phone'] ?? null,
-        'billing_email' => $validated['customer_email'] ?? null,
-        'payment_status' => 'pending',
-        'is_charged' => false,
-    ]);
-}
+    /**
+     * Create split payment cards.
+     */
+    protected function createSplitPaymentCards(Booking $booking, array $validated): void
+    {
+        $splitPayment = $validated['split_payment'];
 
-/**
- * Create split payment cards.
- */
-protected function createSplitPaymentCards(Booking $booking, array $validated): void
-{
-    $splitPayment = $validated['split_payment'];
-    
-    // Airline card (merchant_id is null since it's free text)
-    BookingCard::create([
-        'booking_id' => $booking->id,
-        'merchant_id' => null,
-        'merchantname' => $splitPayment['airline_merchant_name'] ?? null,  // Store airline name here
-        'merchanttype' => 'Airline',
-        'card_holder_name' => $splitPayment['airline']['card_holder_name'] ?? null,
-        'card_last_four' => $splitPayment['airline']['card_last_four'] ?? null,
-        'charge_amount' => $splitPayment['airline']['charge_amount'] ?? null,
-        'card_order' => 1,
-        'billing_address' => $validated['billing_address'] ?? null,
-        'billing_phone' => $validated['billing_phone'] ?? null,
-        'billing_email' => $validated['customer_email'] ?? null,
-        'payment_status' => 'pending',
-        'is_charged' => false,
-    ]);
+        // Airline card (merchant_id is null since it's free text)
+        BookingCard::create([
+            'booking_id' => $booking->id,
+            'merchant_id' => null,
+            'merchantname' => $splitPayment['airline_merchant_name'] ?? null,  // Store airline name here
+            'merchanttype' => 'Airline',
+            'card_holder_name' => $splitPayment['airline']['card_holder_name'] ?? null,
+            'card_last_four' => $splitPayment['airline']['card_last_four'] ?? null,
+            'charge_amount' => $splitPayment['airline']['charge_amount'] ?? null,
+            'card_order' => 1,
+            'billing_address' => $validated['billing_address'] ?? null,
+            'billing_phone' => $validated['billing_phone'] ?? null,
+            'billing_email' => $validated['customer_email'] ?? null,
+            'payment_status' => 'pending',
+            'is_charged' => false,
+        ]);
 
-    // Agency card
-    BookingCard::create([
-        'booking_id' => $booking->id,
-        'merchant_id' => $splitPayment['agency']['agency_merchant_id'] ?? null,
-        'merchantname' => null,
-        'merchanttype' => 'Agency',
-        'card_holder_name' => $splitPayment['agency']['card_holder_name'] ?? null,
-        'card_last_four' => $splitPayment['agency']['card_last_four'] ?? null,
-        'charge_amount' => $splitPayment['agency']['charge_amount'] ?? null,
-        'card_order' => 2,
-        'billing_address' => $validated['billing_address'] ?? null,
-        'billing_phone' => $validated['billing_phone'] ?? null,
-        'billing_email' => $validated['customer_email'] ?? null,
-        'payment_status' => 'pending',
-        'is_charged' => false,
-    ]);
-}
+        // Agency card
+        BookingCard::create([
+            'booking_id' => $booking->id,
+            'merchant_id' => $splitPayment['agency']['agency_merchant_id'] ?? null,
+            'merchantname' => null,
+            'merchanttype' => 'Agency',
+            'card_holder_name' => $splitPayment['agency']['card_holder_name'] ?? null,
+            'card_last_four' => $splitPayment['agency']['card_last_four'] ?? null,
+            'charge_amount' => $splitPayment['agency']['charge_amount'] ?? null,
+            'card_order' => 2,
+            'billing_address' => $validated['billing_address'] ?? null,
+            'billing_phone' => $validated['billing_phone'] ?? null,
+            'billing_email' => $validated['customer_email'] ?? null,
+            'payment_status' => 'pending',
+            'is_charged' => false,
+        ]);
+    }
+
     /**
      * Update segment PNRs.
      */
@@ -823,5 +826,120 @@ protected function createSplitPaymentCards(Booking $booking, array $validated): 
                 'split_payment.agency.charge_amount' => 'Charge amount is required for agency payment.',
             ]);
         }
+    }
+
+    public function show($id)
+    {
+        $booking = Booking::with(['remarks.agent', 'agent', 'passengers', 'flightSegments'])->findOrFail($id);
+        $this->authorizeBookingAccess($booking);
+
+        return view('agent.bookings.show', compact('booking'));
+    }
+
+    public function addRemark(Request $request, $bookingId)
+    {
+        try {
+            $booking = Booking::findOrFail($bookingId);
+            $this->authorizeBookingAccess($booking);
+
+            $validator = Validator::make($request->all(), [
+                'remark_text' => 'required|string|min:1',
+                'remark_type' => 'required|in:general,payment,modification,customer_request,followup',
+                'amount_changed' => 'nullable|numeric|min:0',
+                'old_value' => 'nullable|string',
+                'new_value' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $remarkData = [
+                'booking_id' => $booking->id,
+                'agent_id' => auth()->id(),
+                'remark_text' => $request->remark_text,
+                'remark_type' => $request->remark_type,
+                'amount_changed' => $request->amount_changed,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ];
+
+            // Store old/new values if modification
+            if ($request->remark_type === 'modification') {
+                if ($request->old_value) {
+                    $remarkData['old_data'] = json_encode(['value' => $request->old_value]);
+                }
+                if ($request->new_value) {
+                    $remarkData['new_data'] = json_encode(['value' => $request->new_value]);
+                }
+            }
+
+            $remark = BookingRemark::create($remarkData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Remark added successfully',
+                'remark' => $remark,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all remarks for a booking
+     */
+    public function getRemarks($bookingId)
+    {
+        $booking = Booking::with(['remarks.agent', 'agent'])->findOrFail($bookingId);
+        $this->authorizeBookingAccess($booking);
+
+        $remarks = $booking->getAllRemarksAttribute();
+
+        if (request()->ajax()) {
+            $html = view('agent.bookings.partials.remarks-timeline', compact('remarks'))->render();
+
+            return response()->json([
+                'success' => true,
+                'remarks' => $remarks,
+                'html' => $html,
+            ]);
+        }
+
+        return view('agent.bookings.partials.remarks-timeline', compact('booking', 'remarks'));
+    }
+
+    /**
+     * Update existing remark (optional, for editing)
+     */
+    public function updateRemark(Request $request, $remarkId)
+    {
+        $remark = BookingRemark::findOrFail($remarkId);
+        $booking = $remark->booking;
+        $this->authorizeBookingAccess($booking);
+
+        $validator = Validator::make($request->all(), [
+            'remark_text' => 'required|string|min:1',
+            'remark_type' => 'required|in:general,payment,modification,customer_request,followup',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $remark->update([
+            'remark_text' => $request->remark_text,
+            'remark_type' => $request->remark_type,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Remark updated']);
     }
 }

@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use App\Models\User;
-
 
 class Booking extends Model
 {
@@ -163,7 +161,35 @@ class Booking extends Model
         ]);
     }
 
+    public function getAllRemarksAttribute()
+    {
+        $remarks = collect();
+
+        // Add old single remark if exists
+        if ($this->agent_remarks) {
+            $remarks->push((object) [
+                'id' => null,
+                'remark_text' => $this->agent_remarks,
+                'remark_type' => 'general',
+                'created_at' => $this->created_at,
+                'is_legacy' => true,
+                'agent' => $this->agent,
+                'amount_changed' => null,
+            ]);
+        }
+
+        // Add new multi remarks
+        $remarks = $remarks->concat($this->remarks);
+
+        return $remarks->sortByDesc('created_at');
+    }
+
     // Relationships
+    public function remarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BookingRemark::class)->orderBy('created_at', 'desc');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
