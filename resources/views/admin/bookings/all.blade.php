@@ -162,11 +162,6 @@
                         </table>
                     </div>
                 </form>
-
-                <div class="mt-3">
-                    {{ $bookings->appends(request()->query())->links() }}
-                </div>
-
                 <script>
                     document.getElementById('select-all')?.addEventListener('change', function() {
                         document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
@@ -210,17 +205,6 @@
                         <h3>${{ number_format(\App\Models\Booking::sum('total_mco'), 2) }}</h3>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Pagination -->
-        <div class="mt-4 d-flex justify-content-between align-items-center">
-            <div>
-                Showing {{ $bookings->firstItem() ?? 0 }} to {{ $bookings->lastItem() ?? 0 }} of {{ $bookings->total() }}
-                bookings
-            </div>
-            <div>
-                {{ $bookings->appends(request()->query())->links() }}
             </div>
         </div>
     </div>
