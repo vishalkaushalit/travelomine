@@ -31,11 +31,6 @@
 
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
-
-        @auth
-            {{-- @include('components.notifications') --}}
-            {{-- @include('layouts.notification-bell') --}}
-        @endauth
         <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <!-- Left navbar links -->
@@ -66,6 +61,9 @@
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 @auth
+                    <a href="{{ route('agent.notifications') }}" class="nav-link">
+                        <i class="nav-icon fas fa-bell"></i>
+                    </a>
                     <!-- User Account Menu -->
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
@@ -96,7 +94,7 @@
 
                 @guest
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('agent.login') }}">
+                        <a class="nav-link" href="{{ route('public.home') }}">
 
                             <span class="d-none d-md-inline ml-1">Login</span>
                         </a>
@@ -193,6 +191,14 @@
                                 </a>
                             </li>
 
+                            <!-- Notifications -->
+                            <li class="nav-item">
+                                <a href="{{ route('agent.notifications') }}" class="nav-link">
+                                    <i class="nav-icon fas fa-bell"></i>
+                                    <p>Notifications</p>
+                                </a>
+                            </li>
+
                             <!-- Settings (Placeholder) -->
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
@@ -203,7 +209,6 @@
                         </ul>
                     </nav>
                 @endauth
-
             </div>
         </aside>
 

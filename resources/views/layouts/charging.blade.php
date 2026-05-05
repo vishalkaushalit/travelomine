@@ -59,6 +59,9 @@
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
             @auth
+                <a href="{{ route('charge.notifications') }}" class="nav-link">
+                    <i class="nav-icon fas fa-bell"></i>
+                </a>
                 <!-- User Account Menu -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
@@ -89,7 +92,7 @@
 
             @guest
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('charge.login') }}">
+                    <a class="nav-link" href="{{ route('public.home') }}">
                         <i class="fas fa-sign-in-alt"></i>
                         <span class="d-none d-md-inline ml-1">Login</span>
                     </a>
@@ -157,11 +160,6 @@
 
         </div>
     </aside>
-    @auth
-        <div class="container-fluid mt-2">
-            @include('components.user-notifications')
-        </div>
-    @endauth
     <!-- Content Wrapper -->
     <div class="content-wrapper">
         <section class="content">

@@ -86,7 +86,7 @@
 
             @guest
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('agent.login') }}">
+                    <a class="nav-link" href="{{ route('public.home') }}">
                         <i class="fas fa-sign-in-alt"></i>
                         <span class="d-none d-md-inline ml-1">Login</span>
                     </a>

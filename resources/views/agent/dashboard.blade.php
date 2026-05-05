@@ -3,8 +3,8 @@
 @section('title', 'Agent Dashboard')
 
 @section('content')
+@include('components.user-notifications')
 <div class="container-fluid py-4">
-    
     {{-- Header / Profile Card --}}
     <div class="row g-4 mb-4">
         <div class="col-12">

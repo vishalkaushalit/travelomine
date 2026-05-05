@@ -96,7 +96,7 @@
 
                 @guest
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('mis-manager.login') }}">
+                        <a class="nav-link" href="{{ route('public.home') }}">
 
                             <span class="d-none d-md-inline ml-1">Login</span>
                         </a>
@@ -168,7 +168,7 @@
 
             </div>
         </aside>
-
+        
         <!-- Content Wrapper -->
         <div class="content-wrapper">
             <section class="content">

@@ -41,7 +41,7 @@
 @endphp
 
 @if($notifications->count() > 0)
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; max-width: 450px;">
+    <div class="p-3" style="z-index: 9999; max-width: 450px;">
         @foreach($notifications as $notification)
             <div class="alert alert-{{ $notification->priority }} alert-dismissible fade show mb-3 shadow-lg notification-item" 
                  role="alert" 

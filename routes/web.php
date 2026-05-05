@@ -321,9 +321,12 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/booking-status/{id}', [StatusController::class, 'update'])->name('status.update');
 });
 
-Route::get('/agent/test-notifications', function () {
-    return view('agent.test-notifications');
-})->middleware(['auth', 'role:agent'])->name('agent.test');
+Route::get('/agent/notifications', function () {
+    return view('agent.notifications');
+})->middleware(['auth', 'role:agent'])->name('agent.notifications');
+Route::get('/charge/notifications', function () {
+    return view('charge.notifications');
+})->middleware(['auth', 'role:charge'])->name('charge.notifications');
 
 // clear all cache
 Route::get('/clear-all-cache', function () {

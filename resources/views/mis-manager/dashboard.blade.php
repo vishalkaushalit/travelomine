@@ -3,6 +3,7 @@
 @section('title', 'Mis Manager Dashboard')
 
 @section('content')
+@include('components.user-notifications')
 <div class="container-fluid py-4">
     
     {{-- Header / Profile Card --}}
