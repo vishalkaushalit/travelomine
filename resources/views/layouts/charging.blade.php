@@ -147,6 +147,14 @@
                             </a>
                         </li>
 
+                        <!-- Notifications -->
+                        <li class="nav-item">
+                            <a href="{{ route('charge.notifications') }}" class="nav-link">
+                                <i class="nav-icon fas fa-bell"></i>
+                                <p>Notifications</p>
+                            </a>
+                        </li>
+
                         <!-- Settings (Placeholder) -->
                         <li class="nav-item">
                             <a href="#" class="nav-link">

@@ -43,6 +43,12 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+// use App\Mail\TestMail;
+
+// Route::get('/send-test-mail', function () {
+//     Mail::to('vishalkaushalit@gmail.com')->send(new TestMail());
+//     return 'Mail sent!';
+// });
 
 Route::get('/', function () {
     return view('welcome');
@@ -327,6 +333,12 @@ Route::get('/agent/notifications', function () {
 Route::get('/charge/notifications', function () {
     return view('charge.notifications');
 })->middleware(['auth', 'role:charge'])->name('charge.notifications');
+Route::get('/mis/notifications', function () {
+    return view('mis.notifications');
+})->middleware(['auth', 'role:mis'])->name('mis.notifications');
+Route::get('/mis-manager/notifications', function () {
+    return view('mis-manager.notifications');
+})->middleware(['auth', 'role:mis-manager'])->name('mis-manager.notifications');
 
 // clear all cache
 Route::get('/clear-all-cache', function () {

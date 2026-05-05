@@ -42,12 +42,9 @@
                         <thead>
                             <tr>
                                 <th>Sr.No.</th>
-                                <th>Notification ID</th>
                                 <th>Title</th>
                                 <th>Message</th>
                                 <th>Priority</th>
-                                <th>Read Status</th>
-                                <th>Can Dismiss</th>
                                 <th>Expiry</th>
                             </tr>
                         </thead>
@@ -55,7 +52,6 @@
                             @foreach($notifications as $key => $notification)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $notification->id }}</td>
                                 <td>{{ $notification->title }}</td>
                                 <td>{{ $notification->message }}</td>
                                 <td>
@@ -63,14 +59,6 @@
                                         {{ $notification->priority }}
                                     </span>
                                 </td>
-                                <td>
-                                    @if(in_array($notification->id, $readNotifications))
-                                        <span class="badge bg-secondary">Read</span>
-                                    @else
-                                        <span class="badge bg-success">Unread</span>
-                                    @endif
-                                </td>
-                                <td>{{ $notification->can_dismiss ? 'Yes' : 'No' }}</td>
                                 <td>{{ $notification->expiry_date ?? 'Never' }}</td>
                             </tr>
                             @endforeach

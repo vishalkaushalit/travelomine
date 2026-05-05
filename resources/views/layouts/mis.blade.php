@@ -57,6 +57,9 @@
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
             @auth
+                <a href="{{ route('mis.notifications') }}" class="nav-link">
+                    <i class="nav-icon fas fa-bell"></i>
+                </a>
                 <!-- User Account Menu -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
@@ -156,6 +159,14 @@
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-chart-bar"></i>
                                 <p>Reports</p>
+                            </a>
+                        </li>
+
+                        <!-- Notifications -->
+                        <li class="nav-item">
+                            <a href="{{ route('mis.notifications') }}" class="nav-link">
+                                <i class="nav-icon fas fa-bell"></i>
+                                <p>Notifications</p>
                             </a>
                         </li>
 
