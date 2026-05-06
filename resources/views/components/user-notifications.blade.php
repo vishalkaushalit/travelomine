@@ -30,9 +30,10 @@
                 //           ->orWhere('expiry_date', '>=', now());
                 // })
                 ->orderBy('created_at', 'desc')
+                ->limit(1)
                 ->get();
-            echo '<pre>';
-            print_r($notifications->toArray());
+            // echo '<pre>';
+            // print_r($notifications->toArray());
 
             $readNotifications = DB::table('user_notification_reads')
                 ->where('user_id', $user->id)
