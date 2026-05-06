@@ -1,4 +1,4 @@
-@extends('layouts.agent')
+@extends('layouts.charging')
 
 @section('content')
 <div class="container-fluid py-4">
