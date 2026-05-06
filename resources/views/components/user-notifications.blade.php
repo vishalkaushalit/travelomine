@@ -10,21 +10,30 @@
         try {
             // Get active notifications for this user's role
             $notifications = AdminNotification::where('is_active', true)
-                ->where(function($query) use ($user) {
+                // ->where(function($query) use ($user) {
+                //     $query->where('target_type', 'all')
+                //           ->orWhereJsonContains('target_roles', $user->role);
+                // })
+                ->where(function ($query) use ($user) {
                     $query->where('target_type', 'all')
-                          ->orWhereJsonContains('target_roles', $user->role);
+                        ->orWhere(function ($q) use ($user) {
+                        $q->where('target_type', 'specific_roles')
+                        ->whereJsonContains('target_roles', $user->role);
+                    });
                 })
-                ->where(function($query) {
-                    $query->whereNull('start_date')
-                          ->orWhere('start_date', '<=', now());
-                })
-                ->where(function($query) {
-                    $query->whereNull('expiry_date')
-                          ->orWhere('expiry_date', '>=', now());
-                })
+                // ->where(function($query) {
+                //     $query->whereNull('start_date')
+                //           ->orWhere('start_date', '<=', now());
+                // })
+                // ->where(function($query) {
+                //     $query->whereNull('expiry_date')
+                //           ->orWhere('expiry_date', '>=', now());
+                // })
                 ->orderBy('created_at', 'desc')
                 ->get();
-                
+            echo '<pre>';
+            print_r($notifications->toArray());
+
             $readNotifications = DB::table('user_notification_reads')
                 ->where('user_id', $user->id)
                 ->pluck('notification_id')

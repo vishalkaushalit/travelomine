@@ -37,7 +37,8 @@ class AdminNotifyController extends Controller
             'agent' => 'Agents',
             'charge' => 'Charge Team',
             'support' => 'Support Team',
-            'mis' => 'MIS Team'
+            'mis' => 'MIS Team',
+            'mis-manager' => 'MIS Managers'
         ];
         
         $priorities = [
@@ -105,7 +106,8 @@ class AdminNotifyController extends Controller
             'agent' => 'Agents',
             'charge' => 'Charge Team',
             'support' => 'Support Team',
-            'mis' => 'MIS Team'
+            'mis' => 'MIS Team',
+            'mis-manager' => 'MIS Managers'
         ];
         
         $priorities = [
