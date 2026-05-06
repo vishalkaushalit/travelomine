@@ -1,0 +1,7 @@
+
+Booking status - pending, assigned_to_charging, charging_in_progress, auth_email_sent, payment_processing, failed, cancelled, hold, confirmed, void, refund, chargeback, ticketed, alert, rdr, retrivel, charged
+
+1. Agent creates booking - pending
+2. Agent assign booking to charging team - assigned_to_charging
+3. Charging team start creating auth mail - charging_in_progress
+4. Charge team sent an auth mail to customer - 

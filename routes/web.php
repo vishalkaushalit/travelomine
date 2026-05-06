@@ -228,8 +228,6 @@ Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(func
     Route::get('/bookings/{id}/edit', [AdminBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [AdminBookingsController::class, 'update'])->name('bookings.update');
 
-    // Route::get('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'create'])->name('bookings.import.form');
-    // Route::post('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'store'])->name('bookings.import.store');
 });
 
 // GENERAL LOGOUT
