@@ -138,8 +138,12 @@
                                             <td>{{ ucfirst($booking->language) }}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Airline Merchant</strong></td>
-                                            <td><code>{{ $booking->airline_merchant ?? 'N/A' }}</code></td>
+                                            <td><strong>Airline</strong></td>
+                                            <td>{{ $booking->airline_name ?? 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Merchant</strong></td>
+                                            <td><code>{{ $booking->agency_merchant_name ?? 'Not found' }}</code></td>
                                         </tr>
                                         <tr>
                                             <td><strong>Booking Date</strong></td>
@@ -245,108 +249,325 @@
 
                         {{-- Tab 3: Flights --}}
                         <div class="tab-pane fade" id="flights" role="tabpanel">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Route</th>
-                                            <th>Dates</th>
-                                            <th>Airline</th>
-                                            <th>Flight</th>
-                                            <th>Class</th>
-                                            <th>PNR</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($booking->segments as $index => $segment)
-                                            <tr>
-                                                <td>{{ $index + 1 }}</td>
-                                                <td>
-                                                    <strong>{{ $segment->from_city }} → {{ $segment->to_city }}</strong>
-                                                    @if ($segment->from_airport || $segment->to_airport)
-                                                        <br><small class="text-muted">
-                                                            {{ $segment->from_airport ?? 'N/A' }} →
-                                                            {{ $segment->to_airport ?? 'N/A' }}
-                                                        </small>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    <strong>{{ \Carbon\Carbon::parse($segment->departure_date)->format('M d') }}</strong>
-                                                    @if ($segment->return_date)
-                                                        <br><small>↩
-                                                            {{ \Carbon\Carbon::parse($segment->return_date)->format('M d') }}</small>
-                                                    @endif
-                                                </td>
-                                                <td>{{ $segment->airline_name }}</td>
-                                                <td>{{ $segment->flight_number ?: 'N/A' }}</td>
-                                                <td>
-                                                    <span class="badge badge-light">{{ $segment->cabin_class }}</span>
-                                                </td>
-                                                <td>
-                                                    <code>{{ $segment->segment_pnr ?? ($segment->pnr ?? 'N/A') }}</code>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="7" class="text-center text-muted py-4">No flights</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                            <div class="boarding-passes">
+                                @forelse($booking->segments as $index => $segment)
+                                    <div class="boarding-pass mb-4">
+                                        <div class="boarding-pass-inner">
+                                            <!-- Tear-off effect -->
+                                            <div class="tear-line"></div>
+
+                                            <!-- Top Section -->
+                                            <div class="bp-header">
+                                                <div class="row">
+                                                    <div class="col-8">
+                                                        <div class="airline-info">
+                                                            <i class="bi bi-airplane-fill"></i>
+                                                            <strong>{{ $segment->airline_name ?? 'Airline' }}</strong>
+                                                            <span class="flight-no">| Flight
+                                                                {{ $segment->flight_number ?? 'N/A' }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-4 text-right">
+                                                        <div class="class-badge">{{ $segment->cabin_class ?? 'Economy' }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Main Boarding Info -->
+                                            <div class="bp-body">
+                                                <div class="row">
+                                                    <div class="col-5 text-left">
+                                                        <div class="boarding-point">
+                                                            <div class="city-code">
+                                                                {{ substr($segment->from_city ?? 'DEP', 0, 3) }}</div>
+                                                            <div class="city-name">
+                                                                {{ $segment->from_city ?? 'Departure' }}</div>
+                                                            <div class="time">
+                                                                {{ \Carbon\Carbon::parse($segment->departure_date)->format('h:i A') ?? 'N/A' }}
+                                                            </div>
+                                                            <div class="date">
+                                                                {{ \Carbon\Carbon::parse($segment->departure_date)->format('d M Y') ?? 'N/A' }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-2 text-center">
+                                                        <div class="flight-direction">
+                                                            <i class="bi bi-airplane-fill"></i>
+                                                            <div class="duration">
+                                                                @php
+                                                                    $dep = \Carbon\Carbon::parse(
+                                                                        $segment->departure_date,
+                                                                    );
+                                                                    $arr = \Carbon\Carbon::parse(
+                                                                        $segment->arrival_date ??
+                                                                            $segment->departure_date,
+                                                                    );
+                                                                    $duration = $dep->diff($arr);
+                                                                @endphp
+                                                                {{ $duration->format('%h') }}h
+                                                                {{ $duration->format('%i') }}m
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-5 text-right">
+                                                        <div class="boarding-point">
+                                                            <div class="city-code">
+                                                                {{ substr($segment->to_city ?? 'ARR', 0, 3) }}</div>
+                                                            <div class="city-name">{{ $segment->to_city ?? 'Arrival' }}
+                                                            </div>
+                                                            <div class="time">
+                                                                {{ \Carbon\Carbon::parse($segment->arrival_date ?? $segment->departure_date)->format('h:i A') ?? 'N/A' }}
+                                                            </div>
+                                                            <div class="date">
+                                                                {{ \Carbon\Carbon::parse($segment->arrival_date ?? $segment->departure_date)->format('d M Y') }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Bottom Section with Barcode -->
+                                            <div class="bp-footer">
+                                                <div class="row">
+                                                    <div class="col-7">
+                                                        <div class="passenger-info">
+                                                            <small>PASSENGER</small>
+                                                            <div><strong>{{ $booking->user->name ?? 'N/A' }}</strong></div>
+                                                        </div>
+                                                        <div class="pnr-info mt-2">
+                                                            <small>PNR CODE</small>
+                                                            <div>
+                                                                <code>{{ $booking->airline_pnr ?? ($booking->gk_pnr ?? 'N/A') }}</code>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-5 text-right">
+                                                        <div class="boarding-time">
+                                                            <small>BOARDING TIME</small>
+                                                            <div><strong>
+                                                                    {{ \Carbon\Carbon::parse($segment->departure_date)->subMinutes(45)->format('h:i A') }}
+                                                                </strong></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                              
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="text-center py-5">
+                                        <i class="bi bi-airplane-engines display-1 text-muted"></i>
+                                        <h5 class="mt-3">No Flight Information</h5>
+                                    </div>
+                                @endforelse
                             </div>
                         </div>
-
                         {{-- Tab 4: Payments --}}
                         <div class="tab-pane fade" id="payments" role="tabpanel">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Card</th>
-                                            <th>Merchant</th>
-                                            <th>Amount</th>
-                                            <th>Last 4</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($booking->cards as $index => $card)
-                                            <tr>
-                                                <td>{{ $index + 1 }}</td>
-                                                <td>
-                                                    {{ $card->card_type ?? 'Card' }}<br>
-                                                    <small>{{ $card->card_holder_name }}</small>
-                                                </td>
-                                                <td>
-                                                    {{ $card->agencyMerchant->name ?? ($card->merchantname ?? 'N/A') }}
-                                                </td>
-                                                <td>
-                                                    <strong>${{ number_format($card->charge_amount, 2) }}</strong>
-                                                </td>
-                                                <td><code>**** {{ $card->card_last_four }}</code></td>
-                                                <td>
-                                                    @php
-                                                        $statusClass = match ($card->payment_status) {
-                                                            'success' => 'success',
-                                                            'pending' => 'warning',
-                                                            'ticketed' => 'badge-ticketed',
-                                                            default => 'danger',
-                                                        };
-                                                    @endphp
-                                                    <span class="badge badge-{{ $statusClass }}">
-                                                        {{ ucfirst($card->payment_status) }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="6" class="text-center text-muted py-4">No payments</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                            <div class="row">
+                                @forelse($booking->cards as $index => $card)
+                                    <div class="col-12 mb-4">
+                                        <div class="card {{ $card->card_order == 1 ? 'border-primary' : '' }}">
+                                            <div
+                                                class="card-header {{ $card->card_order == 1 ? 'bg-primary text-white' : 'bg-secondary text-white' }}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <i class="bi bi-credit-card"></i>
+                                                        <strong>Payment {{ $index + 1 }}</strong>
+                                                        @if ($card->card_order == 1)
+                                                            <span class="badge badge-light ml-2">Primary Card</span>
+                                                        @endif
+                                                    </div>
+                                                    <div>
+                                                        @php
+                                                            $statusClass = match ($card->payment_status) {
+                                                                'success', 'ticketed' => 'success',
+                                                                'pending' => 'warning',
+                                                                'failed' => 'danger',
+                                                                'refunded' => 'info',
+                                                                default => 'secondary',
+                                                            };
+                                                        @endphp
+                                                        <span
+                                                            class="badge badge-{{ $statusClass }} badge-pill px-3 py-2">
+                                                            {{ ucfirst($card->payment_status) }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <!-- Card Information -->
+                                                    <div class="col-md-6">
+                                                        <h6 class="text-muted mb-3">
+                                                            <i class="bi bi-credit-card-2-front"></i> Card Details
+                                                        </h6>
+                                                        <table class="table table-sm table-borderless">
+                                                            <tr>
+                                                                <td width="35%"><strong>Card Type:</strong></td>
+                                                                <td>
+                                                                    <i
+                                                                        class="bi bi-{{ strtolower($card->card_type) == 'visa' ? 'credit-card' : 'credit-card' }}"></i>
+                                                                    {{ $card->card_type ?? 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>Card Holder:</strong></td>
+                                                                <td>{{ $card->card_holder_name ?? 'N/A' }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>Card Number:</strong></td>
+                                                                <td>
+                                                                    <code>
+                                                                        @if ($card->card_last_four)
+                                                                            •••• •••• •••• {{ $card->card_last_four }}
+                                                                        @else
+                                                                            {{ $card->masked_card ?? 'N/A' }}
+                                                                        @endif
+                                                                    </code>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>Expiration:</strong></td>
+                                                                <td>{{ $card->expiry ?? $card->expiration_month . '/' . $card->expiration_year }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>Charge Amount:</strong></td>
+                                                                <td>
+                                                                    <h5 class="text-success mb-0">
+                                                                        ${{ number_format($card->charge_amount ?? 0, 2) }}
+                                                                    </h5>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+
+                                                    <!-- Merchant & Transaction Details -->
+                                                    <div class="col-md-6">
+                                                        <h6 class="text-muted mb-3">
+                                                            <i class="bi bi-shop"></i> Merchant & Transaction Details
+                                                        </h6>
+                                                        <table class="table table-sm table-borderless">
+                                                            <tr>
+                                                                <td width="35%"><strong>Merchant Name:</strong></td>
+                                                                <td>
+                                                                    <span class="badge badge-info">
+                                                                        {{ $card->merchantname ?? ($card->merchant->name ?? 'N/A') }}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td><strong>Merchant ID:</strong></td>
+                                                                <td>
+                                                                    <code>{{ $card->merchant_id ?? 'N/A' }}</code>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>Transaction ID:</strong></td>
+                                                                <td>
+                                                                    <code
+                                                                        class="text-primary">{{ $card->transaction_id ?? 'N/A' }}</code>
+                                                                    @if ($card->transaction_id)
+                                                                        <button class="btn btn-sm btn-link copy-btn"
+                                                                            data-text="{{ $card->transaction_id }}"
+                                                                            title="Copy Transaction ID">
+                                                                            <i class="bi bi-clipboard"></i>
+                                                                        </button>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>Charged Status:</strong></td>
+                                                                <td>
+                                                                    @if ($card->is_charged)
+                                                                        <span class="badge badge-success">
+                                                                            <i class="bi bi-check-circle"></i> Charged
+                                                                        </span>
+                                                                        @if ($card->charged_at)
+                                                                            <br><small
+                                                                                class="text-muted">{{ $card->charged_at->format('d M Y, h:i A') }}</small>
+                                                                        @endif
+                                                                    @else
+                                                                        <span class="badge badge-secondary">
+                                                                            <i class="bi bi-clock"></i> Not Charged
+                                                                        </span>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+
+                                                    <!-- Billing Information (Visible when expanded) -->
+                                                    <div class="col-12 mt-3">
+                                                        <div class="collapse" id="billingInfo{{ $card->id }}">
+                                                            <div class="card card-body bg-light">
+                                                                <h6 class="text-muted mb-3">
+                                                                    <i class="bi bi-house-door"></i> Billing Information
+                                                                </h6>
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <strong>Billing Address:</strong><br>
+                                                                        {{ $card->billing_address ?? 'N/A' }}
+                                                                    </div>
+                                                                    <div class="col-md-3">
+                                                                        <strong>Billing Phone:</strong><br>
+                                                                        {{ $card->billing_phone ?? 'N/A' }}
+                                                                    </div>
+                                                                    <div class="col-md-3">
+                                                                        <strong>Billing Email:</strong><br>
+                                                                        {{ $card->billing_email ?? 'N/A' }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <button class="btn btn-sm btn-outline-secondary mt-2"
+                                                            data-toggle="collapse"
+                                                            data-target="#billingInfo{{ $card->id }}">
+                                                            <i class="bi bi-chevron-down"></i> Show Billing Details
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="col-12">
+                                        <div class="alert alert-info text-center py-5">
+                                            <i class="bi bi-credit-card display-4 d-block mb-3"></i>
+                                            <h5>No Payment Information Available</h5>
+                                            <p class="mb-0">No card or payment records found for this booking.</p>
+                                        </div>
+                                    </div>
+                                @endforelse
+
+                                {{-- Payment Summary --}}
+                                @if ($booking->cards->count() > 0)
+                                    <div class="col-12 mt-3">
+                                        <div class="alert alert-success">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <strong>Total Amount:</strong>
+                                                    <h4 class="text-success mb-0 text-white">
+                                                        ${{ number_format($booking->total_mco, 2) }}</h4>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <strong>Number of Payments:</strong>
+                                                    <h5 class="text-white">{{ $booking->cards->count() }}</h5>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <strong>Primary Payment:</strong>
+                                                    <h5 class="text-white">{{ $booking->primaryCard->card_type ?? 'N/A' }}
+                                                        (****{{ $booking->primaryCard->card_last_four ?? '' }})</h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
 
@@ -488,6 +709,131 @@
             .card {
                 border: 1px solid #ddd;
             }
+        }
+    </style>
+    <style>
+        .boarding-pass {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 2px;
+            transition: transform 0.3s;
+        }
+
+        .boarding-pass:hover {
+            transform: scale(1.02);
+        }
+
+        .boarding-pass-inner {
+            background: white;
+            border-radius: 13px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tear-line {
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: repeating-linear-gradient(90deg, #ddd, #ddd 10px, transparent 10px, transparent 20px);
+            margin: 0;
+        }
+
+        .bp-header {
+            padding: 20px 25px 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-bottom: 1px dashed #dee2e6;
+        }
+
+        .airline-info {
+            font-size: 18px;
+        }
+
+        .airline-info i {
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .flight-no {
+            margin-left: 10px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .class-badge {
+            background: #28a745;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .bp-body {
+            padding: 30px 25px;
+            background: white;
+        }
+
+        .city-code {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c3e50;
+            letter-spacing: 2px;
+        }
+
+        .city-name {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .time {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-top: 10px;
+        }
+
+        .date {
+            font-size: 11px;
+            color: #95a5a6;
+        }
+
+        .flight-direction {
+            position: relative;
+            padding-top: 20px;
+        }
+
+        .flight-direction i {
+            font-size: 30px;
+            color: #667eea;
+            transform: rotate(45deg);
+            display: inline-block;
+        }
+
+        .duration {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-top: 8px;
+        }
+
+        .bp-footer {
+            background: #f8f9fa;
+            padding: 15px 25px 20px;
+            border-top: 1px dashed #dee2e6;
+        }
+
+        .bp-footer small {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #6c757d;
+            letter-spacing: 0.5px;
+        }
+
+        .barcode {
+            border-top: 1px solid #e9ecef;
+            padding-top: 15px;
+            margin-top: 10px;
         }
     </style>
 

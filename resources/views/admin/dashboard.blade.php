@@ -7,35 +7,40 @@
     @include('admin.partials.activity-log-popup')
 
 
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="GET" action="{{ route('admin.dashboard') }}" class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label for="filter" class="form-label">Filter Type</label>
-                <select name="filter" id="filter" class="form-select">
-                    <option value="all" {{ request('filter', 'all') == 'all' ? 'selected' : '' }}>All Bookings</option>
-                    <option value="today" {{ request('filter') == 'today' ? 'selected' : '' }}>Today</option>
-                    <option value="last_month" {{ request('filter') == 'last_month' ? 'selected' : '' }}>Last Month</option>
-                    <option value="date_range" {{ request('filter') == 'date_range' ? 'selected' : '' }}>Date Range</option>
-                </select>
-            </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.dashboard') }}" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="filter" class="form-label">Filter Type</label>
+                    <select name="filter" id="filter" class="form-select">
+                        <option value="all" {{ request('filter', 'all') == 'all' ? 'selected' : '' }}>All Bookings
+                        </option>
+                        <option value="today" {{ request('filter') == 'today' ? 'selected' : '' }}>Today</option>
+                        <option value="last_month" {{ request('filter') == 'last_month' ? 'selected' : '' }}>Last Month
+                        </option>
+                        <option value="date_range" {{ request('filter') == 'date_range' ? 'selected' : '' }}>Date Range
+                        </option>
+                    </select>
+                </div>
 
-            <div class="col-md-3 date-range-fields" style="{{ request('filter') == 'date_range' ? '' : 'display:none;' }}">
-                <label for="from" class="form-label">From Date</label>
-                <input type="date" name="from" id="from" value="{{ request('from') }}" class="form-control">
-            </div>
+                <div class="col-md-3 date-range-fields"
+                    style="{{ request('filter') == 'date_range' ? '' : 'display:none;' }}">
+                    <label for="from" class="form-label">From Date</label>
+                    <input type="date" name="from" id="from" value="{{ request('from') }}" class="form-control">
+                </div>
 
-            <div class="col-md-3 date-range-fields" style="{{ request('filter') == 'date_range' ? '' : 'display:none;' }}">
-                <label for="to" class="form-label">To Date</label>
-                <input type="date" name="to" id="to" value="{{ request('to') }}" class="form-control">
-            </div>
+                <div class="col-md-3 date-range-fields"
+                    style="{{ request('filter') == 'date_range' ? '' : 'display:none;' }}">
+                    <label for="to" class="form-label">To Date</label>
+                    <input type="date" name="to" id="to" value="{{ request('to') }}" class="form-control">
+                </div>
 
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
-            </div>
-        </form>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
     <div class="row mb-4">
         <div class="col-md-4">
             <div class="card shadow-sm border-0">
@@ -93,17 +98,6 @@
         </div>
     </div>
 
-
-    <div class="row justify-content-center align-items-center g-2">
-        <h5 class="text-left ">Media Campaign Report</h5>
-        <div class="col"><iframe width="100%" height="900"
-                src="https://lookerstudio.google.com/embed/reporting/6308a4ec-7497-41c6-b4fe-5f174fbc2a82/page/p_t5ws2iy80d"
-                frameborder="0" style="border:0" allowfullscreen
-                sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
-        </div>
-    </div>
-
-
     {{-- Shortcuts --}}
     <div class="mb-4" id="create-booking">
         <a href="{{ route('admin.agents.index') }}" class="btn btn-outline-secondary me-2">
@@ -135,19 +129,19 @@
                     </thead>
                     <tbody>
                         @foreach ($latestBookings as $booking)
-                        <tr>
-                        <td>{{ $booking->id }}</td>
-                        <td>{{ $booking->agent_custom_id ?? optional($booking->user)->agent_custom_id }}</td>
-                        <td>{{ $booking->customer_email }}</td>
-                        <td>{{ $booking->flight_type }}</td>
-                        <td>{{ $booking->currency }} {{ number_format($booking->amount_charged, 2) }}</td>
-                        <td>
-                        <span class="badge bg-{{ $booking->status === 'charged' ? 'success' : 'warning' }}">
-                        {{ ucfirst($booking->status) }}
-                        </span>
-                        </td>
-                        <td>{{ $booking->created_at->format('Y-m-d H:i') }}</td>
-                        </tr> 
+                            <tr>
+                                <td>{{ $booking->id }}</td>
+                                <td>{{ $booking->agent_custom_id ?? optional($booking->user)->agent_custom_id }}</td>
+                                <td>{{ $booking->customer_email }}</td>
+                                <td>{{ $booking->flight_type }}</td>
+                                <td>{{ $booking->currency }} {{ number_format($booking->amount_charged, 2) }}</td>
+                                <td>
+                                    <span class="badge bg-{{ $booking->status === 'charged' ? 'success' : 'warning' }}">
+                                        {{ ucfirst($booking->status) }}
+                                    </span>
+                                </td>
+                                <td>{{ $booking->created_at->format('Y-m-d H:i') }}</td>
+                            </tr>
                         @endforeach
                     </tbody>
                 </table>

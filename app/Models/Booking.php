@@ -14,48 +14,6 @@ class Booking extends Model
 
     protected $appends = ['badge_class'];
 
-    // protected $fillable = [
-
-    //     'user_id',
-    //     'agent_custom_id',
-    //     'booking_reference',
-    //     'booking_date',
-    //     'call_type',
-    //     'service_provided',
-    //     'service_type',
-    //     'booking_portal',
-    //     'email_auth_taken',
-    //     'customer_name',
-    //     'customer_email',
-    //     'customer_phone',
-    //     'billing_phone',
-    //     'billing_address',
-    //     'flight_type',
-    //     'departure_city',
-    //     'arrival_city',
-    //     'gk_pnr',
-    //     'airline_pnr',
-    //     'total_passengers',
-    //     'adults',
-    //     'children',
-    //     'infants',
-    //     'card_last_four',
-    //     'currency',
-    //     'amount_charged',
-    //     'amount_paid_airline',
-    //     'total_mco',
-    //     'status',
-    //     'agent_remarks',
-    //     'charging_remarks',
-    //     'mis_remarks',
-    //     'hotel_required',
-    //     'cab_required',
-    //     'insurance_required',
-    //     'auth_email_sent_at',
-    //     'payment_confirmed_at',
-    //     'ticketed_at',
-    // ];
-
     protected $fillable = [
         'user_id',
         'agent_custom_id',
