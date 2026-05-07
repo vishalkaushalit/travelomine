@@ -1,11 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title>@yield('title', 'Changes Panel')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Changes Panel | Flight Booking CRM</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -20,13 +19,8 @@
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
 
-    @stack('styles')
 
-    <style>
-        body {
-            font-family: 'Source Sans Pro', sans-serif;
-        }
-    </style>
+    @stack('styles')
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -36,7 +30,6 @@
                 {{-- @include('components.user-notifications') --}}
             </div>
         @endauth
-
         <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <!-- Left navbar links -->
@@ -53,7 +46,7 @@
                     </li>
 
                     <li class="nav-item d-none d-sm-inline-block">
-                        <a href="{{ route('changes.bookings.index') }}" class="nav-link">All Bookings</a>
+                        <a href="{{ route('changes.bookings.all') }}" class="nav-link">Bookings</a>
                     </li>
                 @endauth
 
@@ -67,7 +60,9 @@
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 @auth
-                    @include('layouts.notification-bell')
+                    <a href="{{ route('changes.notifications') }}" class="nav-link">
+                        <i class="nav-icon fas fa-bell"></i>
+                    </a>
                     <!-- User Account Menu -->
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
@@ -86,7 +81,7 @@
 
                             <div class="dropdown-divider"></div>
 
-                            <form method="POST" action="{{ route('changes.logout') }}" class="d-inline">
+                            <form method="POST" action="{{ route('changes.logout') }}">
                                 @csrf
                                 <button type="submit" class="dropdown-item">
                                     <i class="fas fa-sign-out-alt mr-2"></i> Logout
@@ -95,23 +90,47 @@
                         </div>
                     </li>
                 @endauth
+
+                @guest
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('public.home') }}">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span class="d-none d-md-inline ml-1">Login</span>
+                        </a>
+                    </li>
+                @endguest
             </ul>
         </nav>
 
-        @auth
-            <!-- Main Sidebar Container -->
-            <aside class="main-sidebar sidebar-dark-primary elevation-4">
-                <!-- Brand Logo -->
-                <a href="{{ route('changes.dashboard') }}" class="brand-link">
-                    <span class="brand-text font-weight-light">Changes Panel</span>
-                </a>
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="{{ auth()->check() ? route('changes.dashboard') : route('changes.login') }}" class="brand-link">
+                <i class="fas fa-plane-departure brand-image ml-3"></i>
+                <span class="brand-text font-weight-light">Changes Panel</span>
+            </a>
 
-                <!-- Sidebar -->
-                <div class="sidebar">
+            <!-- Sidebar -->
+            <div class="sidebar">
+
+                @auth
+                    <!-- Sidebar user panel -->
+                    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                        <div class="image">
+                            <i class="fas fa-user-circle fa-2x text-white"></i>
+                        </div>
+                        <div class="info">
+                            <a href="#" class="d-block">{{ auth()->user()->name }}</a>
+                            <small class="text-muted">Changes</small>
+                        </div>
+                    </div>
+
                     <!-- Sidebar Menu -->
                     <nav class="mt-2">
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                             data-accordion="false">
+
+                            <!-- Dashboard -->
                             <li class="nav-item">
                                 <a href="{{ route('changes.dashboard') }}"
                                     class="nav-link {{ request()->routeIs('changes.dashboard') ? 'active' : '' }}">
@@ -119,34 +138,74 @@
                                     <p>Dashboard</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ route('changes.bookings.all') }}"
+
+                            <!-- Bookings -->
+                            <li class="nav-item {{ request()->routeIs('changes.bookings.*') ? 'menu-open' : '' }}">
+                                <a href="#"
                                     class="nav-link {{ request()->routeIs('changes.bookings.*') ? 'active' : '' }}">
-                                    <i class="nav-icon fas fa-calendar-check"></i>
-                                    <p>All Bookings</p>
+                                    <i class="nav-icon fas fa-clipboard-list"></i>
+                                    <p>
+                                        Bookings
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ route('changes.bookings.all') }}"
+                                            class="nav-link {{ request()->routeIs('changes.bookings.index') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>All Bookings</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <!-- Reports (Placeholder) -->
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-chart-bar"></i>
+                                    <p>Reports</p>
+                                </a>
+                            </li>
+
+                            <!-- Notifications -->
+                            <li class="nav-item">
+                                <a href="{{ route('changes.notifications') }}" class="nav-link">
+                                    <i class="nav-icon fas fa-bell"></i>
+                                    <p>Notifications</p>
+                                </a>
+                            </li>
+
+                            <!-- Settings (Placeholder) -->
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-cog"></i>
+                                    <p>Settings</p>
                                 </a>
                             </li>
                         </ul>
                     </nav>
-                </div>
-            </aside>
-        @endauth
+                @endauth
+
+            </div>
+        </aside>
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
-            @yield('content')
+            <section class="content">
+                @yield('content')
+            </section>
         </div>
 
-        @auth
-            <!-- Footer -->
-            <footer class="main-footer">
-                <strong>Copyright &copy; {{ date('Y') }} <a href="#">Travelomile - Changes Panel</a>.</strong>
-                All rights reserved.
-                <div class="float-right d-none d-sm-inline-block">
-                    <b>Version</b> 1.0.0
-                </div>
-            </footer>
-        @endauth
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; {{ date('Y') }} <a href="#">Flight Booking CRM</a>.</strong>
+            All rights reserved.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Version</b> 1.0.0
+            </div>
+        </footer>
     </div>
 
     <!-- jQuery -->
