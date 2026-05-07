@@ -13,9 +13,9 @@
                 <p class="text-muted">Manage all bookings from all agents</p>
             </div>
             <div class="col-auto">
-                <a href="{{ route('changes.agents.index') }}" class="btn btn-outline-primary">
+                {{-- <a href="{{ route('changes.agents.index') }}" class="btn btn-outline-primary">
                     <i class="bi bi-people"></i> View Agents
-                </a>
+                </a> --}}
             </div>
         </div>
 
@@ -71,7 +71,8 @@
 
                 </form>
 
-                <form method="POST" action="{{ route('changes.bookings.export.selected') }}">
+                {{-- <form method="POST" action="{{ route('changes.bookings.export.selected') }}"> --}}
+                <form method="POST" action="#">
                     @csrf
 
                     <input type="hidden" name="search" value="{{ request('search') }}">

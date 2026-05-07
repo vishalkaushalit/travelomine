@@ -347,6 +347,9 @@ Route::get('/mis/notifications', function () {
 Route::get('/mis-manager/notifications', function () {
     return view('mis-manager.notifications');
 })->middleware(['auth', 'role:mis-manager'])->name('mis-manager.notifications');
+Route::get('/changes/notifications', function () {
+    return view('changes.notifications');
+})->middleware(['auth', 'role:changes'])->name('changes.notifications');
 
 // clear all cache
 Route::get('/clear-all-cache', function () {
