@@ -229,6 +229,8 @@ class UserController extends Controller
             'charge' => 'CHG',
             'support' => 'SUP',
             'mis' => 'MIS',
+            'mis-manager' => 'MIS_MGNR',
+            'change' => 'CHNG',
             default => 'USR'
         };
         

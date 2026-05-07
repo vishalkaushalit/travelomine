@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MIS Panel | Flight Booking CRM</title>
+    <title>Changes Panel | Flight Booking CRM</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -42,17 +42,17 @@
                     </li>
 
                     <li class="nav-item d-none d-sm-inline-block">
-                        <a href="{{ route('mis.dashboard') }}" class="nav-link">Dashboard</a>
+                        <a href="{{ route('changes.dashboard') }}" class="nav-link">Dashboard</a>
                     </li>
 
                     <li class="nav-item d-none d-sm-inline-block">
-                        <a href="{{ route('mis.bookings.all') }}" class="nav-link">Bookings</a>
+                        <a href="{{ route('changes.bookings.all') }}" class="nav-link">Bookings</a>
                     </li>
                 @endauth
 
                 @guest
                     <li class="nav-item d-none d-sm-inline-block">
-                        <a href="{{ route('mis.login') }}" class="nav-link">MIS Login</a>
+                        <a href="{{ route('changes.login') }}" class="nav-link">Changes Login</a>
                     </li>
                 @endguest
             </ul>
@@ -60,7 +60,7 @@
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 @auth
-                    <a href="{{ route('mis.notifications') }}" class="nav-link">
+                    <a href="{{ route('changes.notifications') }}" class="nav-link">
                         <i class="nav-icon fas fa-bell"></i>
                     </a>
                     <!-- User Account Menu -->
@@ -81,7 +81,7 @@
 
                             <div class="dropdown-divider"></div>
 
-                            <form method="POST" action="{{ route('mis.logout') }}">
+                            <form method="POST" action="{{ route('changes.logout') }}">
                                 @csrf
                                 <button type="submit" class="dropdown-item">
                                     <i class="fas fa-sign-out-alt mr-2"></i> Logout
@@ -105,9 +105,9 @@
         <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
-            <a href="{{ auth()->check() ? route('mis.dashboard') : route('mis.login') }}" class="brand-link">
+            <a href="{{ auth()->check() ? route('changes.dashboard') : route('changes.login') }}" class="brand-link">
                 <i class="fas fa-plane-departure brand-image ml-3"></i>
-                <span class="brand-text font-weight-light">MIS Panel</span>
+                <span class="brand-text font-weight-light">Changes Panel</span>
             </a>
 
             <!-- Sidebar -->
@@ -121,7 +121,7 @@
                         </div>
                         <div class="info">
                             <a href="#" class="d-block">{{ auth()->user()->name }}</a>
-                            <small class="text-muted">MIS</small>
+                            <small class="text-muted">Changes</small>
                         </div>
                     </div>
 
@@ -132,17 +132,17 @@
 
                             <!-- Dashboard -->
                             <li class="nav-item">
-                                <a href="{{ route('mis.dashboard') }}"
-                                    class="nav-link {{ request()->routeIs('mis.dashboard') ? 'active' : '' }}">
+                                <a href="{{ route('changes.dashboard') }}"
+                                    class="nav-link {{ request()->routeIs('changes.dashboard') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-tachometer-alt"></i>
                                     <p>Dashboard</p>
                                 </a>
                             </li>
 
                             <!-- Bookings -->
-                            <li class="nav-item {{ request()->routeIs('mis.bookings.*') ? 'menu-open' : '' }}">
+                            <li class="nav-item {{ request()->routeIs('changes.bookings.*') ? 'menu-open' : '' }}">
                                 <a href="#"
-                                    class="nav-link {{ request()->routeIs('mis.bookings.*') ? 'active' : '' }}">
+                                    class="nav-link {{ request()->routeIs('changes.bookings.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-clipboard-list"></i>
                                     <p>
                                         Bookings
@@ -152,8 +152,8 @@
 
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
-                                        <a href="{{ route('mis.bookings.all') }}"
-                                            class="nav-link {{ request()->routeIs('mis.bookings.index') ? 'active' : '' }}">
+                                        <a href="{{ route('changes.bookings.all') }}"
+                                            class="nav-link {{ request()->routeIs('changes.bookings.index') ? 'active' : '' }}">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>All Bookings</p>
                                         </a>
@@ -171,7 +171,7 @@
 
                             <!-- Notifications -->
                             <li class="nav-item">
-                                <a href="{{ route('mis.notifications') }}" class="nav-link">
+                                <a href="{{ route('changes.notifications') }}" class="nav-link">
                                     <i class="nav-icon fas fa-bell"></i>
                                     <p>Notifications</p>
                                 </a>

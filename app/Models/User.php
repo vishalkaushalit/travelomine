@@ -65,6 +65,7 @@ class User extends Authenticatable implements FilamentUser
             'charge' => in_array($this->role, ['charge']), // Multiple charging team members
             'support' => in_array($this->role, ['support']),   // Multiple support team members
             'mis' => in_array($this->role, ['mis']),           // Multiple MIS team members
+            'changes' => in_array($this->role, ['changes']),           // Changes panel
             default => false,
         };
     }
@@ -114,6 +115,11 @@ class User extends Authenticatable implements FilamentUser
     public function isMis(): bool
     {
         return $this->role === 'mis';
+    }
+
+    public function isChanges(): bool
+    {
+        return $this->role === 'changes';
     }
 
     public function isBlocked(): bool
