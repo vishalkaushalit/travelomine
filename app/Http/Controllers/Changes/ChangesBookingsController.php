@@ -10,9 +10,9 @@ use Illuminate\Http\Request;
 class ChangesBookingsController extends Controller
 {
     /**
-     * Display ALL bookings for changes panel
+     * Display ALL bookings (not filtered by agent)
      */
-    public function index(Request $request)
+    public function all(Request $request)
     {
         $query = Booking::with(['user', 'passengers', 'segments']);
 
@@ -52,42 +52,99 @@ class ChangesBookingsController extends Controller
             $query->whereDate('booking_date', '<=', $request->date_to);
         }
 
-        $bookings = $query->orderBy('created_at', 'desc')->paginate(15);
+        // Per page limit, max 500
+        $perPage = (int) $request->get('per_page', 25);
+        $allowedPerPage = [25, 50, 100, 250, 500];
 
-        $agents = User::where('role', 'agent')->select('id', 'name')->get();
+        if (! in_array($perPage, $allowedPerPage)) {
+            $perPage = 25;
+        }
 
-        return view('changes.bookings.index', compact('bookings', 'agents'));
+        $bookings = $query->orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        $agents = User::where('email', 'like', '%@callinggenie.com')
+            ->orWhere('email', 'like', '%@trafficpirates.com')
+            ->orderBy('name')
+            ->get();
+
+        return view('changes.bookings.all', compact('bookings', 'agents', 'perPage'));
     }
 
     /**
-     * Show the form for editing the specified booking.
+     * Display bookings for a specific agent
+     */
+    public function index(Request $request)
+    {
+        $agentId = $request->query('agent_id');
+        // Get the agent details
+        $agent = User::findOrFail($agentId);
+        // Fetch bookings with relationships
+        $bookings = Booking::with(['passengers', 'segments', 'user'])
+            ->where('user_id', $agentId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('changes.bookings.index', compact('bookings', 'agent'));
+    }
+
+    /**
+     * Show single booking details
+     */
+    public function show($id)
+    {
+        $booking = Booking::with(['passengers', 'segments', 'user'])
+            ->findOrFail($id);
+
+        return view('changes.bookings.show', compact('booking'));
+    }
+
+    /**
+     * Show edit form
      */
     public function edit($id)
     {
-        $booking = Booking::with(['user', 'passengers', 'segments'])->findOrFail($id);
+        $booking = Booking::with(['passengers', 'segments'])
+            ->findOrFail($id);
 
         return view('changes.bookings.edit', compact('booking'));
     }
 
     /**
-     * Update the specified booking in storage.
+     * Update booking
      */
     public function update(Request $request, $id)
     {
         $booking = Booking::findOrFail($id);
 
-        // Add validation and update logic here
-        // For now, just redirect back
-        return redirect()->route('changes.bookings.index')->with('success', 'Booking updated successfully.');
+        $validated = $request->validate([
+            'status' => 'required|in:pending,assigned_to_charging,auth_email_sent,payment_processing,confirmed,ticketed,failed,cancelled,hold,refund,charging_in_progress,Alert,RDR,retrieval,chargeback,charged',
+            'mis_remarks' => 'nullable|string',
+            'amount_charged' => 'required|numeric',
+            'amount_paid_airline' => 'required|numeric',
+            'total_mco' => 'required|numeric',
+        ]);
+
+        $booking->update($validated);
+
+        return redirect()
+            ->route('changes.bookings.index', ['agent_id' => $booking->user_id])
+            ->with('success', 'Booking updated successfully!');
     }
 
     /**
-     * Display the specified booking.
+     * Delete booking
      */
-    public function show($id)
+    public function destroy($id)
     {
-        $booking = Booking::with(['user', 'passengers', 'segments'])->findOrFail($id);
+        $booking = Booking::findOrFail($id);
+        $agentId = $booking->user_id;
 
-        return view('changes.bookings.show', compact('booking'));
+        $booking->delete();
+
+        return redirect()
+            ->route('changes.bookings.index', ['agent_id' => $agentId])
+            ->with('success', 'Booking deleted successfully!');
     }
 }

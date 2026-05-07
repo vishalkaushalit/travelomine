@@ -120,7 +120,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('changes.bookings.index') }}"
+                                <a href="{{ route('changes.bookings.all') }}"
                                     class="nav-link {{ request()->routeIs('changes.bookings.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-calendar-check"></i>
                                     <p>All Bookings</p>

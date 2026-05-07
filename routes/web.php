@@ -18,8 +18,6 @@ use App\Http\Controllers\Agent\bookings\AgentBookingSearchController;
 use App\Http\Controllers\Agent\ChargingController;
 use App\Http\Controllers\Agent\DashboardController;
 use App\Http\Controllers\AgentBookingController;
-use App\Http\Controllers\Changes\ChangesBookingsController;
-use App\Http\Controllers\Changes\ChangesLoginController;
 use App\Http\Controllers\Auth\ChargeLoginController;
 use App\Http\Controllers\AuthConsentController;
 use App\Http\Controllers\BookingController;
@@ -33,6 +31,9 @@ use App\Http\Controllers\Mis\MisLoginController;
 use App\Http\Controllers\MisManager\MisManagerBookingsController;
 use App\Http\Controllers\MisManager\MisManagerDashboardController;
 use App\Http\Controllers\MisManager\MisManagerLoginController;
+use App\Http\Controllers\Changes\ChangesDashboardController;
+use App\Http\Controllers\Changes\ChangesBookingsController;
+use App\Http\Controllers\Changes\ChangesLoginController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPaymentController;
 // payment contollers
@@ -218,16 +219,7 @@ Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.
     Route::put('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
 });
-// CHANGES PANEL ROUTES - Role: changes
-Route::middleware(['auth', 'role:changes'])->prefix('changes')->name('changes.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('changes.dashboard');
-    })->name('dashboard');
-    Route::get('/bookings', [\App\Http\Controllers\Changes\ChangesBookingsController::class, 'index'])->name('bookings.index');
-    Route::get('/bookings/{id}', [\App\Http\Controllers\Changes\ChangesBookingsController::class, 'show'])->name('bookings.show');
-    Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Changes\ChangesBookingsController::class, 'edit'])->name('bookings.edit');
-    Route::put('/bookings/{id}', [\App\Http\Controllers\Changes\ChangesBookingsController::class, 'update'])->name('bookings.update');
-});
+
 // customer support ROUTES
 Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardController::class, 'index'])->name('dashboard');
@@ -389,4 +381,14 @@ Route::middleware(['auth', 'role:mis-manager'])->prefix('mis-manager')->name('mi
     Route::get('/bookings/{id}/edit', [MisManagerBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [MisManagerBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [MisManagerBookingsController::class, 'destroy'])->name('bookings.destroy');
+});
+
+Route::middleware(['auth', 'role:changes'])->prefix('changes')->name('changes.')->group(function () {
+    Route::get('/dashboard', [ChangesDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/bookings/all', [ChangesBookingsController::class, 'all'])->name('bookings.all');
+    Route::get('/bookings', [ChangesBookingsController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{id}', [ChangesBookingsController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/edit', [ChangesBookingsController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{id}', [ChangesBookingsController::class, 'update'])->name('bookings.update');
+    Route::delete('/bookings/{id}', [ChangesBookingsController::class, 'destroy'])->name('bookings.destroy');
 });

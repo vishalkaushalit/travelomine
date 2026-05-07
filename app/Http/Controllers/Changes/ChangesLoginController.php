@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Change;
+namespace App\Http\Controllers\Changes;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -9,7 +9,7 @@ class ChangesLoginController extends Controller
 {
     public function showLoginForm()
     {
-        return view('change.auth.login');
+        return view('changes.auth.login');
     }
 
     public function login(Request $request)
@@ -22,10 +22,10 @@ class ChangesLoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             
-            if (auth()->user()->role === 'change') {
-                // Ensure the authenticated user has the Spatie role required by role:change middleware.
-                auth()->user()->syncRoles(['change']);
-                return redirect()->intended(route('change.dashboard'));
+            if (auth()->user()->role === 'changes') {
+                // Ensure the authenticated user has the Spatie role required by role:changes middleware.
+                auth()->user()->syncRoles(['changes']);
+                return redirect()->intended(route('changes.dashboard'));
             }
             
             Auth::logout();
@@ -36,7 +36,7 @@ class ChangesLoginController extends Controller
     }
 
     /**
-     * Log the change out of the application.
+     * Log the changes out of the application.
      */
     public function logout(Request $request)
     {
@@ -46,6 +46,6 @@ class ChangesLoginController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/change/login')->with('status', 'You have been logged out safely.');
+        return redirect('/changes/login')->with('status', 'You have been logged out safely.');
     }
 }

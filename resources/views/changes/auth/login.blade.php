@@ -6,13 +6,12 @@
             <div class="col-md-5">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Changes Panel Login</h3>
+                        <h3 class="card-title">Changes Login</h3>
                     </div>
                     <div class="card-body">
-                        @if (session('error'))
-                            <div class="alert alert-danger">
-                                {{ session('error') }}
-                            </div>
+
+                        @if (session('success'))
+                            <div class="alert alert-success mt-2">{{ session('success') }}</div>
                         @endif
 
                         @if ($errors->any())
@@ -32,17 +31,11 @@
                                 <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                                 <input type="email" name="email" id="email" class="form-control"
                                     value="{{ old('email') }}" required>
-                                @error('email')
-                                    <small class="text-danger">{{ $message }}</small>
-                                @enderror
                             </div>
 
                             <div class="form-group">
                                 <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                                 <input type="password" name="password" id="password" class="form-control" required>
-                                @error('password')
-                                    <small class="text-danger">{{ $message }}</small>
-                                @enderror
                             </div>
 
                             <div class="form-group form-check">
@@ -52,6 +45,10 @@
                             </div>
 
                             <button class="btn btn-primary btn-block" type="submit">Login</button>
+
+                            <div class="mt-3 text-center">
+                                <p class="text-muted">Contact Admin if you facing any problem in login process</p>
+                            </div>
                         </form>
                     </div>
                 </div>
