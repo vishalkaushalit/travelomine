@@ -1,0 +1,4 @@
+Current process - 
+
+agents create bookings 
+agents assign booking to charge team 

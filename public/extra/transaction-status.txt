@@ -1,0 +1,31 @@
+agent create bookings
+charge team charge the amount by customer 
+payment gateway - nmi, 
+db nmi_transactions =
+    protected $fillable = [
+        'merchant_id',
+        'booking_id',
+        'payment_link_id',
+        'order_id',
+        'transaction_id',
+        'type',
+        'customer_first_name',
+        'customer_last_name',
+        'email',
+        'card_last4',
+        'card_brand',
+        'address1',
+        'city',
+        'state',
+        'zip',
+        'country',
+        'amount',
+        'currency',
+        'status',
+        'processed_at',
+        'raw_response',
+    ];
+
+    - there are 2 type of status
+    1. booking status - pending(payment pending), assign_to_chargeing, Charging_process, Confirmed
+    
