@@ -297,7 +297,7 @@
                     {{-- Announcements --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.notifications.index') }}" class="nav-link {{ request()->is('admin/notifications*') ? 'active' : '' }}">
-                            <i class="bi bi-bell-fill"></i> Announcements <i class="bi bi-speaker"></i>
+                            <i class="bi bi-bell-fill"></i> Announcements
                         </a>
                     </li>
                     
