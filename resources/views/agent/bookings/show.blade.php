@@ -436,10 +436,17 @@
                                                                 </td>
                                                             </tr>
                                                             <tr>
+<<<<<<< HEAD
                                                                 <td><strong>MCO:</strong></td>
                                                                 <td>
                                                                     <h5 class="text-success mb-0">
                                                                         ${{ number_format($booking->total_mco ?? 0, 2) }}
+=======
+                                                                <td><strong>Charge Amount:</strong></td>
+                                                                <td>
+                                                                    <h5 class="text-success mb-0">
+                                                                        ${{ number_format($card->charge_amount ?? 0, 2) }}
+>>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
                                                                     </h5>
                                                                 </td>
                                                             </tr>

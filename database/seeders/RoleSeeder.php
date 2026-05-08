@@ -3,13 +3,19 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+<<<<<<< HEAD
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+=======
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
+>>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
 
 class RoleSeeder extends Seeder
 {
     public function run(): void
     {
+<<<<<<< HEAD
         // Define allowed roles
         $roles = ['admin', 'manager', 'agent', 'charging', 'support', 'mis', 'mis-manager'];
         
@@ -72,3 +78,19 @@ class RoleSeeder extends Seeder
         }
     }
 }
+=======
+        // Reset cached roles/permissions
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Create roles (idempotent - won't duplicate)
+        $roles = ['admin', 'manager', 'agent', 'charging', 'support', 'mis', 'mis-manager'];
+        
+        foreach ($roles as $roleName) {
+            Role::firstOrCreate(
+                ['name' => $roleName],
+                ['name' => $roleName, 'guard_name' => 'web']
+            );
+        }
+    }
+}
+>>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7

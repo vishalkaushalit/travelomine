@@ -4,7 +4,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+<<<<<<< HEAD
     <title>MIS Panel | Flight Booking CRM</title>
+=======
+    <title>Agent Panel | Flight Booking CRM</title>
+>>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

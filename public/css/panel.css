@@ -104,10 +104,13 @@ div#segments_container {
     margin: 0;
     background-color: transparent !important;
     box-shadow: 0;
+<<<<<<< HEAD
 }
 
 /* hide radio input btn from bookings form and show a btbn  */
 
 input#payment_type_full, input#payment_type_split {
     visibility: hidden;
+=======
+>>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
 }

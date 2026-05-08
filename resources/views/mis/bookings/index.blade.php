@@ -96,7 +96,11 @@
                                            title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </a>
+<<<<<<< HEAD
                                         {{-- <form action="{{ route('mis.bookings.destroy', $booking->id) }}" 
+=======
+                                        <form action="{{ route('mis.bookings.destroy', $booking->id) }}" 
+>>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
                                               method="POST" 
                                               style="display:inline;"
                                               onsubmit="return confirm('Are you sure you want to delete this booking?');">
@@ -105,7 +109,11 @@
                                             <button type="submit" class="btn btn-sm btn-danger" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
+<<<<<<< HEAD
                                         </form> --}}
+=======
+                                        </form>
+>>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
                                     </div>
                                 </td>
                             </tr>
