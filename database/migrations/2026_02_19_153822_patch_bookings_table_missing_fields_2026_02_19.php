@@ -11,6 +11,7 @@ return new class extends Migration
     {
         Schema::table('bookings', function (Blueprint $table) {
 
+            // helper: add column only if missing
             $add = function(string $col) use ($table) {
                 return !Schema::hasColumn('bookings', $col);
             };
