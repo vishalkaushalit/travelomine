@@ -96,7 +96,7 @@
                                            title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <form action="{{ route('mis.bookings.destroy', $booking->id) }}" 
+                                        {{-- <form action="{{ route('mis.bookings.destroy', $booking->id) }}" 
                                               method="POST" 
                                               style="display:inline;"
                                               onsubmit="return confirm('Are you sure you want to delete this booking?');">
@@ -105,7 +105,7 @@
                                             <button type="submit" class="btn btn-sm btn-danger" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
-                                        </form>
+                                        </form> --}}
                                     </div>
                                 </td>
                             </tr>

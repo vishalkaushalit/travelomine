@@ -48,10 +48,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 // use App\Mail\TestMail;
 
-// Route::get('/send-test-mail', function () {
-//     Mail::to('vishalkaushalit@gmail.com')->send(new TestMail());
-//     return 'Mail sent!';
-// });
 
 Route::get('/', function () {
     return view('welcome');
