@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
-    use HasFactory, Notifiable;
-
-    protected $table = 'users';
+    use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'name',
@@ -27,7 +28,6 @@ class User extends Authenticatable
         'is_blocked',
         'last_login',
         'created_by',
-        'email_verified_at',
     ];
 
     protected $hidden = [
@@ -39,14 +39,14 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
-            'is_blocked' => 'boolean',
-            'last_login' => 'datetime',
+            'password'          => 'hashed',
+            'is_active'         => 'boolean',
+            'is_blocked'        => 'boolean',
+            'last_login'        => 'datetime',
         ];
     }
 
-    // Auto-generate agent_custom_id if not provided
+    // ✅ Auto-generate agent_custom_id
     protected static function booted(): void
     {
         static::creating(function ($user) {
@@ -56,7 +56,36 @@ class User extends Authenticatable
         });
     }
 
-    // Helper Methods for Role Checking
+    // ✅ FILAMENT PANEL ACCESS - Updated for multiple roles per panel
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return match ($panel->getId()) {
+            'admin' => in_array($this->role, ['admin', 'manager']), // Managers assist admins
+            'agent' => $this->role === 'agent',
+            'charge' => in_array($this->role, ['charge']), // Multiple charging team members
+            'support' => in_array($this->role, ['support']),   // Multiple support team members
+            'mis' => in_array($this->role, ['mis']),           // Multiple MIS team members
+            default => false,
+        };
+    }
+
+    // ✅ RELATIONSHIPS
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'user_id');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function createdUsers(): HasMany
+    {
+        return $this->hasMany(User::class, 'created_by');
+    }
+
+    // ✅ HELPER METHODS - Added new role checkers
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -74,7 +103,7 @@ class User extends Authenticatable
 
     public function isCharging(): bool
     {
-        return $this->role === 'charging';
+        return $this->role === 'charge';
     }
 
     public function isSupport(): bool
@@ -87,15 +116,6 @@ class User extends Authenticatable
         return $this->role === 'mis';
     }
 
-    public function isMisManager(): bool
-    {
-        return $this->role === 'mis-manager';
-    }
-     public function isChanges(): bool
-    {
-        return $this->role === 'changes';
-    }
-
     public function isBlocked(): bool
     {
         return $this->is_blocked;
@@ -104,26 +124,5 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->is_active;
-    }
-
-    public function hasAnyRole(array $roles): bool
-    {
-        return in_array($this->role, $roles);
-    }
-
-    // Relationships
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class, 'user_id');
-    }
-
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function createdUsers(): HasMany
-    {
-        return $this->hasMany(User::class, 'created_by');
     }
 }

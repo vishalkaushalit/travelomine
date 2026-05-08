@@ -436,10 +436,10 @@
                                                                 </td>
                                                             </tr>
                                                             <tr>
-                                                                <td><strong>MCO:</strong></td>
+                                                                <td><strong>Charge Amount:</strong></td>
                                                                 <td>
                                                                     <h5 class="text-success mb-0">
-                                                                        ${{ number_format($booking->total_mco ?? 0, 2) }}
+                                                                        ${{ number_format($card->charge_amount ?? 0, 2) }}
                                                                     </h5>
                                                                 </td>
                                                             </tr>

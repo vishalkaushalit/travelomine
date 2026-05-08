@@ -105,9 +105,3 @@ div#segments_container {
     background-color: transparent !important;
     box-shadow: 0;
 }
-
-/* hide radio input btn from bookings form and show a btbn  */
-
-input#payment_type_full, input#payment_type_split {
-    visibility: hidden;
-}
