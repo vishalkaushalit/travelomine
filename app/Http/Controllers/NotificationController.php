@@ -43,7 +43,6 @@ class NotificationController extends Controller
     }
 
     /**
-<<<<<<< HEAD
      * Get unread notifications count for current user
      */
     public function getUnreadCount()
@@ -80,8 +79,6 @@ class NotificationController extends Controller
     }
 
     /**
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
      * Get unread notifications for current user
      */
     public function getUnreadNotifications()

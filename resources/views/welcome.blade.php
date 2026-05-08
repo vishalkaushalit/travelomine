@@ -280,7 +280,6 @@
                                     </div>
                                 </a>
 
-<<<<<<< HEAD
                                 {{-- Changes Panel --}}
                                 <a href="{{ route('changes.login') }}" class="text-decoration-none text-light">
                                     <div class="role-card p-3 h-100">
@@ -299,8 +298,6 @@
                                     </div>
                                 </a>
 
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
                             </div>
 
                             <div class="col-md-6 d-flex flex-column gap-3">

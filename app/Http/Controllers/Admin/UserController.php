@@ -1,10 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-<<<<<<< HEAD
 
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
 use App\Http\Controllers\Controller;
 use App\Mail\WelcomeMail;
 use App\Models\User;
@@ -12,19 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-<<<<<<< HEAD
 
 class UserController extends Controller
 {
     // Define allowed roles as class constant
     const ALLOWED_ROLES = ['admin', 'manager', 'agent', 'charging', 'support', 'mis', 'mis-manager'];
 
-=======
-use Spatie\Permission\Models\Role;
-
-class UserController extends Controller
-{
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
     /**
      * Display a listing of users
      */
@@ -42,11 +32,7 @@ class UserController extends Controller
      */
     public function create()
     {
-<<<<<<< HEAD
         $roles = self::ALLOWED_ROLES;
-=======
-        $roles = Role::all()->pluck('name');
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
         return view('admin.users.create', compact('roles'));
     }
 
@@ -62,11 +48,7 @@ class UserController extends Controller
             'extension_number' => 'nullable|alpha_num|max:20',
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
-<<<<<<< HEAD
             'role' => 'required|string|in:' . implode(',', self::ALLOWED_ROLES),
-=======
-            'role' => 'required|string|exists:roles,name',
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
             'is_active' => 'sometimes|boolean',
         ]);
 
@@ -86,7 +68,6 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'agent_custom_id' => $this->generateAgentId($request->role),
             'role' => $request->role,
-<<<<<<< HEAD
             'is_active' => $request->has('is_active'),
             'is_blocked' => false,
             'created_by' => auth()->id(),
@@ -95,18 +76,6 @@ class UserController extends Controller
 
         // Send welcome email
         if ($user && $user->email) {
-=======
-            'is_active' => $request->has('is_active') ? true : false,
-            'is_blocked' => false,
-            'created_by' => auth()->id(),
-            'email_verified_at' => now(), // Auto verify
-        ]);
-
-        // Assign Spatie role
-        $user->assignRole($request->role);
-
-        if($user && $user->email) {
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
             Mail::to($user->email)->send(new WelcomeMail($user));
         }
 
@@ -120,11 +89,7 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
-<<<<<<< HEAD
         $roles = self::ALLOWED_ROLES;
-=======
-        $roles = Role::all()->pluck('name');
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
         
         return view('admin.users.edit', compact('user', 'roles'));
     }
@@ -143,11 +108,7 @@ class UserController extends Controller
             'extension_number' => 'nullable|alpha_num|max:20',
             'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
-<<<<<<< HEAD
             'role' => 'required|string|in:' . implode(',', self::ALLOWED_ROLES),
-=======
-            'role' => 'required|string|exists:roles,name',
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
             'is_active' => 'sometimes|boolean',
             'is_blocked' => 'sometimes|boolean',
         ]);
@@ -165,13 +126,8 @@ class UserController extends Controller
             'extension_number' => $request->role === 'agent' ? $request->extension_number : null,
             'phone' => $request->phone,
             'role' => $request->role,
-<<<<<<< HEAD
             'is_active' => $request->has('is_active'),
             'is_blocked' => $request->has('is_blocked'),
-=======
-            'is_active' => $request->has('is_active') ? true : false,
-            'is_blocked' => $request->has('is_blocked') ? true : false,
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
         ];
 
         // Update password if provided
@@ -179,23 +135,13 @@ class UserController extends Controller
             $updateData['password'] = Hash::make($request->password);
         }
 
-<<<<<<< HEAD
         // Update agent_custom_id if role changed to agent
-=======
-        // Update agent_custom_id if role changed and it's an agent
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
         if ($user->role !== $request->role && $request->role === 'agent') {
             $updateData['agent_custom_id'] = $this->generateAgentId($request->role);
         }
 
         $user->update($updateData);
 
-<<<<<<< HEAD
-=======
-        // Sync Spatie role
-        $user->syncRoles([$request->role]);
-
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
         return redirect()->route('admin.users.index')
             ->with('success', 'User updated successfully.');
     }
@@ -257,15 +203,12 @@ class UserController extends Controller
                 ->with('error', 'You cannot delete your own account.');
         }
 
-<<<<<<< HEAD
         // Prevent deleting admin user
         if ($user->role === 'admin') {
             return redirect()->back()
                 ->with('error', 'Cannot delete admin user.');
         }
 
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
         // Check if user has related records
         if ($user->bookings()->count() > 0) {
             return redirect()->back()
@@ -287,7 +230,6 @@ class UserController extends Controller
             'admin' => 'ADM',
             'manager' => 'MGR',
             'agent' => 'AGT',
-<<<<<<< HEAD
             'charging' => 'CHG',
             'support' => 'SUP',
             'mis' => 'MIS',
@@ -298,14 +240,5 @@ class UserController extends Controller
         
         // Add timestamp for uniqueness
         return $prefix . '_' . time() . '_' . strtoupper(substr(uniqid(), -6));
-=======
-            'charge' => 'CHG',
-            'support' => 'SUP',
-            'mis' => 'MIS',
-            default => 'USR'
-        };
-        
-        return $prefix . '_' . strtoupper(uniqid());
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
     }
 }
