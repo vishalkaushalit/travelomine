@@ -29,7 +29,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    {{-- add alias name  --}}
+                    
                     <div class="col-md-6">
                         <label for="alias_name" class="form-label">Alias Name <span class="text-muted">(Optional)</span></label>
                         <input type="text" 
@@ -43,7 +43,8 @@
                         @enderror
                     </div>
                 </div>
-                <div class="row">
+
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
                         <input type="email" 
@@ -56,9 +57,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                </div>
 
-                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="phone" class="form-label">Phone Number</label>
                         <input type="text" 
@@ -70,7 +69,9 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+                </div>
 
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
                         <select class="form-select @error('role') is-invalid @enderror" 
@@ -85,6 +86,20 @@
                             @endforeach
                         </select>
                         @error('role')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6 extension-field" style="display: {{ old('role') === 'agent' ? 'block' : 'none' }};">
+                        <label for="extension_number" class="form-label">Extension Number <span class="text-muted">(Optional - Agent Only)</span></label>
+                        <input type="text" 
+                               class="form-control @error('extension_number') is-invalid @enderror" 
+                               id="extension_number" 
+                               name="extension_number" 
+                               value="{{ old('extension_number') }}" 
+                               placeholder="e.g. 1234">
+                        <div class="form-text">Enter extension number for agent (optional)</div>
+                        @error('extension_number')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -122,11 +137,28 @@
                                    id="is_active" 
                                    name="is_active" 
                                    value="1" 
-                                   {{ old('is_active') ? 'checked' : 'checked' }}>
+                                   {{ old('is_active', true) ? 'checked' : '' }}>
                             <label class="form-check-label" for="is_active">
                                 Active (User can login immediately)
                             </label>
                         </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="is_blocked" 
+                                   name="is_blocked" 
+                                   value="1" 
+                                   {{ old('is_blocked') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="is_blocked">
+                                Blocked (Prevent user from logging in)
+                            </label>
+                        </div>
+                        <div class="form-text text-muted">Blocked users cannot access the system</div>
                     </div>
                 </div>
 
@@ -144,4 +176,27 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('role').addEventListener('change', function() {
+    const extensionField = document.querySelector('.extension-field');
+    const extensionInput = document.getElementById('extension_number');
+    
+    if (this.value === 'agent') {
+        extensionField.style.display = 'block';
+    } else {
+        extensionField.style.display = 'none';
+        // Clear extension number when role is not agent
+        extensionInput.value = '';
+    }
+});
+
+// Trigger change event on page load to set initial state based on old input
+document.addEventListener('DOMContentLoaded', function() {
+    const roleSelect = document.getElementById('role');
+    if (roleSelect.value === 'agent') {
+        document.querySelector('.extension-field').style.display = 'block';
+    }
+});
+</script>
 @endsection

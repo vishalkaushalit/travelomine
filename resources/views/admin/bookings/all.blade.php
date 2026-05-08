@@ -22,7 +22,7 @@
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <button type="button" class="btn-close" data-dismiss="alert"></button>
             </div>
         @endif
 
@@ -147,7 +147,10 @@
                                         <td>${{ number_format($booking->total_mco, 2) }}</td>
                                         <td>{{ ucfirst($booking->status) }}</td>
                                         <td>
-                                            {{-- existing action buttons --}}
+                                            <a href="{{ route('admin.bookings.show', $booking->id) }}"
+                                                class="btn btn-sm btn-info">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty
@@ -159,11 +162,6 @@
                         </table>
                     </div>
                 </form>
-
-                <div class="mt-3">
-                    {{ $bookings->appends(request()->query())->links() }}
-                </div>
-
                 <script>
                     document.getElementById('select-all')?.addEventListener('change', function() {
                         document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
@@ -207,17 +205,6 @@
                         <h3>${{ number_format(\App\Models\Booking::sum('total_mco'), 2) }}</h3>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Pagination -->
-        <div class="mt-4 d-flex justify-content-between align-items-center">
-            <div>
-                Showing {{ $bookings->firstItem() ?? 0 }} to {{ $bookings->lastItem() ?? 0 }} of {{ $bookings->total() }}
-                bookings
-            </div>
-            <div>
-                {{ $bookings->appends(request()->query())->links() }}
             </div>
         </div>
     </div>

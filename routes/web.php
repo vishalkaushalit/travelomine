@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Admin\OldBookingUploadController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Agent\AgentBookingUpdatesController;
 use App\Http\Controllers\Agent\Auth\AgentAuthController;
 use App\Http\Controllers\Agent\bookings\AgentBookingSearchController;
 use App\Http\Controllers\Agent\ChargingController;
@@ -24,6 +25,12 @@ use App\Http\Controllers\Charge\BookingPaymentLinkController;
 use App\Http\Controllers\Charge\ChargeBookingStatusController;
 use App\Http\Controllers\Charge\ChargeController;
 use App\Http\Controllers\Charge\ChargingDashboardController;
+use App\Http\Controllers\Mis\MisBookingsController;
+use App\Http\Controllers\Mis\MisDashboardController;
+use App\Http\Controllers\Mis\MisLoginController;
+use App\Http\Controllers\MisManager\MisManagerBookingsController;
+use App\Http\Controllers\MisManager\MisManagerDashboardController;
+use App\Http\Controllers\MisManager\MisManagerLoginController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPaymentController;
 // payment contollers
@@ -36,6 +43,12 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+// use App\Mail\TestMail;
+
+// Route::get('/send-test-mail', function () {
+//     Mail::to('vishalkaushalit@gmail.com')->send(new TestMail());
+//     return 'Mail sent!';
+// });
 
 Route::get('/', function () {
     return view('welcome');
@@ -52,6 +65,7 @@ Route::get('/consent/{id}', [AuthConsentController::class, 'customerConsentView'
 
 // agent auth routes
 Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
+// Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
 Route::post('/agent/login', [AgentAuthController::class, 'login']);
 Route::post('/agent/logout', [AgentAuthController::class, 'logout'])->name('agent.logout');
 
@@ -69,6 +83,16 @@ Route::post('/support/logout', [CsLoginController::class, 'logout'])->name('supp
 Route::get('/charge/login', [ChargeLoginController::class, 'showLoginForm'])->name('charge.login');
 Route::post('/charge/login', [ChargeLoginController::class, 'login']);
 Route::post('/charge/logout', [ChargeLoginController::class, 'logout'])->name('charge.logout');
+
+// MIS routes
+Route::get('/mis/login', [MisLoginController::class, 'showLoginForm'])->name('mis.login');
+Route::post('/mis/login', [MisLoginController::class, 'login']);
+Route::post('/mis/logout', [MisLoginController::class, 'logout'])->name('mis.logout');
+
+// MIS MANAGER routes (login)
+Route::get('/mis-manager/login', [MisManagerLoginController::class, 'showLoginForm'])->name('mis-manager.login');
+Route::post('/mis-manager/login', [MisManagerLoginController::class, 'login']);
+Route::post('/mis-manager/logout', [MisManagerLoginController::class, 'logout'])->name('mis-manager.logout');
 
 // CHARGING TEAM
 Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->group(function () {
@@ -125,7 +149,6 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
 Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'Index'])->name('dashboard');
-
     // Route::get('/dashboard', [BookingController::class, 'agentIndex'])->name('dashboard');
     Route::get('/bookings', [BookingController::class, 'agentIndex'])->name('bookings.index');
     Route::get('/bookings/create', [AgentBookingController::class, 'create'])->name('bookings.create');
@@ -140,6 +163,13 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 
     Route::get('/booking-search', [AgentBookingSearchController::class, 'index'])->name('bookings.search');
     Route::get('/booking-search/results', [AgentBookingSearchController::class, 'search'])->name('bookings.search.results');
+
+    Route::post('/booking-updates/search', [AgentBookingUpdatesController::class, 'searchByPnr'])->name('booking-updates.search');
+    Route::post('/booking-updates', [AgentBookingUpdatesController::class, 'store'])->name('booking-updates.store');
+
+    // Add remark route
+    Route::post('/bookings/{bookingId}/add-remark', [AgentBookingController::class, 'addRemark'])
+         ->name('agent.bookings.add-remark');
 });
 
 // ADMIN ROUTES
@@ -198,8 +228,6 @@ Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(func
     Route::get('/bookings/{id}/edit', [AdminBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [AdminBookingsController::class, 'update'])->name('bookings.update');
 
-    Route::get('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'create'])->name('bookings.import.form');
-    Route::post('/bookings/import', [\App\Http\Controllers\Mis\BookingImportController::class, 'store'])->name('bookings.import.store');
 });
 
 // GENERAL LOGOUT
@@ -246,7 +274,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
     // Notification Management Routes (Only Admin)
     Route::prefix('notifications')->name('notifications.')->middleware(['role:admin'])->group(function () {
         Route::get('/', [AdminNotifyController::class, 'index'])->name('index');
-        // Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
+        Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
         Route::get('/create', [AdminNotifyController::class, 'create'])->name('create');
         Route::post('/', [AdminNotifyController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [AdminNotifyController::class, 'edit'])->name('edit');
@@ -279,7 +307,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
     // Bookings (Both Admin and Manager can access)
     Route::get('/bookings', [AdminBookingsController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [AdminBookingsController::class, 'show'])->name('bookings.show');
-
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -298,9 +325,18 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/booking-status/{id}', [StatusController::class, 'update'])->name('status.update');
 });
 
-Route::get('/agent/test-notifications', function () {
-    return view('agent.test-notifications');
-})->middleware(['auth', 'role:agent'])->name('agent.test');
+Route::get('/agent/notifications', function () {
+    return view('agent.notifications');
+})->middleware(['auth', 'role:agent'])->name('agent.notifications');
+Route::get('/charge/notifications', function () {
+    return view('charge.notifications');
+})->middleware(['auth', 'role:charge'])->name('charge.notifications');
+Route::get('/mis/notifications', function () {
+    return view('mis.notifications');
+})->middleware(['auth', 'role:mis'])->name('mis.notifications');
+Route::get('/mis-manager/notifications', function () {
+    return view('mis-manager.notifications');
+})->middleware(['auth', 'role:mis-manager'])->name('mis-manager.notifications');
 
 // clear all cache
 Route::get('/clear-all-cache', function () {
@@ -314,4 +350,25 @@ Route::get('/clear-all-cache', function () {
     Artisan::call('optimize:clear');
 
     return 'Configuration, Routes, and all other caches cleared and application optimized!';
+});
+
+// MIS PANEL ROUTES - Role: mis
+Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(function () {
+    Route::get('/dashboard', [MisDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/bookings/all', [MisBookingsController::class, 'all'])->name('bookings.all');
+    Route::get('/bookings', [MisBookingsController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{id}', [MisBookingsController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/edit', [MisBookingsController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{id}', [MisBookingsController::class, 'update'])->name('bookings.update');
+    Route::delete('/bookings/{id}', [MisBookingsController::class, 'destroy'])->name('bookings.destroy');
+});
+
+Route::middleware(['auth', 'role:mis-manager'])->prefix('mis-manager')->name('mis-manager.')->group(function () {
+    Route::get('/dashboard', [MisManagerDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/bookings/all', [MisManagerBookingsController::class, 'all'])->name('bookings.all');
+    Route::get('/bookings', [MisManagerBookingsController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{id}', [MisManagerBookingsController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/edit', [MisManagerBookingsController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{id}', [MisManagerBookingsController::class, 'update'])->name('bookings.update');
+    Route::delete('/bookings/{id}', [MisManagerBookingsController::class, 'destroy'])->name('bookings.destroy');
 });

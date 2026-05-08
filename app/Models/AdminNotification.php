@@ -21,7 +21,7 @@ class AdminNotification extends Model
         'priority',
         'is_active',
         'can_dismiss',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [
@@ -29,7 +29,7 @@ class AdminNotification extends Model
         'start_date' => 'datetime',
         'expiry_date' => 'datetime',
         'is_active' => 'boolean',
-        'can_dismiss' => 'boolean'
+        'can_dismiss' => 'boolean',
     ];
 
     public function creator()
@@ -40,8 +40,8 @@ class AdminNotification extends Model
     public function readBy()
     {
         return $this->belongsToMany(User::class, 'user_notification_reads', 'notification_id', 'user_id')
-                    ->withPivot('read_at')
-                    ->withTimestamps();
+            ->withPivot('read_at')
+            ->withTimestamps();
     }
 
     public function isExpired()
@@ -51,27 +51,26 @@ class AdminNotification extends Model
 
     public function isValidForUser($user)
     {
-        // Check if notification is active and not expired
-        if (!$this->is_active || $this->isExpired()) {
+        if (! $this->is_active || $this->isExpired()) {
             return false;
         }
 
-        // Check start date
         if ($this->start_date && now()->lt($this->start_date)) {
             return false;
         }
 
-        // Check target roles
         if ($this->target_type === 'all') {
             return true;
         }
 
-        // For specific roles
         return in_array($user->role, $this->target_roles ?? []);
     }
 
     public function isReadByUser($userId)
     {
-        return $this->readBy()->where('user_id', $userId)->exists();
+        return DB::table('user_notification_reads')
+            ->where('notification_id', $this->id)
+            ->where('user_id', $userId)
+            ->exists();
     }
 }

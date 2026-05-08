@@ -23,7 +23,9 @@
                 <h5 class="modal-title" id="notifyModalLabel">
                     <i class="bi bi-bell me-2"></i>System Announcements
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x"></i>
+                </button>
             </div>
             <div class="modal-body p-0">
                 {{-- Re‑use the component you already have --}}

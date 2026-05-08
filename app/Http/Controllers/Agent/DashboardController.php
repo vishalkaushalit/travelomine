@@ -64,6 +64,7 @@ class DashboardController extends Controller
             'name'          => $user->name,
             'alias_name'    => $user->alias_name,
             'agent_id'      => $user->agent_custom_id ?? ('AG' . $user->id),
+            'extension_number' => $user->extension_number,
             'joined_date'   => optional($user->created_at)->format('d M Y'),
             'total_bookings'=> $totalBookings,
         ];

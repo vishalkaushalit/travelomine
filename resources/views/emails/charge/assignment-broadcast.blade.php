@@ -14,12 +14,12 @@
             <p style="margin-top:0;">Hello Charging Team,</p>
 
             <p>
-                A new booking has been assigned for charging review.
+                A new booking has been assigned for charge review.
             </p>
 
             <table style="width:100%; border-collapse:collapse; margin:20px 0;">
                 <tr>
-                    <td style="padding:10px; border:1px solid #ddd; width:40%;"><strong>Booking Ref</strong></td>
+                    <td style="padding:10px; border:1px solid #ddd; width:40%;"><strong>Booking Ref: </strong></td>
                     <td style="padding:10px; border:1px solid #ddd;">{{ $booking->booking_reference ?? 'N/A' }}</td>
                 </tr>
                 <tr>
@@ -54,7 +54,7 @@
         </div>
 
         <div style="background:#f1f1f1; padding:14px 24px; font-size:12px; color:#666;">
-            This is an automated notification email.
+            This is an automated notification email. Do not reply to this email.
         </div>
     </div>
 </body>

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Flight CRM – Unified Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}" sizes="96x96" />
     {{-- Bootstrap 5 --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     {{-- Icons --}}
@@ -18,9 +19,11 @@
             display: flex;
             flex-direction: column;
         }
+
         .hero-section {
             padding: 4rem 1.5rem 2rem;
         }
+
         .hero-badge {
             background: rgba(13, 110, 253, 0.15);
             border: 1px solid rgba(13, 110, 253, 0.4);
@@ -30,6 +33,7 @@
             text-transform: uppercase;
             letter-spacing: .08em;
         }
+
         .glass-card {
             background: rgba(15, 23, 42, 0.85);
             border-radius: 1.2rem;
@@ -37,6 +41,7 @@
             box-shadow: 0 24px 80px rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(16px);
         }
+
         .role-card {
             border-radius: 1rem;
             border: 1px solid rgba(148, 163, 184, 0.25);
@@ -44,11 +49,13 @@
             transition: all .2s ease;
             cursor: pointer;
         }
+
         .role-card:hover {
             transform: translateY(-4px);
             border-color: #0d6efd;
             box-shadow: 0 16px 40px rgba(13, 110, 253, 0.35);
         }
+
         .role-icon {
             width: 44px;
             height: 44px;
@@ -58,6 +65,7 @@
             justify-content: center;
             font-size: 1.4rem;
         }
+
         .orbit {
             position: relative;
             width: 260px;
@@ -65,6 +73,7 @@
             border-radius: 50%;
             border: 1px dashed rgba(148, 163, 184, 0.4);
         }
+
         .orbit-dot {
             position: absolute;
             width: 10px;
@@ -72,22 +81,50 @@
             border-radius: 999px;
             background: #0d6efd;
         }
-        .orbit-dot:nth-child(1) { top: 7%; left: 50%; transform: translateX(-50%); }
-        .orbit-dot:nth-child(2) { right: 7%; top: 50%; transform: translateY(-50%); }
-        .orbit-dot:nth-child(3) { bottom: 7%; left: 50%; transform: translateX(-50%); }
-        .orbit-dot:nth-child(4) { left: 7%; top: 50%; transform: translateY(-50%); }
+
+        .orbit-dot:nth-child(1) {
+            top: 7%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .orbit-dot:nth-child(2) {
+            right: 7%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .orbit-dot:nth-child(3) {
+            bottom: 7%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .orbit-dot:nth-child(4) {
+            left: 7%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
         footer {
             margin-top: auto;
             padding: 1.25rem 0;
             font-size: .85rem;
             color: #9ca3af;
         }
+
         @media (max-width: 767.98px) {
-            .hero-section { padding-top: 3rem; }
-            .glass-card { margin-top: 1.5rem; }
+            .hero-section {
+                padding-top: 3rem;
+            }
+
+            .glass-card {
+                margin-top: 1.5rem;
+            }
         }
     </style>
 </head>
+
 <body>
     {{-- Top navigation --}}
     <nav class="navbar navbar-dark navbar-expand-lg border-bottom border-secondary border-opacity-25">
@@ -97,7 +134,7 @@
                 <span class="fw-semibold">Flight CRM</span>
             </a>
             <div class="d-flex align-items-center gap-2">
-                @if(Auth::check())
+                @if (Auth::check())
                     <span class="small text-light me-2 d-none d-sm-inline">
                         Signed in as <strong>{{ Auth::user()->name }}</strong>
                     </span>
@@ -175,7 +212,8 @@
                                 <a href="{{ route('admin.login') }}" class="text-decoration-none text-light">
                                     <div class="role-card p-3 h-100">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="role-icon bg-primary bg-opacity-10 text-primary border border-primary border-opacity-50">
+                                            <div
+                                                class="role-icon bg-primary bg-opacity-10 text-primary border border-primary border-opacity-50">
                                                 <i class="bi bi-shield-lock"></i>
                                             </div>
                                             <div>
@@ -192,7 +230,8 @@
                                 <a href="{{ route('charge.login') }}" class="text-decoration-none text-light">
                                     <div class="role-card p-3 h-100">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="role-icon bg-warning bg-opacity-10 text-warning border border-warning border-opacity-50">
+                                            <div
+                                                class="role-icon bg-warning bg-opacity-10 text-warning border border-warning border-opacity-50">
                                                 <i class="bi bi-people-fill"></i>
                                             </div>
                                             <div>
@@ -205,7 +244,42 @@
                                     </div>
                                 </a>
 
-                               
+                                {{-- MIS placeholder --}}
+                                <a href="{{ route('mis.login') }}" class="text-decoration-none text-light">
+                                    <div class="role-card p-3 h-100">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div
+                                                class="role-icon bg-danger bg-opacity-10 text-danger border border-danger border-opacity-50">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">MIS</div>
+                                                <small class="text-secondary">
+                                                    Manage bookings
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+
+                                {{-- MIS MANAGER placeholder --}}
+                                <a href="{{ route('mis-manager.login') }}" class="text-decoration-none text-light">
+                                    <div class="role-card p-3 h-100">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div
+                                                class="role-icon bg-danger bg-opacity-10 text-danger border border-danger border-opacity-50">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">MIS Manager</div>
+                                                <small class="text-secondary">
+                                                    Manage bookings and team performance
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+
                             </div>
 
                             <div class="col-md-6 d-flex flex-column gap-3">
@@ -213,7 +287,8 @@
                                 <a href="{{ route('agent.login') }}" class="text-decoration-none text-light">
                                     <div class="role-card p-3 h-100">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="role-icon bg-success bg-opacity-10 text-success border border-success border-opacity-50">
+                                            <div
+                                                class="role-icon bg-success bg-opacity-10 text-success border border-success border-opacity-50">
                                                 <i class="bi bi-person-fill-check"></i>
                                             </div>
                                             <div>
@@ -227,10 +302,11 @@
                                 </a>
 
                                 {{-- Chargeback / Finance placeholder --}}
-                                <a href="#" class="text-decoration-none text-light">
+                                <a href="{{ route('support.login') }}" class="text-decoration-none text-light">
                                     <div class="role-card p-3 h-100">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="role-icon bg-danger bg-opacity-10 text-danger border border-danger border-opacity-50">
+                                            <div
+                                                class="role-icon bg-danger bg-opacity-10 text-danger border border-danger border-opacity-50">
                                                 <i class="bi bi-cash-stack"></i>
                                             </div>
                                             <div>
@@ -279,4 +355,5 @@
     {{-- Scripts --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

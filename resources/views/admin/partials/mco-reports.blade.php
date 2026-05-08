@@ -100,84 +100,58 @@
 
 
 @push('scripts')
-    {{-- Chart.js CDN --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // Dummy data sets for MCO by period
-        const mcoDataSets = {
-            today: {
-                labels: ['09:00', '11:00', '13:00', '15:00', '17:00'],
-                values: [2, 3, 1, 4, 2],
-                count: 12,
-                total: 3200,
-                avg: 266.67,
-                conversion: 42
-            },
-            week: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                values: [5, 7, 4, 9, 8, 3, 2],
-                count: 38,
-                total: 11200,
-                avg: 294.74,
-                conversion: 37
-            },
-            month: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                values: [24, 31, 27, 35],
-                count: 117,
-                total: 36500,
-                avg: 311.97,
-                conversion: 39
-            }
-        };
+        const mcoDataSets = @json($mcoStats);
+        const topAgentsData = @json($topAgents);
 
-        // Dummy top agents data (this month)
-        const topAgentsDummy = [
-            { name: 'Prashant', alias: 'AG3823', bookings: 42, mco: 9800 },
-            { name: 'MIS Main', alias: 'AG4125', bookings: 35, mco: 8400 },
-            { name: 'Charging Team', alias: 'AG6861', bookings: 29, mco: 7600 },
-            { name: 'Support Team', alias: 'AG4084', bookings: 21, mco: 5300 },
-        ];
-
-        // Helpers to format numbers
         function formatCurrency(value) {
-            return '$' + Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return '$' + Number(value || 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
 
         function formatPercent(value) {
-            return Number(value).toFixed(0) + '%';
+            return Number(value || 0).toFixed(0) + '%';
         }
 
-        // Init top agents table
         function renderTopAgentsTable() {
             const tbody = document.getElementById('topAgentsTableBody');
             tbody.innerHTML = '';
 
-            topAgentsDummy.forEach((agent, index) => {
-                const tr = document.createElement('tr');
+            if (!topAgentsData.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No data found for this month.</td>
+                    </tr>
+                `;
+                return;
+            }
 
+            topAgentsData.forEach((agent) => {
+                const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${index + 1}</td>
+                    <td>${agent.rank}</td>
                     <td>${agent.name}</td>
                     <td>${agent.alias}</td>
                     <td class="text-center">${agent.bookings}</td>
                     <td class="text-center">${formatCurrency(agent.mco)}</td>
                 `;
-
                 tbody.appendChild(tr);
             });
         }
 
-        // Init MCO chart
         let mcoChartInstance = null;
 
         function renderMcoChart(periodKey) {
             const ctx = document.getElementById('mcoChart').getContext('2d');
             const dataSet = mcoDataSets[periodKey];
 
-            // Update KPI cards
-            document.getElementById('mcoCount').textContent = dataSet.count;
+            if (!dataSet) return;
+
+            document.getElementById('mcoCount').textContent = dataSet.count ?? 0;
             document.getElementById('mcoTotal').textContent = formatCurrency(dataSet.total);
             document.getElementById('mcoAvg').textContent = formatCurrency(dataSet.avg);
             document.getElementById('mcoConversion').textContent = formatPercent(dataSet.conversion);
@@ -190,9 +164,9 @@
                         label: 'MCO Value',
                         data: dataSet.values,
                         borderColor: 'rgba(13, 110, 253, 1)',
-                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        backgroundColor: 'rgba(13, 110, 253, 0.10)',
                         borderWidth: 2,
-                        tension: 0.3,
+                        tension: 0.35,
                         fill: true,
                         pointRadius: 4,
                         pointHoverRadius: 5
@@ -231,10 +205,10 @@
             if (mcoChartInstance) {
                 mcoChartInstance.destroy();
             }
+
             mcoChartInstance = new Chart(ctx, chartConfig);
         }
 
-        // Tab switching logic
         function initMcoTabs() {
             const tabs = document.querySelectorAll('#mcoFilterTabs .nav-link');
 
@@ -248,7 +222,6 @@
                 });
             });
 
-            // Initial load
             renderMcoChart('today');
         }
 

@@ -15,7 +15,7 @@
                         <th>Agent ID</th>
                         <th>Name <span class="small text-muted position-block">(Alias)</span></th>
                         <th>Email</th>
-                        <th class="text-center">Total Entries</th>
+                        <th class="text-center">Entries</th>
                         <th class="text-center">Action</th>
                     </tr>
                 </thead>
@@ -27,7 +27,7 @@
                         <td>{{ $agent->name }} <br> <span class="badge badge-sm small badge-info bg-info ">{{ $agent->alias_name }}</span>  </td>
                         <td>{{ $agent->email }}</td>
                         <td class="text-center">
-                            <span class="badge bg-primary rounded-pill">
+                            <span class="badge bg-light px-3 py-2">
                                 {{ $agent->bookings_count }}
                             </span>
                         </td>
@@ -35,7 +35,7 @@
                             {{-- Link to view this agent's specific bookings --}}
                             <a href="{{ route('admin.bookings.index', ['agent_id' => $agent->id]) }}"
                                 class="btn btn-sm btn-info text-white">
-                                <i class="fas fa-eye me-1"></i>View Bookings
+                                <i class="fas fa-eye me-1"></i>
                             </a>
                             <form action="{{ route('admin.agents.toggleStatus', $agent->id) }}" method="POST"
                                 class="d-inline">

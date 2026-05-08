@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>GDS Itinerary Converter | Flight Data Extractor</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #eef2f7;
+            margin: 0;
+            padding: 24px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .converter-container {
+            max-width: 1400px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0b2b3b 0%, #1a4a6f 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+        }
+
+        .header h1 {
+            margin: 0 0 6px 0;
+            font-weight: 600;
+            font-size: 1.85rem;
+            letter-spacing: -0.3px;
+        }
+
+        .header p {
+            margin: 0;
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        .input-area {
+            padding: 1.8rem 2rem 1.2rem 2rem;
+            background: #f9fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .input-label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #0f2b3d;
+        }
+
+        .input-label span {
+            background: #d4e2f0;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 280px;
+            padding: 1rem;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            background: #ffffff;
+            resize: vertical;
+            transition: 0.2s;
+            color: #0a1c2a;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #1e6f9f;
+            box-shadow: 0 0 0 3px rgba(30, 111, 159, 0.2);
+        }
+
+        .button-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 20px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: white;
+            border: 1px solid #b9cdE3;
+            padding: 10px 22px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1f5068;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button i {
+            font-style: normal;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background: #1f6e9c;
+            border-color: #1f6e9c;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary:hover {
+            background: #0f5a82;
+            transform: translateY(-1px);
+        }
+
+        button:hover {
+            background: #eef3fc;
+            border-color: #8fb4d0;
+        }
+
+        .btn-primary:hover {
+            background: #0f5a82;
+            border-color: #0f5a82;
+        }
+
+        .sample-btn {
+            background: #ecfdf5;
+            border-color: #a7d0cd;
+            color: #116b5c;
+        }
+
+        .stats {
+            font-size: 0.8rem;
+            background: #eef2ff;
+            padding: 8px 16px;
+            border-radius: 60px;
+            color: #1e3a5f;
+        }
+
+        .result-section {
+            padding: 1.8rem 2rem 2rem 2rem;
+            background: white;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e4edf5;
+            padding-bottom: 0.6rem;
+        }
+
+        .result-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+            color: #0f2f40;
+        }
+
+        .badge {
+            background: #e4f0fa;
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #e9edf2;
+            background: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 780px;
+        }
+
+        th {
+            background: #f1f6fc;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e4762;
+            border-bottom: 1px solid #dce5ec;
+        }
+
+        td {
+            padding: 12px 12px;
+            border-bottom: 1px solid #ecf1f5;
+            vertical-align: top;
+            color: #1e2f3c;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #fafdff;
+        }
+
+        .flight-code {
+            font-weight: 700;
+            font-family: monospace;
+            background: #eef2f5;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: #fefefe;
+            border-radius: 28px;
+            color: #6f8eaa;
+        }
+
+        .error-msg {
+            background: #fff5f0;
+            border-left: 5px solid #e2724b;
+            padding: 12px 18px;
+            border-radius: 16px;
+            margin-top: 18px;
+            color: #b13e1a;
+            font-size: 0.85rem;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            border-top: 1px solid #e9edf2;
+            padding: 1rem;
+            background: #fbfdff;
+            color: #5f7f9a;
+        }
+
+        @media (max-width: 640px) {
+            .input-area, .result-section, .header {
+                padding-left: 1.2rem;
+                padding-right: 1.2rem;
+            }
+            button {
+                padding: 6px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="converter-container">
+    <div class="header">
+        <h1>✈️ GDS Itinerary Converter</h1>
+        <p>Parse raw PNR-style flight lines & extract structured flight data (Carrier, Flight#, Class, Date, Route, Times, Status)</p>
+    </div>
+
+    <div class="input-area">
+        <div class="input-label">
+            📋 Paste your GDS itinerary reference <span>multi-line format</span>
+        </div>
+        <textarea id="gdsInput" placeholder="Paste flight lines here ... 
+
+Example lines:
+2  TK 008 W 03MAR 2*IADIST HK1   915P 320P 04MAR  E  TK/RRKDMN
+3  TK 064 W 04MAR 3*ISTBKK HK1   800P 900A 05MAR  E  TK/RRKDMN
+4  TK 065 E 10MAR 2*BKKIST HK1  1030A 445P 10MAR  E  TK/RRKDMN
+5  TK 501 E 11MAR 3*ISTDSS HK1   130A 615A 11MAR  E  TK/RRKDMN
+6  TK 504 W 17MAR 2*DSSIST HK1   905P 655A 18MAR  E  TK/RRKDMN
+7  TK 187 W 18MAR 3*ISTIAD HK1   830A1245P 18MAR  E  TK/RRKDMN"></textarea>
+        <div class="button-bar">
+            <div class="btn-group">
+                <button id="convertBtn" class="btn-primary">🔄 Convert & Extract Fields</button>
+                <button id="sampleBtn" class="sample-btn">📋 Load Sample Data</button>
+                <button id="clearBtn">🗑️ Clear</button>
+            </div>
+            <div class="stats" id="statsInfo">Ready — paste itinerary</div>
+        </div>
+    </div>
+
+    <div class="result-section">
+        <div class="result-header">
+            <h2>📊 Extracted Flight Segments</h2>
+            <div class="badge" id="recordCount">0 flights</div>
+        </div>
+        <div id="resultTable">
+            <div class="empty-state">
+                ✨ No data yet — paste GDS reference lines above and click "Convert"
+            </div>
+        </div>
+        <div id="errorMessage" style="margin-top: 12px;"></div>
+    </div>
+    <footer>
+        Extracted fields: Carrier | Flight# | Booking Class | Departure Date | Route (Origin→Dest) | Departure Time | Arrival Time | Arrival Date | Status
+    </footer>
+</div>
+
+<script>
+    (function() {
+        // DOM elements
+        const textarea = document.getElementById('gdsInput');
+        const convertBtn = document.getElementById('convertBtn');
+        const sampleBtn = document.getElementById('sampleBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultDiv = document.getElementById('resultTable');
+        const errorDiv = document.getElementById('errorMessage');
+        const statsInfo = document.getElementById('statsInfo');
+        const recordCountSpan = document.getElementById('recordCount');
+
+        // ---------- SAMPLE DATA (exactly as reference given) ----------
+        const SAMPLE_TEXT = `2  TK 008 W 03MAR 2*IADIST HK1   915P 320P 04MAR  E  TK/RRKDMN
+3  TK 064 W 04MAR 3*ISTBKK HK1   800P 900A 05MAR  E  TK/RRKDMN
+4  TK 065 E 10MAR 2*BKKIST HK1  1030A 445P 10MAR  E  TK/RRKDMN
+5  TK 501 E 11MAR 3*ISTDSS HK1   130A 615A 11MAR  E  TK/RRKDMN
+6  TK 504 W 17MAR 2*DSSIST HK1   905P 655A 18MAR  E  TK/RRKDMN
+7  TK 187 W 18MAR 3*ISTIAD HK1   830A1245P 18MAR  E  TK/RRKDMN`;
+
+        // ---------- Helper: parse time like "915P" -> "9:15 PM" , "320P" -> "3:20 PM", handle "1245P" -> "12:45 PM"
+        function parseGdsTime(timeStr) {
+            if (!timeStr || timeStr.trim() === '') return '';
+            let cleaned = timeStr.trim().toUpperCase();
+            // detect AM/PM suffix
+            let suffix = '';
+            if (cleaned.endsWith('A')) suffix = 'AM';
+            else if (cleaned.endsWith('P')) suffix = 'PM';
+            else return cleaned; // fallback
+            
+            let numericPart = cleaned.slice(0, -1);
+            let hours = 0, minutes = 0;
+            // format could be 3 digits (915) or 4 digits (1245) or 2 digits (830 etc)
+            if (numericPart.length === 3) {
+                // e.g., 915 -> 9:15
+                hours = parseInt(numericPart.substring(0, 1), 10);
+                minutes = parseInt(numericPart.substring(1, 3), 10);
+            } else if (numericPart.length === 4) {
+                hours = parseInt(numericPart.substring(0, 2), 10);
+                minutes = parseInt(numericPart.substring(2, 4), 10);
+            } else if (numericPart.length === 2) {
+                hours = parseInt(numericPart, 10);
+                minutes = 0;
+            } else if (numericPart.length === 1) {
+                hours = parseInt(numericPart, 10);
+                minutes = 0;
+            } else {
+                return timeStr;
+            }
+            
+            if (isNaN(hours) || isNaN(minutes)) return timeStr;
+            // convert to 12-hour readable
+            let hour12 = hours % 12;
+            if (hour12 === 0) hour12 = 12;
+            let minuteStr = minutes < 10 ? '0' + minutes : minutes.toString();
+            return `${hour12}:${minuteStr} ${suffix}`;
+        }
+
+        // ---------- Parse route from segment like "IADIST" or "ISTBKK" or "BKKIST" (origin/dest split by common airport codes)
+        // convention: 3-letter pairs consecutively: e.g., IADIST -> IAD / IST ; ISTBKK -> IST / BKK ; DSSIST -> DSS / IST
+        function splitRoute(routeRaw) {
+            if (!routeRaw || routeRaw.length < 6) return { origin: '???', destination: '???' };
+            // Typically length 6 or 7? but all airport codes are 3 letters: so split first 3 / last 3
+            const origin = routeRaw.substring(0, 3);
+            const destination = routeRaw.substring(3, 6);
+            return { origin: origin.toUpperCase(), destination: destination.toUpperCase() };
+        }
+
+        // ---------- MAIN PARSER: extracts fields from each line based on observed pattern ----------
+        // Expected structure per line (based on reference):
+        // [line_number] CARRIER FLIGHT_NUM CLASS DEPARTURE_DATE DAY_OFFSET? ROUTE STATUS? ... departure_time arrival_time arrival_date misc...
+        // Robust approach: token splitting and mapping positions
+        function parseGdsLine(line) {
+            line = line.trim();
+            if (line.length === 0) return null;
+            // tokenize by spaces but keep in mind times like "830A1245P" actually sometimes are glued? Actually in sample: "830A1245P" for TK187: it appears without space
+            // But typical line: "7  TK 187 W 18MAR 3*ISTIAD HK1   830A1245P 18MAR  E  TK/RRKDMN"
+            // There's a known quirk: departure and arrival times can be concatenated like "830A1245P". We'll detect and split if needed.
+            
+            // First, we handle concatenated departure+arrival times: e.g., "830A1245P" -> "830A" and "1245P" if they look like time pattern.
+            // We'll do a preprocess: replace occurrences where time pattern merges like (digit+[AP])(digit+[AP]) with a space between.
+            let processedLine = line.replace(/(\d{1,4}[AP])(\d{1,4}[AP])/gi, '$1 $2');
+            
+            let tokens = processedLine.split(/\s+/).filter(t => t.length > 0);
+            if (tokens.length < 8) return null; // insufficient tokens
+            
+            // Expected pattern indexes (flexible, but typical structure:
+            // idx0: lineNum (like '2'), idx1: carrier (TK), idx2: flightNum (008), idx3: bookingClass (W)
+            // idx4: depDate (03MAR), idx5: routeWithMarker (2*IADIST) or (3*ISTBKK) - contains * and route
+            // idx6: status? (HK1) maybe, then idx7: depTime (915P), idx8: arrTime (320P), idx9: arrDate (04MAR), idx10: something E, ...
+            let idx = 0;
+            const lineNum = tokens[idx++]; // we might skip but keep
+            const carrier = tokens[idx++]; // e.g., TK
+            let flightNum = tokens[idx++];
+            let bookingClass = tokens[idx++];
+            let depDateRaw = tokens[idx++];
+            
+            // next token: contains something like "2*IADIST" or "3*ISTBKK"
+            let routeSegmentToken = tokens[idx++];
+            let routeString = '';
+            let dayOffset = '';
+            if (routeSegmentToken.includes('*')) {
+                const starParts = routeSegmentToken.split('*');
+                dayOffset = starParts[0];   // "2" or "3" etc
+                routeString = starParts[1];  // "IADIST" or "ISTBKK"
+            } else {
+                routeString = routeSegmentToken;
+            }
+            
+            // Next token often is status code like "HK1"
+            let statusToken = tokens[idx++]; // HK1
+            
+            // Now time tokens: depTime & arrTime, but careful for lines where arrTime may have extra
+            if (idx + 2 >= tokens.length) return null;
+            let depTimeRaw = tokens[idx++];
+            let arrTimeRaw = tokens[idx++];
+            let arrDateRaw = tokens[idx++];
+            // extra token optional like "E" and tail
+            let extraFlag = tokens[idx++] || '';
+            
+            // Validate essential fields
+            if (!carrier || !flightNum || !bookingClass || !depDateRaw || !routeString || !depTimeRaw || !arrTimeRaw || !arrDateRaw) {
+                // fallback attempt for alternative pattern (maybe status missing)
+                return null;
+            }
+            
+            // Build route origin/destination
+            const { origin, destination } = splitRoute(routeString);
+            
+            // Format departure/arrival times
+            const depTimeFormatted = parseGdsTime(depTimeRaw);
+            const arrTimeFormatted = parseGdsTime(arrTimeRaw);
+            
+            // Additional: flight status from statusToken and extraFlag
+            let flightStatus = statusToken ? statusToken : '';
+            if (extraFlag && extraFlag.length === 1 && (extraFlag === 'E' || extraFlag === 'W')) {
+                // sometimes extraFlag like 'E' or 'W' might be meal/service code, but keep
+                flightStatus = flightStatus + ' ' + extraFlag;
+            }
+            flightStatus = flightStatus.trim() || 'Confirmed';
+            
+            // Extract arrival date and departure date as readable
+            const depDate = depDateRaw.toUpperCase();
+            const arrDate = arrDateRaw.toUpperCase();
+            
+            // final structured object
+            return {
+                carrier: carrier,
+                flight: flightNum,
+                class: bookingClass,
+                depDate: depDate,
+                origin: origin,
+                destination: destination,
+                depTime: depTimeFormatted,
+                arrTime: arrTimeFormatted,
+                arrDate: arrDate,
+                status: flightStatus,
+                rawDayOffset: dayOffset
+            };
+        }
+        
+        // Parse all lines from raw text (split by newline)
+        function parseItinerary(rawText) {
+            const lines = rawText.split(/\r?\n/);
+            const flights = [];
+            let errors = [];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (line.trim() === '') continue;
+                try {
+                    const flightData = parseGdsLine(line);
+                    if (flightData) {
+                        flights.push(flightData);
+                    } else {
+                        // if line looks like contains flight pattern but failed
+                        if (line.match(/TK\s+\d{2,3}/i) || line.match(/\d{1,2}[AP]/)) {
+                            errors.push(`Line ${i+1}: format not fully recognized, skipped.`);
+                        }
+                    }
+                } catch (e) {
+                    errors.push(`Line ${i+1}: parsing error - ${e.message}`);
+                }
+            }
+            return { flights, errors };
+        }
+        
+        // Render table based on extracted flights
+        function renderTable(flights) {
+            if (!flights || flights.length === 0) {
+                resultDiv.innerHTML = `<div class="empty-state">✈️ No flights extracted. Please check GDS format (example: carrier, flight#, date, route, times).</div>`;
+                recordCountSpan.innerText = `0 flights`;
+                statsInfo.innerText = `No valid segments`;
+                return;
+            }
+            
+            const tableHtml = `
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Carrier</th><th>Flight</th><th>Class</th><th>Departure Date</th><th>Origin → Destination</th>
+                                <th>Departure Time</th><th>Arrival Time</th><th>Arrival Date</th><th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${flights.map(fl => `
+                                <tr>
+                                    <td><span class="flight-code">${escapeHtml(fl.carrier)}</span></td>
+                                    <td><strong>${escapeHtml(fl.flight)}</strong></td>
+                                    <td>${escapeHtml(fl.class)}</td>
+                                    <td>${escapeHtml(fl.depDate)}</td>
+                                    <td>${escapeHtml(fl.origin)} → ${escapeHtml(fl.destination)}</td>
+                                    <td>${escapeHtml(fl.depTime)}</td>
+                                    <td>${escapeHtml(fl.arrTime)}</td>
+                                    <td>${escapeHtml(fl.arrDate)}</td>
+                                    <td>${escapeHtml(fl.status)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            resultDiv.innerHTML = tableHtml;
+            recordCountSpan.innerText = `${flights.length} flight${flights.length !== 1 ? 's' : ''}`;
+            statsInfo.innerText = `✅ ${flights.length} segment(s) extracted`;
+        }
+        
+        // Helper escape HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+        
+        // main conversion action
+        function convertData() {
+            errorDiv.innerHTML = '';
+            const rawInput = textarea.value;
+            if (!rawInput.trim()) {
+                resultDiv.innerHTML = `<div class="empty-state">📭 Input is empty — paste GDS itinerary lines.</div>`;
+                recordCountSpan.innerText = `0 flights`;
+                statsInfo.innerText = `No data to convert`;
+                return;
+            }
+            
+            const { flights, errors } = parseItinerary(rawInput);
+            if (errors.length > 0) {
+                errorDiv.innerHTML = `<div class="error-msg">⚠️ ${errors.slice(0, 3).join('; ')}${errors.length > 3 ? '...' : ''}</div>`;
+            } else {
+                if (flights.length === 0 && rawInput.trim().length > 10) {
+                    errorDiv.innerHTML = `<div class="error-msg">⚠️ Couldn't identify any flight segments. Ensure lines follow pattern: CARRIER FLIGHT# CLASS DATE ROUTE TIMES.</div>`;
+                }
+            }
+            renderTable(flights);
+            if (flights.length === 0 && errors.length === 0) {
+                statsInfo.innerText = `No valid flights found`;
+            } else if (flights.length > 0) {
+                statsInfo.innerText = `Extracted ${flights.length} segment(s)`;
+            }
+        }
+        
+        // Load sample data into textarea and convert
+        function loadSample() {
+            textarea.value = SAMPLE_TEXT;
+            convertData();
+        }
+        
+        function clearAll() {
+            textarea.value = '';
+            resultDiv.innerHTML = `<div class="empty-state">✨ Cleared — paste new itinerary data and click Convert.</div>`;
+            errorDiv.innerHTML = '';
+            recordCountSpan.innerText = `0 flights`;
+            statsInfo.innerText = `Ready — paste itinerary`;
+        }
+        
+        // Event listeners
+        convertBtn.addEventListener('click', convertData);
+        sampleBtn.addEventListener('click', loadSample);
+        clearBtn.addEventListener('click', clearAll);
+        
+        // Optional: initial sample load for demonstration? Not automatically, but we can prefill with sample on page load to show functionality? (makes it user-friendly)
+        // prefill sample so user sees working tool immediately
+        textarea.value = SAMPLE_TEXT;
+        convertData();
+    })();
+</script>
+</body>
+</html>

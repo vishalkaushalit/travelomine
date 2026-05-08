@@ -14,7 +14,7 @@ class RoleSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Create roles (idempotent - won't duplicate)
-        $roles = ['admin', 'manager', 'agent', 'charging', 'support', 'mis'];
+        $roles = ['admin', 'manager', 'agent', 'charging', 'support', 'mis', 'mis-manager'];
         
         foreach ($roles as $roleName) {
             Role::firstOrCreate(

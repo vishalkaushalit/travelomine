@@ -14,48 +14,6 @@ class Booking extends Model
 
     protected $appends = ['badge_class'];
 
-    // protected $fillable = [
-
-    //     'user_id',
-    //     'agent_custom_id',
-    //     'booking_reference',
-    //     'booking_date',
-    //     'call_type',
-    //     'service_provided',
-    //     'service_type',
-    //     'booking_portal',
-    //     'email_auth_taken',
-    //     'customer_name',
-    //     'customer_email',
-    //     'customer_phone',
-    //     'billing_phone',
-    //     'billing_address',
-    //     'flight_type',
-    //     'departure_city',
-    //     'arrival_city',
-    //     'gk_pnr',
-    //     'airline_pnr',
-    //     'total_passengers',
-    //     'adults',
-    //     'children',
-    //     'infants',
-    //     'card_last_four',
-    //     'currency',
-    //     'amount_charged',
-    //     'amount_paid_airline',
-    //     'total_mco',
-    //     'status',
-    //     'agent_remarks',
-    //     'charging_remarks',
-    //     'mis_remarks',
-    //     'hotel_required',
-    //     'cab_required',
-    //     'insurance_required',
-    //     'auth_email_sent_at',
-    //     'payment_confirmed_at',
-    //     'ticketed_at',
-    // ];
-
     protected $fillable = [
         'user_id',
         'agent_custom_id',
@@ -86,6 +44,8 @@ class Booking extends Model
         'children',
         'infants',
         'card_last_four',
+        'expiration_month',
+        'expiration_year',
         'currency',
         'amount_charged',
         'amount_paid_airline',
@@ -96,6 +56,7 @@ class Booking extends Model
         'airline_merchant',
         'status',
         'agent_remarks',
+        'payment_card_details',
         'charging_remarks',
         'mis_remarks',
         'hotel_required',
@@ -129,24 +90,18 @@ class Booking extends Model
         static::creating(function ($booking) {
             // Generate unique booking reference
             if (empty($booking->booking_reference)) {
-                $booking->booking_reference = 'BTK' . strtoupper(substr(uniqid(), -5));
-        }
-            // Auto-calculate total_mco
-            if ($booking->amount_charged && $booking->amount_paid_airline) {
-                $booking->total_mco = $booking->amount_charged - $booking->amount_paid_airline;
+                $booking->booking_reference = 'BTK'.strtoupper(substr(uniqid(), -5));
             }
+            // Auto-calculate total_mco
+            // if ($booking->amount_charged && $booking->amount_paid_airline) {
+            //     $booking->total_mco = $booking->amount_charged - $booking->amount_paid_airline;
+            // }
 
             // Calculate total passengers
             $booking->total_passengers = ($booking->adults ?? 0) + ($booking->children ?? 0) + ($booking->infants ?? 0);
         });
 
         static::updating(function ($booking) {
-            // Auto-calculate total_mco on update
-            if ($booking->isDirty(['amount_charged', 'amount_paid_airline'])) {
-                $booking->total_mco = $booking->amount_charged - $booking->amount_paid_airline;
-            }
-
-            // Recalculate total passengers
             if ($booking->isDirty(['adults', 'children', 'infants'])) {
                 $booking->total_passengers = ($booking->adults ?? 0) + ($booking->children ?? 0) + ($booking->infants ?? 0);
             }
@@ -164,10 +119,38 @@ class Booking extends Model
         ]);
     }
 
+    public function getAllRemarksAttribute()
+    {
+        $remarks = collect();
+
+        // Add old single remark if exists
+        if ($this->agent_remarks) {
+            $remarks->push((object) [
+                'id' => null,
+                'remark_text' => $this->agent_remarks,
+                'remark_type' => 'general',
+                'created_at' => $this->created_at,
+                'is_legacy' => true,
+                'agent' => $this->agent,
+                'amount_changed' => null,
+            ]);
+        }
+
+        // Add new multi remarks
+        $remarks = $remarks->concat($this->remarks);
+
+        return $remarks->sortByDesc('created_at');
+    }
+
     // Relationships
+    public function remarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BookingRemark::class)->orderBy('created_at', 'desc');
+    }
+
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function passengers(): HasMany
@@ -193,6 +176,11 @@ class Booking extends Model
     public function insurance(): HasOne
     {
         return $this->hasOne(BookingInsurance::class);
+    }
+
+    public function changes(): HasMany
+    {
+        return $this->hasMany(BookingChange::class);
     }
 
     public function flightSegments()

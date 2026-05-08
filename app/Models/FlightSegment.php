@@ -22,6 +22,9 @@ class FlightSegment extends Model
     'airline_pnr',   // ← was 'pnr'
     // cabin_type removed ✓
     ];
+
+    // 'segment_pnr', == booking's pnr, 'airline_pnr' == airline's pnr or gk_pnr ✓
+    
     protected $casts = [
         'departure_date' => 'date',
         'return_date' => 'date',

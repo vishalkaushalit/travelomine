@@ -133,7 +133,7 @@ class OldBookingUploadController extends Controller
                         'email_auth_taken' => $this->yesNoToBool($this->value($row, 'Email - Auth Taken')),
                         'agency_merchant_name' => $this->value($row, 'Merchant'),
                         'currency' => $this->value($row, 'Currency'),
-                        'amount_charged' => $this->toNumber($this->value($row, 'Total Quoted')),
+                        'amount_charged' => $this->toNumber($this->value($row, 'Amount Charged')),
                         'amount_paid_airline' => $this->toNumber($this->value($row, 'Amount paid to airline')),
                         'total_mco' => $this->toNumber($this->value($row, 'Total MCO')),
                         'language' => $this->value($row, 'Language'),

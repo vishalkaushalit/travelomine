@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class NotificationController extends Controller
 {
     /**
-     * Mark a notification as read
+     * Mark a single notification as read
      */
     public function markAsRead(Request $request, $id)
     {
@@ -18,20 +18,27 @@ class NotificationController extends Controller
         }
 
         try {
+            $userId = auth()->id();
+            $now = now();
+
             DB::table('user_notification_reads')->updateOrInsert(
                 [
                     'notification_id' => $id,
-                    'user_id' => auth()->id()
+                    'user_id' => $userId,
                 ],
                 [
-                    'read_at' => now(),
-                    'updated_at' => now()
+                    'read_at' => $now,
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]
             );
 
             return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Failed to mark notification as read',
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -45,37 +52,35 @@ class NotificationController extends Controller
         }
 
         $user = auth()->user();
-        
-        $notifications = AdminNotification::where('is_active', true)
-            ->where(function($query) use ($user) {
+        $now = now();
+
+        $readNotificationIds = DB::table('user_notification_reads')
+            ->where('user_id', $user->id)
+            ->pluck('notification_id');
+
+        $unreadNotifications = AdminNotification::query()
+            ->where('is_active', true)
+            ->where(function ($query) use ($user) {
                 $query->where('target_type', 'all')
                       ->orWhereJsonContains('target_roles', $user->role);
             })
-            ->where(function($query) {
+            ->where(function ($query) use ($now) {
                 $query->whereNull('start_date')
-                      ->orWhere('start_date', '<=', now());
+                      ->orWhere('start_date', '<=', $now);
             })
-            ->where(function($query) {
+            ->where(function ($query) use ($now) {
                 $query->whereNull('expiry_date')
-                      ->orWhere('expiry_date', '>=', now());
+                      ->orWhere('expiry_date', '>=', $now);
             })
-            ->orderBy('created_at', 'desc')
+            ->whereNotIn('id', $readNotificationIds)
+            ->orderByDesc('created_at')
             ->get();
-
-        $readNotifications = DB::table('user_notification_reads')
-            ->where('user_id', $user->id)
-            ->pluck('notification_id')
-            ->toArray();
-
-        $unreadNotifications = $notifications->filter(function($notification) use ($readNotifications) {
-            return !in_array($notification->id, $readNotifications);
-        })->values();
 
         return response()->json($unreadNotifications);
     }
 
     /**
-     * Mark all notifications as read
+     * Mark all visible notifications as read
      */
     public function markAllAsRead()
     {
@@ -83,36 +88,46 @@ class NotificationController extends Controller
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
-        $user = auth()->user();
-        
-        $notifications = AdminNotification::where('is_active', true)
-            ->where(function($query) use ($user) {
-                $query->where('target_type', 'all')
-                      ->orWhereJsonContains('target_roles', $user->role);
-            })
-            ->where(function($query) {
-                $query->whereNull('start_date')
-                      ->orWhere('start_date', '<=', now());
-            })
-            ->where(function($query) {
-                $query->whereNull('expiry_date')
-                      ->orWhere('expiry_date', '>=', now());
-            })
-            ->pluck('id');
+        try {
+            $user = auth()->user();
+            $now = now();
 
-        foreach ($notifications as $notificationId) {
-            DB::table('user_notification_reads')->updateOrInsert(
-                [
-                    'notification_id' => $notificationId,
-                    'user_id' => $user->id
-                ],
-                [
-                    'read_at' => now(),
-                    'updated_at' => now()
-                ]
-            );
+            $notificationIds = AdminNotification::query()
+                ->where('is_active', true)
+                ->where(function ($query) use ($user) {
+                    $query->where('target_type', 'all')
+                          ->orWhereJsonContains('target_roles', $user->role);
+                })
+                ->where(function ($query) use ($now) {
+                    $query->whereNull('start_date')
+                          ->orWhere('start_date', '<=', $now);
+                })
+                ->where(function ($query) use ($now) {
+                    $query->whereNull('expiry_date')
+                          ->orWhere('expiry_date', '>=', $now);
+                })
+                ->pluck('id');
+
+            foreach ($notificationIds as $notificationId) {
+                DB::table('user_notification_reads')->updateOrInsert(
+                    [
+                        'notification_id' => $notificationId,
+                        'user_id' => $user->id,
+                    ],
+                    [
+                        'read_at' => $now,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]
+                );
+            }
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Failed to mark all notifications as read',
+                'message' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json(['success' => true]);
     }
 }

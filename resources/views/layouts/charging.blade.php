@@ -4,9 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Charging Panel | Flight Booking CRM</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        
+    {{-- Bootstrap Icons CDN --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <!-- Google Font: Source Sans Pro -->
@@ -54,6 +59,9 @@
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
             @auth
+                <a href="{{ route('charge.notifications') }}" class="nav-link">
+                    <i class="nav-icon fas fa-bell"></i>
+                </a>
                 <!-- User Account Menu -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
@@ -84,7 +92,7 @@
 
             @guest
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('charge.login') }}">
+                    <a class="nav-link" href="{{ route('public.home') }}">
                         <i class="fas fa-sign-in-alt"></i>
                         <span class="d-none d-md-inline ml-1">Login</span>
                     </a>
@@ -139,6 +147,14 @@
                             </a>
                         </li>
 
+                        <!-- Notifications -->
+                        <li class="nav-item">
+                            <a href="{{ route('charge.notifications') }}" class="nav-link">
+                                <i class="nav-icon fas fa-bell"></i>
+                                <p>Notifications</p>
+                            </a>
+                        </li>
+
                         <!-- Settings (Placeholder) -->
                         <li class="nav-item">
                             <a href="#" class="nav-link">
@@ -152,11 +168,6 @@
 
         </div>
     </aside>
-    @auth
-        <div class="container-fluid mt-2">
-            @include('components.user-notifications')
-        </div>
-    @endauth
     <!-- Content Wrapper -->
     <div class="content-wrapper">
         <section class="content">
