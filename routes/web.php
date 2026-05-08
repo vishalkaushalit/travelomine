@@ -31,12 +31,9 @@ use App\Http\Controllers\Mis\MisLoginController;
 use App\Http\Controllers\MisManager\MisManagerBookingsController;
 use App\Http\Controllers\MisManager\MisManagerDashboardController;
 use App\Http\Controllers\MisManager\MisManagerLoginController;
-<<<<<<< HEAD
 use App\Http\Controllers\Changes\ChangesDashboardController;
 use App\Http\Controllers\Changes\ChangesBookingsController;
 use App\Http\Controllers\Changes\ChangesLoginController;
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPaymentController;
 // payment contollers
@@ -51,13 +48,10 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 // use App\Mail\TestMail;
 
-<<<<<<< HEAD
-=======
 // Route::get('/send-test-mail', function () {
 //     Mail::to('vishalkaushalit@gmail.com')->send(new TestMail());
 //     return 'Mail sent!';
 // });
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
 
 Route::get('/', function () {
     return view('welcome');
@@ -103,14 +97,11 @@ Route::get('/mis-manager/login', [MisManagerLoginController::class, 'showLoginFo
 Route::post('/mis-manager/login', [MisManagerLoginController::class, 'login']);
 Route::post('/mis-manager/logout', [MisManagerLoginController::class, 'logout'])->name('mis-manager.logout');
 
-<<<<<<< HEAD
-// CHANGES PANEL routes (login)
+ // CHANGES PANEL routes (login)
 Route::get('/changes/login', [ChangesLoginController::class, 'showLoginForm'])->name('changes.login');
 Route::post('/changes/login', [ChangesLoginController::class, 'login']);
 Route::post('/changes/logout', [ChangesLoginController::class, 'logout'])->name('changes.logout');
 
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
 // CHARGING TEAM
 Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->group(function () {
     // Route::get('/dashboard', [ChargeController::class, 'index'])->name('dashboard');
@@ -228,10 +219,7 @@ Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.
     Route::put('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
 });
-<<<<<<< HEAD
 
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
 // customer support ROUTES
 Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardController::class, 'index'])->name('dashboard');
@@ -333,10 +321,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
 Route::middleware(['auth'])->group(function () {
     // Notification routes for all authenticated users
     Route::prefix('notifications')->name('notifications.')->group(function () {
-<<<<<<< HEAD
-        Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
+
         Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
         Route::get('/unread', [NotificationController::class, 'getUnreadNotifications'])->name('unread');
         Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
@@ -362,12 +347,11 @@ Route::get('/mis/notifications', function () {
 Route::get('/mis-manager/notifications', function () {
     return view('mis-manager.notifications');
 })->middleware(['auth', 'role:mis-manager'])->name('mis-manager.notifications');
-<<<<<<< HEAD
+
 Route::get('/changes/notifications', function () {
     return view('changes.notifications');
 })->middleware(['auth', 'role:changes'])->name('changes.notifications');
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
+
 
 // clear all cache
 Route::get('/clear-all-cache', function () {
@@ -403,7 +387,6 @@ Route::middleware(['auth', 'role:mis-manager'])->prefix('mis-manager')->name('mi
     Route::put('/bookings/{id}', [MisManagerBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [MisManagerBookingsController::class, 'destroy'])->name('bookings.destroy');
 });
-<<<<<<< HEAD
 
 Route::middleware(['auth', 'role:changes'])->prefix('changes')->name('changes.')->group(function () {
     Route::get('/dashboard', [ChangesDashboardController::class, 'index'])->name('dashboard');
@@ -414,5 +397,3 @@ Route::middleware(['auth', 'role:changes'])->prefix('changes')->name('changes.')
     Route::put('/bookings/{id}', [ChangesBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [ChangesBookingsController::class, 'destroy'])->name('bookings.destroy');
 });
-=======
->>>>>>> 06924c1a30d5822418525d51da97f03dc316d9f7
