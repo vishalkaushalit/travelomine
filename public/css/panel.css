@@ -20,8 +20,14 @@ section.content {
     border-color: #667eea;
     box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 }
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.btn-primary,
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link,
+.dataTables_wrapper
+    .dataTables_paginate
+    .paginate_button.page-item.active
+    .page-link {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     border: none;
 }
 .btn-primary:hover {
@@ -35,9 +41,10 @@ table#bookingsTable tr td span {
 .nav-link:focus,
 .nav-link:hover {
     color: #ffc107;
+    border: none !important;
 }
 .sidebar a.active {
-    background: rgba(52, 152, 219, 0.3);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: #ffc107 !important;
     border-left: 4px solid #3498db;
 }
@@ -89,8 +96,13 @@ badge.badge-ticketed {
     border-right: 6px double #fff;
     border-left: 3px dotted #fff;
 }
-.flight-row{
-    background: linear-gradient(90deg,rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
+.flight-row {
+    background: linear-gradient(
+        90deg,
+        rgba(42, 123, 155, 1) 0%,
+        rgba(87, 199, 133, 1) 50%,
+        rgba(237, 221, 83, 1) 100%
+    );
 
     display: flex;
     justify-content: center;
@@ -100,8 +112,44 @@ div#segments_container {
     margin: 32px 0;
     box-shadow: 0 0 5px -1px #ccc;
 }
-#segments_container > .card-body{
+#segments_container > .card-body {
     margin: 0;
     background-color: transparent !important;
     box-shadow: 0;
+}
+
+tr,
+td,
+th,
+p {
+    font-size: 14px;
+}
+
+.sidebar-collapse .user-panel .info {
+    display: none;
+}
+
+.stat-card.card {
+    border-radius: 10px;
+    margin-bottom: 0;
+}
+
+.stat-card .card-body {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 10px;
+    border: none;
+    min-height: 120px;
+}
+
+@media (max-width: 991.98px) {
+    .mco_chart {
+        height: unset !important;
+    }
+}
+@media (max-width: 575.98px) {
+    .stat-card.card {
+        margin-bottom: 15px;
+    }
 }

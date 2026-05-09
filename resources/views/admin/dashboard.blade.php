@@ -5,42 +5,6 @@
 
 @section('content')
     @include('admin.partials.activity-log-popup')
-
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('admin.dashboard') }}" class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label for="filter" class="form-label">Filter Type</label>
-                    <select name="filter" id="filter" class="form-select">
-                        <option value="all" {{ request('filter', 'all') == 'all' ? 'selected' : '' }}>All Bookings
-                        </option>
-                        <option value="today" {{ request('filter') == 'today' ? 'selected' : '' }}>Today</option>
-                        <option value="last_month" {{ request('filter') == 'last_month' ? 'selected' : '' }}>Last Month
-                        </option>
-                        <option value="date_range" {{ request('filter') == 'date_range' ? 'selected' : '' }}>Date Range
-                        </option>
-                    </select>
-                </div>
-
-                <div class="col-md-3 date-range-fields"
-                    style="{{ request('filter') == 'date_range' ? '' : 'display:none;' }}">
-                    <label for="from" class="form-label">From Date</label>
-                    <input type="date" name="from" id="from" value="{{ request('from') }}" class="form-control">
-                </div>
-
-                <div class="col-md-3 date-range-fields"
-                    style="{{ request('filter') == 'date_range' ? '' : 'display:none;' }}">
-                    <label for="to" class="form-label">To Date</label>
-                    <input type="date" name="to" id="to" value="{{ request('to') }}" class="form-control">
-                </div>
-
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
-                </div>
-            </form>
-        </div>
-    </div>
     <div class="row mb-4">
         <div class="col-md-4">
             <div class="card shadow-sm border-0">
@@ -114,6 +78,36 @@
             <h5 class="mb-0">Latest Bookings</h5>
         </div>
         <div class="card-body">
+            <form method="GET" action="{{ route('admin.dashboard') }}" class="row g-3 align-items-end mb-4">
+                <div class="col-md-3">
+                    <label for="filter" class="form-label">Filter Type</label>
+                    <select name="filter" id="filter" class="form-select">
+                        <option value="all" {{ request('filter', 'all') == 'all' ? 'selected' : '' }}>All Bookings
+                        </option>
+                        <option value="today" {{ request('filter') == 'today' ? 'selected' : '' }}>Today</option>
+                        <option value="last_month" {{ request('filter') == 'last_month' ? 'selected' : '' }}>Last Month
+                        </option>
+                        <option value="date_range" {{ request('filter') == 'date_range' ? 'selected' : '' }}>Date Range
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 date-range-fields"
+                    style="{{ request('filter') == 'date_range' ? '' : 'display:none;' }}">
+                    <label for="from" class="form-label">From Date</label>
+                    <input type="date" name="from" id="from" value="{{ request('from') }}" class="form-control">
+                </div>
+
+                <div class="col-md-3 date-range-fields"
+                    style="{{ request('filter') == 'date_range' ? '' : 'display:none;' }}">
+                    <label for="to" class="form-label">To Date</label>
+                    <input type="date" name="to" id="to" value="{{ request('to') }}" class="form-control">
+                </div>
+
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
+                </div>
+            </form>
             <div class="table-responsive">
                 <table id="bookingsTable" class="table table-striped table-bordered align-middle">
                     <thead class="table-light">
