@@ -280,24 +280,6 @@
                                     </div>
                                 </a>
 
-                                {{-- Changes Panel --}}
-                                <a href="{{ route('changes.login') }}" class="text-decoration-none text-light">
-                                    <div class="role-card p-3 h-100">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div
-                                                class="role-icon bg-info bg-opacity-10 text-info border border-info border-opacity-50">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </div>
-                                            <div>
-                                                <div class="fw-semibold">Changes Panel</div>
-                                                <small class="text-secondary">
-                                                    View and edit all agent bookings
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </a>
-
                             </div>
 
                             <div class="col-md-6 d-flex flex-column gap-3">

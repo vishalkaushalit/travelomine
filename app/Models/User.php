@@ -55,8 +55,37 @@ class User extends Authenticatable
             }
         });
     }
-
     // Helper Methods for Role Checking
+    // ✅ FILAMENT PANEL ACCESS - Updated for multiple roles per panel
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return match ($panel->getId()) {
+            'admin' => in_array($this->role, ['admin', 'manager']), // Managers assist admins
+            'agent' => $this->role === 'agent',
+            'charge' => in_array($this->role, ['charge']), // Multiple charging team members
+            'support' => in_array($this->role, ['support']),   // Multiple support team members
+            'mis' => in_array($this->role, ['mis']),           // Multiple MIS team members
+            default => false,
+        };
+    }
+
+    // ✅ RELATIONSHIPS
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'user_id');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function createdUsers(): HasMany
+    {
+        return $this->hasMany(User::class, 'created_by');
+    }
+
+    // ✅ HELPER METHODS - Added new role checkers
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -95,7 +124,6 @@ class User extends Authenticatable
     {
         return $this->role === 'changes';
     }
-
     public function isBlocked(): bool
     {
         return $this->is_blocked;
@@ -109,21 +137,5 @@ class User extends Authenticatable
     public function hasAnyRole(array $roles): bool
     {
         return in_array($this->role, $roles);
-    }
-
-    // Relationships
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class, 'user_id');
-    }
-
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function createdUsers(): HasMany
-    {
-        return $this->hasMany(User::class, 'created_by');
     }
 }

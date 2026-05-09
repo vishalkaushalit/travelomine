@@ -43,42 +43,6 @@ class NotificationController extends Controller
     }
 
     /**
-     * Get unread notifications count for current user
-     */
-    public function getUnreadCount()
-    {
-        if (!auth()->check()) {
-            return response()->json(['count' => 0]);
-        }
-
-        $user = auth()->user();
-        $now = now();
-
-        $readNotificationIds = DB::table('user_notification_reads')
-            ->where('user_id', $user->id)
-            ->pluck('notification_id');
-
-        $count = AdminNotification::query()
-            ->where('is_active', true)
-            ->where(function ($query) use ($user) {
-                $query->where('target_type', 'all')
-                      ->orWhereJsonContains('target_roles', $user->role);
-            })
-            ->where(function ($query) use ($now) {
-                $query->whereNull('start_date')
-                      ->orWhere('start_date', '<=', $now);
-            })
-            ->where(function ($query) use ($now) {
-                $query->whereNull('expiry_date')
-                      ->orWhere('expiry_date', '>=', $now);
-            })
-            ->whereNotIn('id', $readNotificationIds)
-            ->count();
-
-        return response()->json(['count' => $count]);
-    }
-
-    /**
      * Get unread notifications for current user
      */
     public function getUnreadNotifications()
