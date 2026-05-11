@@ -91,9 +91,9 @@
                                         @forelse($merchants as $merchant)
                                             <option value="{{ $merchant->id }}" {{ old('merchant') == $merchant->id ? 'selected' : '' }}>
                                                 {{ $merchant->name }} 
-                                                <small class="text-muted d-block">
+                                                {{-- <small class="text-muted d-block">
                                                     {{ $merchant->code ?? 'N/A' }} | {{ $merchant->currency }}
-                                                </small>
+                                                </small> --}}
                                             </option>
                                         @empty
                                             <option disabled>No active merchants available</option>
