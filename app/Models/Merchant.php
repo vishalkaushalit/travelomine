@@ -75,3 +75,6 @@ class Merchant extends Model
         return $this->reply_to_name ?: $this->name;
     }
 }
+
+
+
