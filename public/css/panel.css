@@ -123,6 +123,7 @@ td,
 th,
 p {
     font-size: 14px;
+    vertical-align: middle !important;
 }
 
 .sidebar-collapse .user-panel .info {
@@ -141,6 +142,33 @@ p {
     gap: 10px;
     border: none;
     min-height: 120px;
+}
+
+.badge,
+.small,
+small {
+    font-size: 12px;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+}
+
+.btn-group,
+.btn-group-vertical {
+    gap: 5px;
+}
+
+.btn-group-sm > .btn,
+.btn-sm {
+    border-radius: 0.2rem !important;
+}
+
+.alert.alert-dismissible {
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 @media (max-width: 991.98px) {

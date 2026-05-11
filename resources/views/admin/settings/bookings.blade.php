@@ -3,7 +3,7 @@
 @section('title', 'Booking Settings')
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid py-4">
     <h2 class="mb-4"><i class="bi bi-sliders"></i> Booking Settings</h2>
     <p class="text-muted">Manage dropdown options for booking forms</p>
 

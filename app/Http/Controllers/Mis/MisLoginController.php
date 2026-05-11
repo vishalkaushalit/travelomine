@@ -19,12 +19,10 @@ class MisLoginController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             
             if (auth()->user()->role === 'mis') {
-                // Ensure the authenticated user has the Spatie role required by role:mis middleware.
-                auth()->user()->syncRoles(['mis']);
                 return redirect()->intended(route('mis.dashboard'));
             }
             
