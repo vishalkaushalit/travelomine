@@ -155,7 +155,8 @@
 
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
-                                        <a href="{{ route('agent.bookings.search') }}" class="nav-link">
+                                        <a href="{{ route('agent.bookings.search') }}"
+                                            class="nav-link {{ request()->routeIs('agent.bookings.search') ? 'active' : '' }}">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>All Bookings</p>
                                         </a>
@@ -195,7 +196,8 @@
 
                             <!-- Notifications -->
                             <li class="nav-item">
-                                <a href="{{ route('agent.notifications') }}" class="nav-link">
+                                <a href="{{ route('agent.notifications') }}"
+                                    class="nav-link {{ request()->routeIs('agent.notifications') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-bell"></i>
                                     <p>Notifications</p>
                                 </a>

@@ -11,71 +11,71 @@ class Setting extends Model
     protected $fillable = ['key', 'value'];
 
     /**
-     * Get all values for a specific setting key
+     * Get options
      */
-public static function getOptions(string $key): array
-{
-    $settingsOptions = self::where('key', $key)
-        ->pluck('value', 'id')
-        ->toArray();
+    public static function getOptions(string $key): array
+    {
+        return match ($key) {
 
-    $tableData = match ($key) {
-        'service_type'     => DB::table('service_type')
-            ->where('is_active', 1)
-            ->pluck('type_name', 'id')      // ✅ Correct column name
-            ->toArray(),
-        'service_provided' => DB::table('service_provided')
-            ->where('is_active', 1)
-            ->pluck('service_name', 'id')   // ✅ Correct column name
-            ->toArray(),
-        default            => [],
-    };
+            'service_type' => DB::table('service_type')
+                ->where('is_active', 1)
+                ->pluck('type_name', 'id')
+                ->toArray(),
 
-    return array_merge($settingsOptions, $tableData);
-}
+            'service_provided' => DB::table('service_provided')
+                ->where('is_active', 1)
+                ->pluck('service_name', 'id')
+                ->toArray(),
 
-    /**
-     * Add a new option
-     */
-public static function addOption(string $key, string $value): bool
-{
-    if (self::where('key', $key)->where('value', $value)->exists()) {
-        return false;
+            default => [],
+        };
     }
 
-    self::create(['key' => $key, 'value' => $value]);
+    /**
+     * Add option
+     */
+    public static function addOption(string $key, string $value): bool
+    {
+        return match ($key) {
 
-    match ($key) {
-        'service_type'     => DB::table('service_type')->insertOrIgnore([
-            'type_name' => $value,
-            'slug' => Str::slug($value),
-            'is_active' => 1
-        ]),
-        'service_provided' => DB::table('service_provided')->insertOrIgnore([
-            'service_name' => $value,
-            'slug' => Str::slug($value),
-            'is_active' => 1
-        ]),
-        default            => null,
-    };
+            'service_type' => DB::table('service_type')
+                ->insertOrIgnore([
+                    'type_name' => $value,
+                    'slug' => Str::slug($value),
+                    'is_active' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]),
 
-    return true;
-}
+            'service_provided' => DB::table('service_provided')
+                ->insertOrIgnore([
+                    'service_name' => $value,
+                    'slug' => Str::slug($value),
+                    'is_active' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]),
 
-public static function deleteOption(int $id): bool
-{
-    $setting = self::find($id);
-    if (!$setting) return false;
+            default => false,
+        };
+    }
 
-    match ($setting->key) {
-        'service_type'     => DB::table('service_type')
-            ->where('type_name', $setting->value)->delete(),
-        'service_provided' => DB::table('service_provided')
-            ->where('service_name', $setting->value)->delete(),
-        default            => null,
-    };
+    /**
+     * Delete option
+     */
+    public static function deleteOption(string $key, int $id): bool
+    {
+        return match ($key) {
 
-    return $setting->delete();
-}
+            'service_type' => DB::table('service_type')
+                ->where('id', $id)
+                ->delete(),
 
+            'service_provided' => DB::table('service_provided')
+                ->where('id', $id)
+                ->delete(),
+
+            default => false,
+        };
+    }
 }

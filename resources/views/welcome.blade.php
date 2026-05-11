@@ -57,8 +57,8 @@
         }
 
         .role-icon {
-            width: 44px;
-            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;

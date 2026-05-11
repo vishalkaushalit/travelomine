@@ -289,8 +289,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
         ->name('settings.store');
 
     // Delete option
-    Route::delete('/settings/bookings/{id}', [SettingsController::class, 'destroy'])
-        ->name('settings.destroy');
+    Route::delete('/settings/bookings/{key}/{id}', [SettingsController::class, 'destroy'])
+    ->name('settings.destroy');
 
     // Reports (Both Admin and Manager can access)
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

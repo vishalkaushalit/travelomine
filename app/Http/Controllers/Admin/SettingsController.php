@@ -15,8 +15,8 @@ class SettingsController extends Controller
      */
 public function bookings()
 {
-    $serviceProvided = collect(Setting::getOptions('service_provided'));
-    $serviceType = collect(Setting::getOptions('service_type'));
+    $serviceProvided = Setting::getOptions('service_provided');
+    $serviceType = Setting::getOptions('service_type');
 
     return view('admin.settings.bookings', compact('serviceProvided', 'serviceType'));
 }
@@ -42,11 +42,17 @@ public function bookings()
     /**
      * Delete option
      */
-    public function destroy($id)
+    public function destroy($key, $id)
     {
-        Setting::deleteOption($id);
-        return redirect()->back()->with('success', 'Option deleted successfully!');
-    }
+        $deleted = Setting::deleteOption($key, $id);
 
+        if ($deleted) {
+            return redirect()->back()
+                ->with('success', 'Option deleted successfully!');
+        }
+
+        return redirect()->back()
+            ->with('error', 'Option not found!');
+    }
  
 }
