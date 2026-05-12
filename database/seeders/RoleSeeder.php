@@ -11,7 +11,7 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         // Define allowed roles
-        $roles = ['admin', 'manager', 'agent', 'charging', 'support', 'mis', 'mis-manager'];
+        $roles = ['admin', 'manager', 'agent', 'charge', 'support', 'mis', 'mis-manager', 'changes'];
         
         $this->command->info('📋 Available roles: ' . implode(', ', $roles));
         
@@ -49,7 +49,7 @@ class RoleSeeder extends Seeder
             ->where('email', '!=', $adminEmail) // Exclude admin
             ->each(function (User $user) {
                 // Only assign agent role if they don't have a special role
-                $specialRoles = ['admin', 'manager', 'mis', 'mis-manager', 'charging', 'support'];
+                $specialRoles = ['admin', 'manager', 'mis', 'mis-manager', 'charge', 'support'];
                 
                 if (!in_array($user->role, $specialRoles)) {
                     $oldRole = $user->role;

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Admin\OldBookingUploadController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Agent\AgentBookingUpdatesController;
 use App\Http\Controllers\Agent\Auth\AgentAuthController;
 use App\Http\Controllers\Agent\bookings\AgentBookingSearchController;
@@ -143,18 +144,6 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
 
         return 'Test email sent successfully.';
     });
-
-        // Assignment management routes
-    Route::get('/assignments/dashboard', [App\Http\Controllers\Charge\ChangesTeamController::class, 'dashboard'])
-        ->name('assignments.dashboard');
-    Route::get('/assignments/{assignment}', [App\Http\Controllers\Charge\ChangesTeamController::class, 'show'])
-        ->name('assignments.show');
-    Route::post('/assignments/{assignment}/accept', [App\Http\Controllers\Charge\ChangesTeamController::class, 'accept'])
-        ->name('assignments.accept');
-    Route::post('/assignments/{assignment}/reject', [App\Http\Controllers\Charge\ChangesTeamController::class, 'reject'])
-        ->name('assignments.reject');
-    Route::post('/assignments/{assignment}/complete', [App\Http\Controllers\Charge\ChangesTeamController::class, 'complete'])
-        ->name('assignments.complete');
 });
 
 // AGENT DASHBOARD ROUTES ONLY (POST-LOGIN)
@@ -182,16 +171,6 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
     // Add remark route
     Route::post('/bookings/{bookingId}/add-remark', [AgentBookingController::class, 'addRemark'])
          ->name('agent.bookings.add-remark');
-
-             // Booking assignment routes
-    Route::get('/bookings/{booking}/assign', [App\Http\Controllers\Agent\AssignBookingController::class, 'create'])
-        ->name('bookings.assign.create');
-    Route::post('/bookings/{booking}/assign', [App\Http\Controllers\Agent\AssignBookingController::class, 'store'])
-        ->name('bookings.assign.store');
-    Route::get('/assignments', [App\Http\Controllers\Agent\AssignBookingController::class, 'index'])
-        ->name('assignments.index');
-    Route::get('/assignments/{assignment}', [App\Http\Controllers\Agent\AssignBookingController::class, 'show'])
-        ->name('assignments.show');
 });
 
 // ADMIN ROUTES
@@ -220,6 +199,7 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::post('/bookings/upload-old', [OldBookingUploadController::class, 'store'])
             ->name('bookings.upload-old.store');
+
     });
 Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.')->group(function () {
 
@@ -242,6 +222,7 @@ Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')
     Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Support\SupportBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'update'])->name('bookings.update');
     Route::put('/bookings/{id}/support-status', [\App\Http\Controllers\Support\SupportBookingsController::class, 'updateStatus'])->name('bookings.update-status');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 });
 // MIS PANEL ROUTES - Role: mis
 Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(function () {
@@ -382,6 +363,7 @@ Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(func
     Route::get('/bookings/{id}/edit', [MisBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [MisBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [MisBookingsController::class, 'destroy'])->name('bookings.destroy');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 });
 
 Route::middleware(['auth', 'role:mis-manager'])->prefix('mis-manager')->name('mis-manager.')->group(function () {
@@ -392,4 +374,5 @@ Route::middleware(['auth', 'role:mis-manager'])->prefix('mis-manager')->name('mi
     Route::get('/bookings/{id}/edit', [MisManagerBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [MisManagerBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [MisManagerBookingsController::class, 'destroy'])->name('bookings.destroy');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 });
