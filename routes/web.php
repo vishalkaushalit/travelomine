@@ -167,6 +167,7 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 
     Route::post('/booking-updates/search', [AgentBookingUpdatesController::class, 'searchByPnr'])->name('booking-updates.search');
     Route::post('/booking-updates', [AgentBookingUpdatesController::class, 'store'])->name('booking-updates.store');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 
     // Add remark route
     Route::post('/bookings/{bookingId}/add-remark', [AgentBookingController::class, 'addRemark'])
