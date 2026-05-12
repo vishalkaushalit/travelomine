@@ -1,5 +1,33 @@
 @extends('layouts.agent')
-
+{{-- In agent/bookings/show.blade.php, add this temporary test button --}}
+<div class="row mt-3">
+    <div class="col-12">
+        <hr>
+        <h4>Debug Testing Section</h4>
+        
+        {{-- Test Link 1: Direct GET request (temporary) --}}
+        <a href="{{ route('agent.bookings.assign.create', $booking) }}" class="btn btn-primary">
+            <i class="fas fa-arrow-right"></i> Go to Assign Page (GET)
+        </a>
+        
+        {{-- Test Link 2: Direct form with no JavaScript --}}
+        <form action="{{ route('agent.bookings.assign.store', $booking) }}" method="POST" style="display: inline-block; margin-left: 10px;">
+            @csrf
+            <input type="hidden" name="message" value="Test submission from direct form - {{ now() }}">
+            <button type="submit" class="btn btn-success" onclick="return confirm('Submit test assignment?')">
+                <i class="fas fa-paper-plane"></i> Test Direct Submit (No JS)
+            </button>
+        </form>
+        
+        <div class="alert alert-info mt-2">
+            <strong>Debug Info:</strong><br>
+            Booking ID: {{ $booking->id }}<br>
+            Booking Reference: {{ $booking->booking_reference }}<br>
+            Assign Create Route: {{ route('agent.bookings.assign.create', $booking) }}<br>
+            Assign Store Route: {{ route('agent.bookings.assign.store', $booking) }}
+        </div>
+    </div>
+</div>
 @section('content')
     <div class="container-fluid pt-4">
         <div class="row mb-3">
@@ -353,7 +381,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                              
+
                                             </div>
                                         </div>
                                     </div>

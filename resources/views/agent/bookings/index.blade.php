@@ -105,7 +105,16 @@
                                         class="btn btn-xs btn-warning">
                                         <i class="fas fa-edit"></i> Update PNR
                                     </a>
-                                </td>
+                                    @if (!$booking->activeAssignment)
+                                        <a href="{{ route('agent.bookings.assign.create', $booking) }}"
+                                            class="btn btn-warning">
+                                            <i class="fas fa-exchange-alt"></i> Request Changes
+                                        </a>
+                                    @else
+                                        <button class="btn btn-secondary" disabled>
+                                            <i class="fas fa-clock"></i> Changes Requested (Pending)
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

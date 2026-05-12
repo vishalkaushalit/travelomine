@@ -251,4 +251,14 @@ class Booking extends Model
     {
         return $this->hasOne(Status::class, 'booking_id');
     }
+
+    public function assignments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BookingAssignment::class);
+    }
+
+    public function activeAssignment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(BookingAssignment::class)->whereIn('status', ['pending', 'accepted'])->latest();
+    }
 }
