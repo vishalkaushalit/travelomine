@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -65,6 +66,8 @@ class User extends Authenticatable
             'charge' => in_array($this->role, ['charge']), // Multiple charging team members
             'support' => in_array($this->role, ['support']),   // Multiple support team members
             'mis' => in_array($this->role, ['mis']),           // Multiple MIS team members
+            'mis-manager' => in_array($this->role, ['mis-manager']),           // Multiple MIS Manager team members
+            'changes' => in_array($this->role, ['changes']),           // Multiple Changes team members
             default => false,
         };
     }
@@ -101,9 +104,9 @@ class User extends Authenticatable
         return $this->role === 'agent';
     }
 
-    public function isCharging(): bool
+    public function isCharge(): bool
     {
-        return $this->role === 'charging';
+        return $this->role === 'charge';
     }
 
     public function isSupport(): bool

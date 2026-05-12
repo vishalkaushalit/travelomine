@@ -22,7 +22,7 @@ class MisManagerLoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             
-            if (auth()->user()->hasRole('mis-manager')) {
+            if (auth()->user()->role === 'mis-manager') {
                 return redirect()->intended(route('mis-manager.dashboard'));
             }
             

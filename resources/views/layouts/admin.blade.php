@@ -78,7 +78,7 @@
 
                             <div class="dropdown-divider"></div>
 
-                            <a href="#" class="dropdown-item">
+                            <a href="{{ route('admin.profile.index') }}" class="dropdown-item">
                                 <i class="fas fa-user mr-2"></i> My Profile
                             </a>
 
