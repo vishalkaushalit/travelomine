@@ -261,4 +261,17 @@ class Booking extends Model
     {
         return $this->hasOne(BookingAssignment::class)->whereIn('status', ['pending', 'accepted'])->latest();
     }
+
+    public function chargebackRecords()
+    {
+        return $this->hasMany(ChargebackRecord::class);
+    }
+
+    // Accessor: current dispute status (null if no record)
+    public function getCurrentDisputeStatusAttribute()
+    {
+        $latest = $this->chargebackRecords()->latest()->first();
+
+        return $latest ? $latest->status : null;
+    }
 }

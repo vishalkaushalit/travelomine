@@ -35,6 +35,18 @@ return [
     |
     */
 
+        'admin' => [
+        'prashant.saini@trafficpirates.com',
+    ],
+    
+    'mis_team' => [
+        'satyam.mishra@callinggenie.com',
+    ],
+    
+    'mis_manager' => [
+        'anand.shankar@callinggenie.com.com',
+    ],
+
     'mailers' => [
 
         'smtp' => [

@@ -8,16 +8,16 @@
         <p class="text-muted">Manage dropdown options for booking forms</p>
 
         @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
+            <div class="alert alert-success alert-dismissible fade show d-flex justify-content-between align-items-center">
                 {{ session('success') }}
-                <button type="button" class="btn-close" data-dismiss="alert"></button>
+                <button type="button" class="btn-close btn btn-sm btn-light" data-dismiss="alert"></button>
             </div>
         @endif
 
         @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show">
+            <div class="alert alert-danger alert-dismissible fade show d-flex justify-content-between align-items-center">
                 {{ session('error') }}
-                <button type="button" class="btn-close" data-dismiss="alert"></button>
+                <button type="button" class="btn-close btn btn-sm btn-light" data-dismiss="alert"></button>
             </div>
         @endif
 

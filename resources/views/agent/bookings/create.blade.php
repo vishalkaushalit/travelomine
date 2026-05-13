@@ -555,8 +555,8 @@
                     <h5 class="modal-title" id="pnrLookupModalLabel">
                         <i class="bi bi-search"></i> Find Existing Booking
                     </h5>
-                    <button type="button" class="btn-close btn-close-white pnr-modal-close"
-                        data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn btn-light btn-close-white pnr-modal-close"
+                        data-dismiss="modal">X</button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-info mb-3">
@@ -577,6 +577,7 @@
                         <input type="text" id="lookup_pnr" class="form-control"
                             placeholder="Example: ABC123 / GK9876">
                         <small class="text-muted">Only your own existing booking will be matched.</small>
+                        <small class="text-muted d-block">Searching with GK PNR will yield more accurate results.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -691,62 +692,63 @@
             let segmentIndex = 0;
 
             // Segment generation functions
-            function makeSegmentCard(index, showReturnDate = false, removable = false) {
+            function makeSegmentCard(index, isReturnSegment = false, removable = false) {
                 return `
-            <div class="border rounded p-3 mb-3 segment-item animate__animated animate__fadeIn">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 text-primary">
-                        <i class="bi bi-airplane"></i> Flight Segment ${index + 1}
-                    </h6>
-                    ${removable ? '<button type="button" class="btn btn-sm btn-outline-danger remove-segment-btn"><i class="bi bi-trash"></i> Remove</button>' : ''}
+        <div class="border rounded p-3 mb-3 segment-item animate__animated animate__fadeIn">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 text-primary">
+                    <i class="bi bi-airplane"></i> Flight Segment ${index + 1}
+                </h6>
+                ${removable ? '<button type="button" class="btn btn-sm btn-outline-danger remove-segment-btn"><i class="bi bi-trash"></i> Remove</button>' : ''}
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label>From City <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][from_city]" class="form-control" placeholder="e.g., JFK" required>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label>From City <span class="text-danger">*</span></label>
-                        <input type="text" name="segments[${index}][from_city]" class="form-control" placeholder="e.g., JFK" required>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>To City <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][to_city]" class="form-control" placeholder="e.g., LAX" required>
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>To City <span class="text-danger">*</span></label>
-                        <input type="text" name="segments[${index}][to_city]" class="form-control" placeholder="e.g., LAX" required>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Departure Date <span class="text-danger">*</span></label>
+                    <input type="date" name="segments[${index}][departure_date]" class="form-control" required>
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>Departure Date <span class="text-danger">*</span></label>
-                        <input type="date" name="segments[${index}][departure_date]" class="form-control" required>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>${isReturnSegment ? 'Return Date (Auto-filled)' : 'Return Date'}</label>
+                    <input type="date" name="segments[${index}][return_date]" class="form-control" ${isReturnSegment ? 'readonly style="background-color: #e9ecef;"' : ''}>
+                    ${isReturnSegment ? '<small class="form-text text-muted">Auto-filled from departure date</small>' : ''}
+                </div>
 
-                    <div class="col-md-3 mb-3" ${!showReturnDate ? 'style="display:none;"' : ''}>
-                        <label>Return Date ${showReturnDate ? '<span class="text-danger">*</span>' : ''}</label>
-                        <input type="date" name="segments[${index}][return_date]" class="form-control" ${showReturnDate ? 'required' : ''}>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Airline Name <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][airline_name]" class="form-control" placeholder="e.g., Delta" required>
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>Airline Name <span class="text-danger">*</span></label>
-                        <input type="text" name="segments[${index}][airline_name]" class="form-control" placeholder="e.g., Delta" required>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Flight Number</label>
+                    <input type="text" name="segments[${index}][flight_number]" class="form-control" placeholder="e.g., DL123">
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>Flight Number</label>
-                        <input type="text" name="segments[${index}][flight_number]" class="form-control" placeholder="e.g., DL123">
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Segment PNR</label>
+                    <input type="text" name="segments[${index}][segment_pnr]" class="form-control" placeholder="Optional">
+                </div>
 
-                    <div class="col-md-3 mb-3">
-                        <label>Segment PNR</label>
-                        <input type="text" name="segments[${index}][segment_pnr]" class="form-control" placeholder="Optional">
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <label>Cabin Class <span class="text-danger">*</span></label>
-                        <select name="segments[${index}][cabin_class]" class="form-control" required>
-                            <option value="">Select Cabin</option>
-                            ${cabinClasses.map(cabin => `<option value="${cabin}">${cabin}</option>`).join('')}
-                        </select>
-                    </div>
+                <div class="col-md-3 mb-3">
+                    <label>Cabin Class <span class="text-danger">*</span></label>
+                    <select name="segments[${index}][cabin_class]" class="form-control" required>
+                        <option value="">Select Cabin</option>
+                        ${cabinClasses.map(cabin => `<option value="${cabin}">${cabin}</option>`).join('')}
+                    </select>
                 </div>
             </div>
-        `;
+        </div>
+    `;
             }
 
             function buildSegments() {
@@ -764,12 +766,68 @@
                     segmentIndex++;
                     elements.addSegmentWrapper.style.display = 'none';
                 } else if (type === 'roundtrip') {
+                    // Outbound segment
+                    elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+                    segmentIndex++;
+                    // Return segment - this will have return_date auto-filled and readonly
                     elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, true, false));
+                    segmentIndex++;
+                    elements.addSegmentWrapper.style.display = 'none';
+
+                    // Add event listener to auto-fill return date for the second segment
+                    const outboundDeparture = document.querySelector('[name="segments[0][departure_date]"]');
+                    const returnDeparture = document.querySelector('[name="segments[1][departure_date]"]');
+                    const returnReturnDate = document.querySelector('[name="segments[1][return_date]"]');
+
+                    if (outboundDeparture && returnDeparture && returnReturnDate) {
+                        // Function to update return date based on return departure
+                        function updateReturnDate() {
+                            if (returnDeparture.value) {
+                                returnReturnDate.value = returnDeparture.value;
+                            }
+                        }
+
+                        // Update when return departure changes
+                        returnDeparture.addEventListener('change', updateReturnDate);
+                        returnDeparture.addEventListener('input', updateReturnDate);
+
+                        // Initial update if value exists
+                        updateReturnDate();
+                    }
+                } else if (type === 'multicity') {
+                    elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
                     segmentIndex++;
                     elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
                     segmentIndex++;
+                    elements.addSegmentWrapper.style.display = 'block';
+                }
+            }
+
+            function buildSegments() {
+                const type = elements.flightType.value;
+                elements.segmentsContainer.innerHTML = '';
+                segmentIndex = 0;
+
+                if (!type) {
+                    elements.addSegmentWrapper.style.display = 'none';
+                    return;
+                }
+
+                if (type === 'oneway') {
+                    // One way: Single segment with optional return date (won't be used)
+                    elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+                    segmentIndex++;
+                    elements.addSegmentWrapper.style.display = 'none';
+                } else if (type === 'roundtrip') {
+                    // Round trip: Outbound segment (no return date field)
+                    elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+                    segmentIndex++;
+                    // Return segment (isReturnSegment = true, so no return date field)
+                    elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, true, false));
+                    segmentIndex++;
                     elements.addSegmentWrapper.style.display = 'none';
                 } else if (type === 'multicity') {
+                    // Multi city: Start with 2 segments, both have return date fields (removable)
                     elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
                     segmentIndex++;
                     elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));

@@ -729,11 +729,11 @@ class AgentBookingController extends Controller
                 ]);
             }
 
-            if (empty($segments[0]['return_date'])) {
-                throw ValidationException::withMessages([
-                    'segments.0.return_date' => 'Return date is required for round trip booking.',
-                ]);
-            }
+            // if (empty($segments[0]['return_date'])) {
+            //     throw ValidationException::withMessages([
+            //         'segments.0.return_date' => 'Return date is required for round trip booking.',
+            //     ]);
+            // }
         }
 
         // Multi-city validation

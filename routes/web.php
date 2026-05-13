@@ -115,7 +115,7 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
     Route::post('/booking/{id}/authorize-send', [AuthConsentController::class, 'send'])->name('authorize.send');
     Route::post('/booking/{id}/authorize-resend', [AuthConsentController::class, 'resend'])->name('authorize.resend');
     Route::patch('/charge/booking/{id}/auth-done', [AuthConsentController::class, 'markAuthDone'])->name('auth.done');
-    Route::post('/bookings/{id}/update-status', [ChargeBookingStatusController::class, 'update'])->name('bookings.update-status');
+    // Route::post('/bookings/{id}/update-status', [ChargeBookingStatusController::class, 'update'])->name('bookings.update-status');
 
     Route::get('/bookings/{booking}/payment-link/create', [BookingPaymentLinkController::class, 'create'])->name('bookings.payment-link.create');
     Route::post('/bookings/{booking}/payment-link', [BookingPaymentLinkController::class, 'store'])->name('bookings.payment-link.store');
@@ -200,6 +200,7 @@ Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])
             ->name('activity.logs');
 
@@ -234,16 +235,20 @@ Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.
     Route::put('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
 });
-// customer support ROUTES
 Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardController::class, 'index'])->name('dashboard');
-    // Route::get('/agents-list', [\App\Http\Controllers\Support\SupportAgentsController::class, 'index'])->name('agents.index');
+    
+    // Bookings
     Route::get('/bookings/all', [\App\Http\Controllers\Support\SupportBookingsController::class, 'all'])->name('bookings.all');
     Route::get('/bookings', [\App\Http\Controllers\Support\SupportBookingsController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'show'])->name('bookings.show');
     Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Support\SupportBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'update'])->name('bookings.update');
-    Route::put('/bookings/{id}/support-status', [\App\Http\Controllers\Support\SupportBookingsController::class, 'updateStatus'])->name('bookings.update-status');
+    
+    // NEW: Chargeback record creation
+    Route::post('/bookings/{id}/chargeback', [\App\Http\Controllers\Support\SupportBookingsController::class, 'storeChargeback'])->name('bookings.chargeback.store');
+    
+    // Profile
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 });
 // MIS PANEL ROUTES - Role: mis

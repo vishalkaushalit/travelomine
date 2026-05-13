@@ -1,0 +1,218 @@
+1. agent creates booking record - with all details about travel
+2. agent assign to charge team
+3. charge team send auth mail - taking concent from customers before using their credit cards 
+4. payment done and booking confirmed 
+
+
+// charge back team process - which we have to create 
+5. but customer raised dispute regarding this payment
+6. Chargeback team get alert on portal / RDR / Retrieval 
+7. Agent (who craetes booking) need to resolve the case within given time or else refund the amount to save merchant from HIT.
+8. RDR- Rapid dispute refund, agent can call passenger for recharged the amount if pax agree.
+9. Retrieval only come in Amex card and chargeback team needs to submit the file within given time.
+
+If agent won the case, then we will update status as reverse or recharged.
+if lost the status - chargeback 
+ChargeBack team has to file this case within given time from bank and do followup.
+
+Alert case can be chargeback 
+Alert case can get again alert 
+Alert case must be refund if not resolved in given time frame 
+Alert case can be resolved 
+
+Resolved can become chargeback status 
+Resolved can get alert again 
+Resolved can become to RDR
+Resolved can become refund 
+
+Refund can get alert, RDR, chargeback
+Refund can get resolved - yes
+
+chargeback can get retrivel 
+chargeback cant be change to alert, RDR
+
+now db schema 
+ - Dispute status - RDR, retrivel, Alert, chargeback - only Chargeback team can update this status
+ - Time - if status is alert (enter remaining time HH:MM)
+ - remark - everytime the chargeback team they will submit a remark 
+ 
+ one booking has a complete history of chargback so we need to make it history 
+
+ Need to create a timeline of chargeback process regarding the booking number where we have to use the booking details 
+
+ chargeback team can view these details of bookings 
+
+
+// Chargeback support team ROUTES
+Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardController::class, 'index'])->name('dashboard');
+    // Route::get('/agents-list', [\App\Http\Controllers\Support\SupportAgentsController::class, 'index'])->name('agents.index');
+    Route::get('/bookings/all', [\App\Http\Controllers\Support\SupportBookingsController::class, 'all'])->name('bookings.all');
+    Route::get('/bookings', [\App\Http\Controllers\Support\SupportBookingsController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Support\SupportBookingsController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'update'])->name('bookings.update');
+    Route::put('/bookings/{id}/support-status', [\App\Http\Controllers\Support\SupportBookingsController::class, 'updateStatus'])->name('bookings.update-status');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+});
+
+old supportbookingcontroller - 
+
+<?php
+
+namespace App\Http\Controllers\Support;
+
+use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\User;
+use Illuminate\Http\Request;
+
+class SupportBookingsController extends Controller
+{
+    /**
+     * Display ALL bookings (not filtered by agent)
+     */
+    public function all(Request $request)
+    {
+        $query = Booking::with(['user', 'passengers', 'segments', 'cards']);
+
+        // Search functionality
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('customer_email', 'like', "%{$search}%")
+                  ->orWhere('customer_phone', 'like', "%{$search}%")
+                  ->orWhere('agent_custom_id', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by service
+        if ($request->has('service') && $request->service != '') {
+            $query->where('service_provided', $request->service);
+        }
+
+        // Filter by date range
+        if ($request->has('date_from') && $request->date_from != '') {
+            $query->whereDate('booking_date', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to != '') {
+            $query->whereDate('booking_date', '<=', $request->date_to);
+        }
+
+        $bookings = $query->orderBy('created_at', 'desc')->paginate(25);
+        
+        $agents = User::where('email', 'like', '%@callinggenie.com')
+            ->orWhere('email', 'like', '%@trafficpirates.com')
+            ->get();
+
+        return view('support.bookings.all', compact('bookings', 'agents'));
+    }
+
+    /**
+     * Display bookings for a specific agent
+     */
+    public function index(Request $request)
+    {
+        $agentId = $request->query('agent_id');
+        
+        // Get the agent details
+        $agent = User::findOrFail($agentId);
+        
+        // Fetch bookings with relationships
+        $bookings = Booking::with(['passengers', 'segments', 'user'])
+            ->where('user_id', $agentId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+        
+        return view('support.bookings.index', compact('bookings', 'agent'));
+    }
+
+    /**
+     * Show single booking details
+     */
+    public function show($id)
+    {
+        $booking = Booking::with(['passengers', 'segments', 'user'])
+            ->findOrFail($id);
+        
+        return view('support.bookings.show', compact('booking'));
+    }
+
+    /**
+     * Show edit form
+     */
+    public function edit($id)
+    {
+        $booking = Booking::with(['passengers', 'segments'])
+            ->findOrFail($id);
+        
+        return view('support.bookings.edit', compact('booking'));
+    }
+
+    /**
+     * Update booking
+     */
+    public function update(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
+        
+        $validated = $request->validate([
+            'status' => 'required|in:pending,charged,refunded',
+            'mis_remarks' => 'nullable|string',
+            'amount_charged' => 'required|numeric',
+            'amount_paid_airline' => 'required|numeric',
+            'total_mco' => 'required|numeric',
+        ]);
+        
+        $booking->update($validated);
+        
+        return redirect()
+            ->route('support.bookings.index', ['agent_id' => $booking->user_id])
+            ->with('success', 'Booking updated successfully!');
+    }
+
+
+    // change the status of booking as per customer support team requirement 
+    public function updateStatus(Request $request, $id)
+{
+    // 1. Validate that the status is one of the allowed options
+    $request->validate([
+        'status' => 'required|string|in:Alert,RDR,retrieval,chargeback,refund'
+    ]);
+
+    // 2. Find the exact booking
+    $booking = Booking::findOrFail($id);
+
+    // 3. Update the status and save
+    $booking->status = $request->status;
+    $booking->save();
+
+    // 4. Redirect back to the all bookings page with a success message
+    return redirect()->back()->with('success', 'Booking #' . $booking->id . ' status updated to ' . $request->status . '.');
+}
+
+}
+
+
+
+
+new to update this controller and we need to add a new table for thsi process we should not change the booking status directly - 
+instead of changing this we should create a new table with name chargeback table and status should be as a dispute there 
+
+so can you help me to create this complete process along with 
+controller 
+migration file 
+Model
+route - updated
+view files - updated or new 
+Documentation of chargeback support team panel 
+
+i have attached the layout.support file also let me know if you reuqire access of any new file 
+and if you understand all things help me to create this complete panel 
+

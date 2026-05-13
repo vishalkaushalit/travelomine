@@ -12,11 +12,6 @@
                 </h2>
                 <p class="text-muted small">Manage all bookings from all agents</p>
             </div>
-            <div class="col-auto">
-                {{-- <a href="{{ route('support.agents.index') }}" class="btn btn-outline-primary">
-                <i class="bi bi-people"></i> View Agents
-            </a> --}}
-            </div>
         </div>
 
         @if (session('success'))
@@ -26,7 +21,13 @@
             </div>
         @endif
 
-        <!-- Filters -->
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-dismiss="alert"></button>
+            </div>
+        @endif
+
         <!-- Modern Filters Card -->
         <div class="card shadow-lg border-0 mb-4" style="border-radius: 20px; overflow: hidden;">
             <div class="card-header bg-gradient-primary text-white py-3">
@@ -40,6 +41,7 @@
             </div>
 
             <div class="card-body p-3 p-md-4">
+                {{-- FIXED: Changed action to point to the correct route --}}
                 <form action="{{ route('support.bookings.all') }}" method="GET" id="filterForm">
                     <!-- Search Row - Full Width on Mobile -->
                     <div class="row g-3 g-md-4 mb-3 mb-md-4">
@@ -72,6 +74,11 @@
                                 </option>
                                 <option value="refunded" {{ request('status') == 'refunded' ? 'selected' : '' }}>Refunded
                                 </option>
+                                {{-- FIXED: Added dispute statuses to filter --}}
+                                <option value="Alert" {{ request('status') == 'Alert' ? 'selected' : '' }}>Alert</option>
+                                <option value="RDR" {{ request('status') == 'RDR' ? 'selected' : '' }}>RDR</option>
+                                <option value="retrieval" {{ request('status') == 'retrieval' ? 'selected' : '' }}>Retrieval</option>
+                                <option value="chargeback" {{ request('status') == 'chargeback' ? 'selected' : '' }}>Chargeback</option>
                             </select>
                         </div>
 
@@ -98,7 +105,7 @@
                                 @foreach ($agents as $agent)
                                     <option value="{{ $agent->id }}"
                                         {{ request('agent_id') == $agent->id ? 'selected' : '' }}>
-                                        {{ $agent->agent_custom_id }} - {{ $agent->name }}
+                                        {{ $agent->agent_custom_id ?? $agent->id }} - {{ $agent->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -208,7 +215,9 @@
                                 <th>Card Holder Name</th>
                                 <th>Phone Number</th>
                                 <th>Card (Last 4)</th>
-                                <th>Status</th>
+                                <th>Booking Status</th>
+                                {{-- FIXED: Added Dispute Status column --}}
+                                <th>Dispute Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -217,7 +226,7 @@
                                 <tr>
                                     <td><strong>#{{ $booking->id }}</strong></td>
 
-                                    <!-- 1. Agent Name (Alias, Email) -->
+                                    <!-- Agent Info -->
                                     <td>
                                         <a href="{{ route('support.bookings.index', ['agent_id' => $booking->user_id]) }}"
                                             class="text-decoration-none">
@@ -228,16 +237,12 @@
                                         <br><small class="text-muted">{{ $booking->user->email ?? 'N/A' }}</small>
                                     </td>
 
-                                    <!-- 2. Date of booking -->
-                                    <td>{{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}</td>
+                                    <!-- Booking Date -->
+                                    <td>{{ $booking->booking_date ? \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') : 'N/A' }}</td>
 
-                                    <!-- 3. PNR (Both) -->
+                                    <!-- PNR -->
                                     <td>
-                                        <!-- GDS PNR from bookings table -->
-                                        <span
-                                            class="badge badge-secondary mb-1">{{ $booking->gk_pnr ?? 'N/A' }}</span><br>
-
-                                        <!-- Airline PNR from flight_segments (first segment) -->
+                                        <span class="badge badge-secondary mb-1">{{ $booking->gk_pnr ?? 'N/A' }}</span><br>
                                         @if ($booking->segments->first())
                                             <span class="badge badge-primary">
                                                 {{ $booking->segments->first()->pnr ?? ($booking->segments->first()->segment_pnr ?? 'N/A') }}
@@ -245,19 +250,19 @@
                                         @endif
                                     </td>
 
-                                    <!-- 4. Customer detail (name, email) -->
+                                    <!-- Customer Info -->
                                     <td>
                                         <div>{{ $booking->customer_name ?? 'N/A' }}</div>
                                         <small class="text-muted">{{ $booking->customer_email }}</small>
                                     </td>
 
-                                    <!-- 5. Card holder name (assuming it maps to customer name in your structure) -->
+                                    <!-- Card Holder Name -->
                                     <td>{{ $booking->customer_name ?? 'N/A' }}</td>
 
-                                    <!-- 6. Customer phone number -->
+                                    <!-- Phone Number -->
                                     <td>{{ $booking->customer_phone ?? 'N/A' }}</td>
 
-                                    <!-- 7. Card detail (last 4 digit) -->
+                                    <!-- Card Last 4 -->
                                     <td>
                                         @if ($booking->cards->first())
                                             {{ $booking->cards->first()->card_last_four }}
@@ -268,67 +273,87 @@
                                         @endif
                                     </td>
 
-                                    <!-- 8. Current status -->
+                                    <!-- Booking Status -->
                                     <td>
                                         @if ($booking->status === 'pending')
                                             <span class="badge bg-warning text-dark">Pending</span>
                                         @elseif($booking->status === 'charged')
                                             <span class="badge bg-success">Charged</span>
-                                        @elseif(in_array($booking->status, ['Alert', 'RDR', 'retrieval', 'chargeback', 'refund']))
-                                            <span class="badge bg-danger">{{ ucfirst($booking->status) }}</span>
+                                        @elseif($booking->status === 'refunded')
+                                            <span class="badge bg-info">Refunded</span>
                                         @else
-                                            <span
-                                                class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $booking->status)) }}</span>
+                                            <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $booking->status)) }}</span>
                                         @endif
                                     </td>
 
+                                    {{-- FIXED: Display current dispute status from chargeback_records table --}}
+                                    <td>
+                                        @php
+                                            $disputeStatus = $booking->currentDisputeStatus;
+                                        @endphp
+                                        @if($disputeStatus)
+                                            @if($disputeStatus == 'Alert')
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-exclamation-triangle"></i> Alert
+                                                </span>
+                                            @elseif($disputeStatus == 'RDR')
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-redo"></i> RDR
+                                                </span>
+                                            @elseif($disputeStatus == 'Retrieval')
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-search"></i> Retrieval
+                                                </span>
+                                            @elseif($disputeStatus == 'Chargeback')
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-ban"></i> Chargeback
+                                                </span>
+                                            @elseif($disputeStatus == 'Refund')
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-undo"></i> Refund
+                                                </span>
+                                            @elseif($disputeStatus == 'Resolved')
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle"></i> Resolved
+                                                </span>
+                                            @else
+                                                <span class="badge bg-light text-dark">
+                                                    {{ $disputeStatus }}
+                                                </span>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">No Dispute</span>
+                                        @endif
+                                    </td>
 
-
-                                    <!-- 9. Action btn - change status, view booking -->
+                                    <!-- Actions -->
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('support.bookings.show', $booking->id) }}"
-                                                class="btn btn-sm btn-primary" title="View">
+                                                class="btn btn-sm btn-primary" title="View Details & Dispute Timeline">
                                                 <i class="bi bi-eye"></i> View
                                             </a>
-                                            <!-- Trigger Modal -->
-                                            {{-- <button class="btn btn-info btn-sm" data-toggle="modal"
-                                                data-target="#statusModal{{ $booking->id }}">
-                                                Status
-                                            </button> --}}
                                             <a href="{{ route('support.bookings.edit', $booking->id) }}"
-                                                class="btn btn-warning">
-                                                <i class="bi bi-pencil"></i> Status
+                                                class="btn btn-sm btn-warning" title="Edit Booking">
+                                                <i class="bi bi-pencil"></i> Edit
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10" class="text-center py-5 text-muted">
+                                    <td colspan="11" class="text-center py-5 text-muted">
                                         <i class="bi bi-inbox" style="font-size: 3rem;"></i>
                                         <p class="mt-2">No bookings found</p>
                                     </td>
                                 </tr>
-                                <!-- Include the status modal component -->
                             @endforelse
-                            @include('support.bookings.components.booking_status', ['booking' => $booking])
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- Pagination -->
-        <div class="mt-4 d-flex justify-content-between align-items-center">
-            <div>
-                Showing {{ $bookings->firstItem() ?? 0 }} to {{ $bookings->lastItem() ?? 0 }} of {{ $bookings->total() }}
-                bookings
-            </div>
-            <div>
-                {{ $bookings->appends(request()->query())->links() }}
-            </div>
-        </div>
     </div>
 
     <style>
@@ -344,6 +369,11 @@
 
         .card:hover {
             transform: translateY(-2px);
+        }
+
+        .badge {
+            font-size: 0.85rem;
+            padding: 0.35em 0.65em;
         }
     </style>
 @endsection
