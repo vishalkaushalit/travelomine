@@ -3,7 +3,7 @@
 @section('title', 'Create New User')
 
 @section('content')
-<div class="container-fluid px-4">
+<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3">Create New User</h1>
         <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">

@@ -73,8 +73,8 @@
                                 <th>Priority</th>
                                 <th>Schedule</th>
                                 <th>Status</th>
-                                <th>Created By</th>
-                                <th>Stats</th>
+                                <th style="min-width: 100px;">Created By</th>
+                                <th style="min-width: 130px;">Stats</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>

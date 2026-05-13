@@ -90,7 +90,7 @@
 
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped align-middle">
-                            <thead>
+                            <thead class="table-dark">
                                 <tr>
                                     <th width="40">
                                         <input type="checkbox" id="select-all">
@@ -149,7 +149,7 @@
                                         <td>
                                             <a href="{{ route('admin.bookings.show', $booking->id) }}"
                                                 class="btn btn-sm btn-info">
-                                                <i class="bi bi-eye"></i> View
+                                                <i class="bi bi-eye"></i>
                                             </a>
                                         </td>
                                     </tr>

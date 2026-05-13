@@ -3,7 +3,7 @@
 @section('title', 'Edit User')
 
 @section('content')
-<div class="container-fluid px-4">
+<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3">Edit User: {{ $user->name }}</h1>
         <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
