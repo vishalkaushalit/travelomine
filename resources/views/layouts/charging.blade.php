@@ -4,23 +4,30 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Charging Panel | Flight Booking CRM</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <title>Charging Panel | Travelomile Flights Unlocked</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     {{-- Bootstrap Icons CDN --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
+    {{-- Bootstrap 5 --}}
+    {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    {{-- Icons --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
     <!-- AdminLTE CSS -->
+    '
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-
     <link rel="stylesheet" href="{{ asset('css/panel.css') }}">
-
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/favicon.png') }}">
     @stack('styles')
 </head>
 
@@ -39,12 +46,9 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('charge.dashboard') }}"
-                            class="nav-link {{ request()->routeIs('charging.dashboard') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            <p>Dashboard</p>
-                        </a>
+                        <a href="{{ route('agent.dashboard') }}" class="nav-link">Dashboard</a>
                     </li>
+
                     <li class="nav-item">
                         {{-- <a href="{{ route('charge.bookings.index') }}" class="nav-link {{ request()->routeIs('charge.bookings.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-clipboard-list"></i>
