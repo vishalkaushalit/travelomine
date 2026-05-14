@@ -75,7 +75,7 @@
                 </div>
             </div>
 
-                        {{-- 3. Flight Details --}}
+            {{-- 3. Flight Details --}}
             <div class="card mb-4 form-section" data-section="3">
                 <div class="card-header bg-primary text-white">
                     <strong>1. Flight Details</strong>
@@ -105,8 +105,7 @@
 
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Airline PNR</label>
-                            <input type="text" name="airline_pnr" class="form-control"
-                                value="{{ old('airline_pnr') }}">
+                            <input type="text" name="airline_pnr" class="form-control" value="{{ old('airline_pnr') }}">
                         </div>
                     </div>
 
@@ -130,7 +129,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3 col-lg-1 mb-3">
+                        <div class="col-md-3 col-lg-2 mb-3">
                             <label class="form-label">Booking Date <span class="text-danger">*</span></label>
                             <input type="date" name="booking_date" class="form-control"
                                 value="{{ old('booking_date', date('Y-m-d')) }}" required>
@@ -174,10 +173,8 @@
                                 @endforeach
                             </select>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 col-lg-2 mb-3">
                             <label class="form-label">Booking Portal <span class="text-danger">*</span></label>
                             <select name="booking_portal" class="form-control" required>
                                 <option value="">Select Portal</option>
@@ -190,7 +187,7 @@
                             </select>
                         </div>
 
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 col-lg-2 mb-3">
                             <label class="form-label">Language <span class="text-danger">*</span></label>
                             <select name="language" class="form-control" required>
                                 <option value="">Select Language</option>
@@ -213,378 +210,390 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {{-- 2. Customer Information --}}
-            <div class="card mb-4 form-section" data-section="2">
-                <div class="card-header bg-primary text-white">
-                    <strong>2. Customer Information</strong>
-                    <span class="float-end">
-                        <i class="bi bi-chevron-up"></i>
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Customer Name <span class="text-danger">*</span></label>
-                            <input type="text" name="customer_name" class="form-control"
-                                value="{{ old('customer_name') }}" required>
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Customer Email <span class="text-danger">*</span></label>
-                            <input type="email" name="customer_email" class="form-control"
-                                value="{{ old('customer_email') }}" required>
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Customer Phone <span class="text-danger">*</span></label>
-                            <input type="text" name="customer_phone" class="form-control"
-                                value="{{ old('customer_phone') }}" required>
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Billing Phone <span class="text-danger">*</span></label>
-                            <input type="text" name="billing_phone" id="main_billing_phone" class="form-control"
-                                value="{{ old('billing_phone') }}" required>
-                        </div>
-
-                        <div class="col-md-8 mb-3">
-                            <label class="form-label">Billing Address <span class="text-danger">*</span></label>
-                            <textarea name="billing_address" id="main_billing_address" class="form-control" rows="2" required>{{ old('billing_address') }}</textarea>
-                        </div>
+                {{-- 2. Customer Information --}}
+                <div class="card mb-4 form-section" data-section="2">
+                    <div class="card-header bg-primary text-white">
+                        <strong>2. Customer Information</strong>
+                        <span class="float-end">
+                            <i class="bi bi-chevron-up"></i>
+                        </span>
                     </div>
-                </div>
-            </div>
-
-
-
-            {{-- 4. Passenger Details --}}
-            <div class="card mb-4 form-section" data-section="4">
-                <div class="card-header bg-primary text-white">
-                    <strong>4. Passenger Details</strong>
-                    <span class="float-end">
-                        <i class="bi bi-chevron-up"></i>
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-2">
-                            <label>Adults (12+ yrs)</label>
-                            <input type="number" min="1" max="9" class="form-control passenger-counter"
-                                id="adults_count" name="adults" value="{{ old('adults', 1) }}">
-                        </div>
-                        <div class="col-md-2">
-                            <label>Children (2-11 yrs)</label>
-                            <input type="number" min="0" max="9" class="form-control passenger-counter"
-                                id="children_count" name="children" value="{{ old('children', 0) }}">
-                        </div>
-                        <div class="col-md-2">
-                            <label>Infants (Under 2)</label>
-                            <input type="number" min="0" max="9" class="form-control passenger-counter"
-                                id="infants_count" name="infants" value="{{ old('infants', 0) }}">
-                        </div>
-                        <div class="col-md-2">
-                            <label>Infant in Lap</label>
-                            <input type="number" min="0" max="9" class="form-control passenger-counter"
-                                id="infant_in_lap_count" name="infant_in_lap" value="{{ old('infant_in_lap', 0) }}">
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <div class="alert alert-info py-2 px-3 mb-0 w-100">
-                                <i class="bi bi-people-fill"></i>
-                                Total Passengers: <strong id="total_passenger_display">1</strong> / 9
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 col-lg-3 mb-3">
+                                <label class="form-label">Customer Name <span class="text-danger">*</span></label>
+                                <input type="text" name="customer_name" class="form-control"
+                                    value="{{ old('customer_name') }}" required>
                             </div>
-                        </div>
-                    </div>
 
-                    <div id="passengers_container"></div>
-                </div>
-            </div>
-
-            {{-- 5. Payment Details --}}
-            <div class="card mb-4 form-section" data-section="5">
-                <div class="card-header bg-primary text-white">
-                    <strong>5. Payment Details</strong>
-                    <span class="float-end">
-                        <i class="bi bi-chevron-up"></i>
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Currency <span class="text-danger">*</span></label>
-                            <select name="currency" id="currency" class="form-control" required>
-                                <option value="">Select Currency</option>
-                                @foreach ($currencies as $currency)
-                                    <option value="{{ $currency }}"
-                                        {{ old('currency', 'USD') == $currency ? 'selected' : '' }}>
-                                        {{ $currency }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Amount Charged <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0" name="amount_charged"
-                                id="amount_charged" class="form-control" value="{{ old('amount_charged') }}" required>
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Amount Paid to Airline <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0" name="amount_paid_airline"
-                                id="amount_paid_airline" class="form-control" value="{{ old('amount_paid_airline') }}"
-                                required>
-                        </div>
-
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Total MCO (Profit) <span class="text-info">*</span></label>
-                            <input type="number" step="0.01" name="total_mco" id="total_mco"
-                                class="form-control bg-light" value="{{ old('total_mco') }}" readonly>
-                            <small class="text-muted">Auto-calculated: Charged - Paid to Airline</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- 6. Payment Processing --}}
-            <div class="card mb-4 form-section" data-section="6">
-                <div class="card-header bg-primary text-white">
-                    <strong>6. Payment Processing</strong>
-                    <span class="float-end">
-                        <i class="bi bi-chevron-up"></i>
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label d-block">Payment Type <span class="text-danger">*</span></label>
-
-                        <div class="btn-group" role="group">
-                            <input type="radio" class="btn-check payment-type-radio" name="payment_type"
-                                id="payment_type_full" value="full" autocomplete="off"
-                                {{ old('payment_type', 'full') === 'full' ? 'checked' : '' }}>
-                            <label class="btn btn-outline-success" for="payment_type_full">
-                                <i class="bi bi-credit-card"></i> Full Payment
-                            </label>
-
-                            <input type="radio" class="btn-check payment-type-radio" name="payment_type"
-                                id="payment_type_split" value="split" autocomplete="off"
-                                {{ old('payment_type') === 'split' ? 'checked' : '' }}>
-                            <label class="btn btn-outline-warning" for="payment_type_split">
-                                <i class="bi bi-caret-right-square"></i> Split Payment
-                            </label>
-                        </div>
-                    </div>
-
-                    {{-- Full payment --}}
-                    <div id="full_payment_block">
-                        <div class="border rounded p-3 bg-light">
-                            <h6 class="mb-3 text-primary"><i class="bi bi-building"></i> Agency Merchant Full Payment</h6>
-                            <div class="row">
-                                <div class="col-md-6 mb-3 col-lg-4">
-                                    <label class="form-label">Agency Merchant <span class="text-danger">*</span></label>
-                                    <select name="full_payment[agency_merchant_id]" id="full_payment_agency_merchant_id"
-                                        class="form-control payment-full-field">
-                                        <option value="">Select Merchant</option>
-                                        @foreach ($merchants as $merchant)
-                                            <option value="{{ $merchant->id }}"
-                                                {{ old('full_payment.agency_merchant_id') == $merchant->id ? 'selected' : '' }}>
-                                                {{ $merchant->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6 mb-3 col-lg-2">
-                                    <label class="form-label">Charge Amount <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" min="0"
-                                        name="full_payment[charge_amount]" id="full_payment_charge_amount"
-                                        class="form-control payment-full-field"
-                                        value="{{ old('full_payment.charge_amount') }}">
-                                </div>
-
-                                <div class="col-md-6 mb-3 col-lg-4">
-                                    <label class="form-label">Card Holder Full Name <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" name="full_payment[card_holder_name]"
-                                        class="form-control payment-full-field"
-                                        value="{{ old('full_payment.card_holder_name') }}">
-                                </div>
-
-                                <div class="col-md-6 mb-3 col-lg-2">
-                                    <label class="form-label">Card Last 4 Digits <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" name="full_payment[card_last_four]"
-                                        class="form-control payment-full-field" maxlength="4" pattern="\d{4}"
-                                        value="{{ old('full_payment.card_last_four') }}">
-                                </div>
+                            <div class="col-md-4 col-lg-3 mb-3">
+                                <label class="form-label">Customer Email <span class="text-danger">*</span></label>
+                                <input type="email" name="customer_email" class="form-control"
+                                    value="{{ old('customer_email') }}" required>
                             </div>
-                        </div>
-                    </div>
 
-                    {{-- Split payment --}}
-                    <div id="split_payment_block" style="display:none;">
-                        <div class="border rounded p-3 mb-3">
-                            <h6 class="mb-3 text-info"><i class="bi bi-airplane"></i> Airline Payment</h6>
-                            <div class="row">
-                                <div class="col-md-6 mb-3 col-lg-3">
-                                    <label class="form-label">Airline Full Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="split_payment[airline_merchant_name]"
-                                        class="form-control payment-split-field"
-                                        value="{{ old('split_payment.airline_merchant_name') }}">
-                                </div>
-
-                                <div class="col-md-6 mb-3 col-lg-3">
-                                    <label class="form-label">Airline Charge Amount <span
-                                            class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" min="0"
-                                        name="split_payment[airline][charge_amount]" id="split_airline_charge_amount"
-                                        class="form-control payment-split-field"
-                                        value="{{ old('split_payment.airline.charge_amount') }}">
-                                </div>
-
-                                <div class="col-md-6 mb-3 col-lg-4">
-                                    <label class="form-label">Card Holder Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="split_payment[airline][card_holder_name]"
-                                        class="form-control payment-split-field"
-                                        value="{{ old('split_payment.airline.card_holder_name') }}">
-                                </div>
-
-                                <div class="col-md-6 mb-3 col-lg-2">
-                                    <label class="form-label">Card Last 4 Digits <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" name="split_payment[airline][card_last_four]"
-                                        class="form-control payment-split-field" maxlength="4" pattern="\d{4}"
-                                        value="{{ old('split_payment.airline.card_last_four') }}">
-                                </div>
+                            <div class="col-md-4 col-lg-3 mb-3">
+                                <label class="form-label">Customer Phone <span class="text-danger">*</span></label>
+                                <input type="text" name="customer_phone" class="form-control"
+                                    value="{{ old('customer_phone') }}" required>
                             </div>
-                        </div>
 
-                        <div class="border rounded p-3">
-                            <h6 class="mb-3 text-success"><i class="bi bi-building"></i> Agency Payment</h6>
-                            <div class="row">
-                                <div class="col-md-6 mb-3 col-lg-3">
-                                    <label class="form-label">Agency Merchant <span class="text-danger">*</span></label>
-                                    <select name="split_payment[agency][agency_merchant_id]"
-                                        class="form-control payment-split-field">
-                                        <option value="">Select Merchant</option>
-                                        @foreach ($merchants as $merchant)
-                                            <option value="{{ $merchant->id }}"
-                                                {{ old('split_payment.agency.agency_merchant_id') == $merchant->id ? 'selected' : '' }}>
-                                                {{ $merchant->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                            <div class="col-md-4 col-lg-3 mb-3">
+                                <label class="form-label">Billing Phone <span class="text-danger">*</span></label>
+                                <input type="text" name="billing_phone" id="main_billing_phone" class="form-control"
+                                    value="{{ old('billing_phone') }}" required>
+                            </div>
 
-                                <div class="col-md-6 mb-3 col-lg-3">
-                                    <label class="form-label">Agency Charge Amount <span
-                                            class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" min="0"
-                                        name="split_payment[agency][charge_amount]" id="split_agency_charge_amount"
-                                        class="form-control payment-split-field"
-                                        value="{{ old('split_payment.agency.charge_amount') }}">
-                                </div>
-
-                                <div class="col-md-6 mb-3 col-lg-4">
-                                    <label class="form-label">Card Holder Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="split_payment[agency][card_holder_name]"
-                                        class="form-control payment-split-field"
-                                        value="{{ old('split_payment.agency.card_holder_name') }}">
-                                </div>
-
-                                <div class="col-md-6 mb-3 col-lg-2">
-                                    <label class="form-label">Card Last 4 Digits <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" name="split_payment[agency][card_last_four]"
-                                        class="form-control payment-split-field" maxlength="4" pattern="\d{4}"
-                                        value="{{ old('split_payment.agency.card_last_four') }}">
-                                </div>
+                            <div class="col-md-8 col-lg-6 mb-3">
+                                <label class="form-label">Billing Address <span class="text-danger">*</span></label>
+                                <textarea name="billing_address" id="main_billing_address" class="form-control" rows="2" required>{{ old('billing_address') }}</textarea>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {{-- 7. Payment Card Details --}}
-            <div class="card mb-4 form-section" data-section="7">
-                <div class="card-header bg-primary text-white">
-                    <strong>7. Payment Card Details</strong>
-                    <span class="float-end">
-                        <i class="bi bi-chevron-up"></i>
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label" for="payment_card_details">Payment Details <span
-                                class="text-danger">*</span></label>
-                        <textarea placeholder="Enter card details (Card Number, Expiry, CVV, etc.)" name="payment_card_details"
-                            class="form-control" rows="4" id="payment_card_details" required>{{ old('payment_card_details') }}</textarea>
-                        <small class="text-muted">Enter complete payment card information</small>
+
+
+                {{-- 4. Passenger Details --}}
+                <div class="card mb-4 form-section" data-section="4">
+                    <div class="card-header bg-primary text-white">
+                        <strong>4. Passenger Details</strong>
+                        <span class="float-end">
+                            <i class="bi bi-chevron-up"></i>
+                        </span>
                     </div>
-                </div>
-            </div>
-
-            {{-- 8. Agent Remark --}}
-            <div class="card mb-4 form-section" data-section="8">
-                <div class="card-header bg-primary text-white">
-                    <strong>8. Agent Remark</strong>
-                    <span class="float-end">
-                        <i class="bi bi-chevron-up"></i>
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label" for="agent_remarks">Agent Remark <span
-                                class="text-danger">*</span></label>
-                        <textarea placeholder="Enter any remarks or special instructions" name="agent_remarks" class="form-control"
-                            rows="4" id="agent_remarks" required>{{ old('agent_remarks') }}</textarea>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Additional Requirements --}}
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <strong>Additional Requirements</strong>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="hotel_required"
-                                    name="hotel_required" value="1" {{ old('hotel_required') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="hotel_required">Hotel Required</label>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <label>Adults (12+ yrs)</label>
+                                <input type="number" min="1" max="9"
+                                    class="form-control passenger-counter" id="adults_count" name="adults"
+                                    value="{{ old('adults', 1) }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Children (2-11 yrs)</label>
+                                <input type="number" min="0" max="9"
+                                    class="form-control passenger-counter" id="children_count" name="children"
+                                    value="{{ old('children', 0) }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Infants (Under 2)</label>
+                                <input type="number" min="0" max="9"
+                                    class="form-control passenger-counter" id="infants_count" name="infants"
+                                    value="{{ old('infants', 0) }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Infant in Lap</label>
+                                <input type="number" min="0" max="9"
+                                    class="form-control passenger-counter" id="infant_in_lap_count" name="infant_in_lap"
+                                    value="{{ old('infant_in_lap', 0) }}">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="alert alert-info py-2 px-3 mb-0 w-100">
+                                    <i class="bi bi-people-fill"></i>
+                                    Total Passengers: <strong id="total_passenger_display">1</strong> / 9
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="cab_required" name="cab_required"
-                                    value="1" {{ old('cab_required') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="cab_required">Cab Required</label>
+
+                        <div id="passengers_container"></div>
+                    </div>
+                </div>
+
+                {{-- 5. Payment Details --}}
+                <div class="card mb-4 form-section" data-section="5">
+                    <div class="card-header bg-primary text-white">
+                        <strong>5. Payment Details</strong>
+                        <span class="float-end">
+                            <i class="bi bi-chevron-up"></i>
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Currency <span class="text-danger">*</span></label>
+                                <select name="currency" id="currency" class="form-control" required>
+                                    <option value="">Select Currency</option>
+                                    @foreach ($currencies as $currency)
+                                        <option value="{{ $currency }}"
+                                            {{ old('currency', 'USD') == $currency ? 'selected' : '' }}>
+                                            {{ $currency }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="insurance_required"
-                                    name="insurance_required" value="1"
-                                    {{ old('insurance_required') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="insurance_required">Insurance Required</label>
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Amount Charged <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" min="0" name="amount_charged"
+                                    id="amount_charged" class="form-control" value="{{ old('amount_charged') }}"
+                                    required>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Amount Paid to Airline <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" step="0.01" min="0" name="amount_paid_airline"
+                                    id="amount_paid_airline" class="form-control"
+                                    value="{{ old('amount_paid_airline') }}" required>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Total MCO (Profit) <span class="text-info">*</span></label>
+                                <input type="number" step="0.01" name="total_mco" id="total_mco"
+                                    class="form-control bg-light" value="{{ old('total_mco') }}" readonly>
+                                <small class="text-muted">Auto-calculated: Charged - Paid to Airline</small>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {{-- Form Actions --}}
-            <div class="text-end mb-5">
-                <button type="reset" class="btn btn-secondary btn-lg me-2" id="resetFormBtn">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset
-                </button>
-                <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
-                    <i class="bi bi-check-circle"></i> Create Booking
-                </button>
-            </div>
+                {{-- 6. Payment Processing --}}
+                <div class="card mb-4 form-section" data-section="6">
+                    <div class="card-header bg-primary text-white">
+                        <strong>6. Payment Processing</strong>
+                        <span class="float-end">
+                            <i class="bi bi-chevron-up"></i>
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label d-block">Payment Type <span class="text-danger">*</span></label>
+
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check payment-type-radio" name="payment_type"
+                                    id="payment_type_full" value="full" autocomplete="off"
+                                    {{ old('payment_type', 'full') === 'full' ? 'checked' : '' }}>
+                                <label class="btn btn-outline-success" for="payment_type_full">
+                                    <i class="bi bi-credit-card"></i> Full Payment
+                                </label>
+
+                                <input type="radio" class="btn-check payment-type-radio" name="payment_type"
+                                    id="payment_type_split" value="split" autocomplete="off"
+                                    {{ old('payment_type') === 'split' ? 'checked' : '' }}>
+                                <label class="btn btn-outline-warning" for="payment_type_split">
+                                    <i class="bi bi-caret-right-square"></i> Split Payment
+                                </label>
+                            </div>
+                        </div>
+
+                        {{-- Full payment --}}
+                        <div id="full_payment_block">
+                            <div class="border rounded p-3 bg-light">
+                                <h6 class="mb-3 text-primary"><i class="bi bi-building"></i> Agency Merchant Full Payment
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3 col-lg-4">
+                                        <label class="form-label">Agency Merchant <span
+                                                class="text-danger">*</span></label>
+                                        <select name="full_payment[agency_merchant_id]"
+                                            id="full_payment_agency_merchant_id" class="form-control payment-full-field">
+                                            <option value="">Select Merchant</option>
+                                            @foreach ($merchants as $merchant)
+                                                <option value="{{ $merchant->id }}"
+                                                    {{ old('full_payment.agency_merchant_id') == $merchant->id ? 'selected' : '' }}>
+                                                    {{ $merchant->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 col-lg-2">
+                                        <label class="form-label">Charge Amount <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" min="0"
+                                            name="full_payment[charge_amount]" id="full_payment_charge_amount"
+                                            class="form-control payment-full-field"
+                                            value="{{ old('full_payment.charge_amount') }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 col-lg-4">
+                                        <label class="form-label">Card Holder Full Name <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" name="full_payment[card_holder_name]"
+                                            class="form-control payment-full-field"
+                                            value="{{ old('full_payment.card_holder_name') }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 col-lg-2">
+                                        <label class="form-label">Card Last 4 Digits <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" name="full_payment[card_last_four]"
+                                            class="form-control payment-full-field" maxlength="4" pattern="\d{4}"
+                                            value="{{ old('full_payment.card_last_four') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Split payment --}}
+                        <div id="split_payment_block" style="display:none;">
+                            <div class="border rounded p-3 mb-3">
+                                <h6 class="mb-3 text-info"><i class="bi bi-airplane"></i> Airline Payment</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3 col-lg-3">
+                                        <label class="form-label">Airline Full Name <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" name="split_payment[airline_merchant_name]"
+                                            class="form-control payment-split-field"
+                                            value="{{ old('split_payment.airline_merchant_name') }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 col-lg-3">
+                                        <label class="form-label">Airline Charge Amount <span
+                                                class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" min="0"
+                                            name="split_payment[airline][charge_amount]" id="split_airline_charge_amount"
+                                            class="form-control payment-split-field"
+                                            value="{{ old('split_payment.airline.charge_amount') }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 col-lg-4">
+                                        <label class="form-label">Card Holder Name <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" name="split_payment[airline][card_holder_name]"
+                                            class="form-control payment-split-field"
+                                            value="{{ old('split_payment.airline.card_holder_name') }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 col-lg-2">
+                                        <label class="form-label">Card Last 4 Digits <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" name="split_payment[airline][card_last_four]"
+                                            class="form-control payment-split-field" maxlength="4" pattern="\d{4}"
+                                            value="{{ old('split_payment.airline.card_last_four') }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border rounded p-3">
+                                <h6 class="mb-3 text-success"><i class="bi bi-building"></i> Agency Payment</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3 col-lg-3">
+                                        <label class="form-label">Agency Merchant <span
+                                                class="text-danger">*</span></label>
+                                        <select name="split_payment[agency][agency_merchant_id]"
+                                            class="form-control payment-split-field">
+                                            <option value="">Select Merchant</option>
+                                            @foreach ($merchants as $merchant)
+                                                <option value="{{ $merchant->id }}"
+                                                    {{ old('split_payment.agency.agency_merchant_id') == $merchant->id ? 'selected' : '' }}>
+                                                    {{ $merchant->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 col-lg-3">
+                                        <label class="form-label">Agency Charge Amount <span
+                                                class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" min="0"
+                                            name="split_payment[agency][charge_amount]" id="split_agency_charge_amount"
+                                            class="form-control payment-split-field"
+                                            value="{{ old('split_payment.agency.charge_amount') }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 col-lg-4">
+                                        <label class="form-label">Card Holder Name <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" name="split_payment[agency][card_holder_name]"
+                                            class="form-control payment-split-field"
+                                            value="{{ old('split_payment.agency.card_holder_name') }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3 col-lg-2">
+                                        <label class="form-label">Card Last 4 Digits <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" name="split_payment[agency][card_last_four]"
+                                            class="form-control payment-split-field" maxlength="4" pattern="\d{4}"
+                                            value="{{ old('split_payment.agency.card_last_four') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 7. Payment Card Details --}}
+                <div class="card mb-4 form-section" data-section="7">
+                    <div class="card-header bg-primary text-white">
+                        <strong>7. Payment Card Details</strong>
+                        <span class="float-end">
+                            <i class="bi bi-chevron-up"></i>
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="payment_card_details">Payment Details <span
+                                    class="text-danger">*</span></label>
+                            <textarea placeholder="Enter card details (Card Number, Expiry, CVV, etc.)" name="payment_card_details"
+                                class="form-control" rows="4" id="payment_card_details" required>{{ old('payment_card_details') }}</textarea>
+                            <small class="text-muted">Enter complete payment card information</small>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 8. Agent Remark --}}
+                <div class="card mb-4 form-section" data-section="8">
+                    <div class="card-header bg-primary text-white">
+                        <strong>8. Agent Remark</strong>
+                        <span class="float-end">
+                            <i class="bi bi-chevron-up"></i>
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="agent_remarks">Agent Remark <span
+                                    class="text-danger">*</span></label>
+                            <textarea placeholder="Enter any remarks or special instructions" name="agent_remarks" class="form-control"
+                                rows="4" id="agent_remarks" required>{{ old('agent_remarks') }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Additional Requirements --}}
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <strong>Additional Requirements</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="hotel_required"
+                                        name="hotel_required" value="1"
+                                        {{ old('hotel_required') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="hotel_required">Hotel Required</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="cab_required"
+                                        name="cab_required" value="1" {{ old('cab_required') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="cab_required">Cab Required</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="insurance_required"
+                                        name="insurance_required" value="1"
+                                        {{ old('insurance_required') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="insurance_required">Insurance Required</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Form Actions --}}
+                <div class="text-end mb-5">
+                    <button type="reset" class="btn btn-secondary btn-lg me-2" id="resetFormBtn">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                    <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                        <i class="bi bi-check-circle"></i> Create Booking
+                    </button>
+                </div>
         </form>
     </div>
 @endsection
@@ -748,7 +757,7 @@
                             </h6>
                             <input type="hidden" name="passengers[${index}][passenger_type]" value="${typeCode}">
                             <div class="row">
-                                <div class="col-md-2 mb-3">
+                                <div class="col-md-2 col-lg-1 mb-3">
                                     <label>Title <span class="text-danger">*</span></label>
                                     <select name="passengers[${index}][title]" class="form-control" required>
                                         <option value="Mr">Mr</option>
@@ -767,11 +776,11 @@
                                     <label>Middle Name</label>
                                     <input type="text" name="passengers[${index}][middle_name]" class="form-control" placeholder="Optional">
                                 </div>
-                                <div class="col-md-3 mb-3">
+                                <div class="col-md-3 col-lg-2 mb-3">
                                     <label>Last Name <span class="text-danger">*</span></label>
                                     <input type="text" name="passengers[${index}][last_name]" class="form-control" placeholder="Last name" required>
                                 </div>
-                                <div class="col-md-2 mb-3">
+                                <div class="col-md-2  mb-3">
                                     <label>Gender <span class="text-danger">*</span></label>
                                     <select name="passengers[${index}][gender]" class="form-control" required>
                                         <option value="male">Male</option>
@@ -779,34 +788,35 @@
                                         <option value="other">Other</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3 mb-3">
+                                <div class="col-md-3 col-lg-2 mb-3">
                                     <label>Date of Birth <span class="text-danger">*</span></label>
                                     <input type="date" name="passengers[${index}][dob]" class="form-control">
                                 </div>
-                                <div class="col-md-3 mb-3">
+                                <hr>
+                                <div class="col-12 mt-3">
+                                    <h5>Additional Details (optional)</h5> 
+                                </div>
+                                <div class="col-md-3 col-lg-2 mb-3">
                                     <label>Passport Number</label>
                                     <input type="text" name="passengers[${index}][passport_number]" class="form-control">
                                 </div>
-                                <div class="col-md-3 mb-3">
+                                <div class="col-md-3 col-lg-2 mb-3">
                                     <label>Passport Expiry</label>
                                     <input type="date" name="passengers[${index}][passport_expiry]" class="form-control">
                                 </div>
-                                <div class="col-md-3 mb-3">
+                                <div class="col-md-3 col-lg-2 mb-3">
                                     <label>Nationality</label>
                                     <input type="text" name="passengers[${index}][nationality]" class="form-control">
                                 </div>
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-2 col-lg-2 mb-3">
                                     <label>Seat Preference</label>
                                     <input type="text" name="passengers[${index}][seat_preference]" class="form-control" placeholder="Window/Aisle/etc">
                                 </div>
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-4 col-lg-2 mb-3">
                                     <label>Meal Preference</label>
                                     <input type="text" name="passengers[${index}][meal_preference]" class="form-control" placeholder="Vegetarian/Kosher/etc">
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label>Special Assistance</label>
-                                    <input type="text" name="passengers[${index}][special_assistance]" class="form-control" placeholder="Wheelchair/etc">
-                                </div>
+                                
                             </div>
                         </div>
                     `);
@@ -1089,5 +1099,26 @@
                 el.dispatchEvent(new Event('change'));
             });
         }
+    </script>
+    <script>
+        function updateSegmentDateLabels() {
+    const flightType = document.querySelector('[name="flight_type"]')?.value || 'oneway';
+
+    document.querySelectorAll('.segment-card').forEach(function (card, index) {
+        const label = card.querySelector('.segment-date-label');
+        const input = card.querySelector('.segment-date-input');
+
+        if (!label || !input) return;
+
+        if (flightType === 'roundtrip' && index === 1) {
+            // Second segment in a round trip = Return Date
+            label.innerHTML = 'Return Date <span class="text-danger">*</span>';
+            input.name = 'segments[' + index + '][return_date]';
+        } else {
+            // All other cases = Departure Date
+            label.innerHTML = 'Departure Date <span class="text-danger">*</span>';
+            input.name = 'segments[' + index + '][departure_date]';
+        }
+    });
     </script>
 @endpush

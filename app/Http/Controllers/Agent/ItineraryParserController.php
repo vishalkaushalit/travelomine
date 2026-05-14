@@ -421,31 +421,26 @@ class ItineraryParserController extends Controller
     // FLIGHT TYPE DETECTION
     // ─────────────────────────────────────────────────────────────────────────
 
-    private function determineFlightType(array $segments): string
-    {
-        $count = count($segments);
+private function determineFlightType(array $segments): string
+{
+    $count = count($segments);
 
-        if ($count === 1) {
-            return 'oneway';
-        }
+    if ($count === 1) {
+        return 'oneway';
+    }
 
-        $firstOrigin = $segments[0]['from_city'];
-        $lastDest    = $segments[$count - 1]['to_city'];
-
-        // Direct 2-segment round-trip: A→B, B→A
-        if (
-            $count === 2 &&
-            $segments[0]['from_city'] === $segments[1]['to_city'] &&
-            $segments[0]['to_city']   === $segments[1]['from_city']
-        ) {
+    // Exactly 2 segments: check for pure round-trip (A→B, B→A)
+    if ($count === 2) {
+        if ($segments[0]['from_city'] === $segments[1]['to_city'] &&
+            $segments[0]['to_city']   === $segments[1]['from_city']) {
             return 'roundtrip';
         }
-
-        // Multi-stop round-trip: first origin == last destination
-        if ($firstOrigin === $lastDest) {
-            return 'roundtrip';
-        }
-
+        // 2 segments that are not a pure round-trip (e.g. A→B, B→C) → multicity
         return 'multicity';
     }
+
+    // 3 or more segments → always multicity (even if first origin == last destination)
+    return 'multicity';
+}
+
 }
