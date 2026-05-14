@@ -48,6 +48,9 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+
+// tetsing new feature 
+use App\Http\Controllers\Agent\ItineraryParserController;
 // use App\Mail\TestMail;
 
 
@@ -161,6 +164,11 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
 // AGENT DASHBOARD ROUTES ONLY (POST-LOGIN)
 Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->group(function () {
 
+    // New itinerary parser route
+    Route::get('/bookings/createbooking', [ItineraryParserController::class, 'create'])->name('bookings.createbooking');
+    Route::post('/itinerary/decode', [ItineraryParserController::class, 'decode'])->name('itinerary.decode');
+
+
     Route::get('/dashboard', [DashboardController::class, 'Index'])->name('dashboard');
     // Route::get('/dashboard', [BookingController::class, 'agentIndex'])->name('dashboard');
     Route::get('/bookings', [BookingController::class, 'agentIndex'])->name('bookings.index');
@@ -193,6 +201,11 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
         ->name('assignments.index');
     Route::get('/assignments/{assignment}', [App\Http\Controllers\Agent\AssignBookingController::class, 'show'])
         ->name('assignments.show');
+
+
+        // testing new feature routes 
+
+
 });
 
 // ADMIN ROUTES
