@@ -252,6 +252,6 @@
         Best Regards<br>
         Reservation Desk<br>
         {{ $booking->user->alias_name ?? '' }}<br>
-        {{ $booking->user->phone ?? '' }} ||
+        {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }} ||
         {{ $booking->user->extension_number ?? '' }}<br>
     </p>
