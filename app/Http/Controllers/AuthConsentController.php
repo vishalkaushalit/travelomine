@@ -32,12 +32,15 @@ class AuthConsentController extends Controller
         $templateMap = [
             'New Booking'           => 'emails.charge.auth.new-booking',
             'Exchange'              => 'emails.charge.auth.exchange',
-            'Exchange & Upgrade'    => 'emails.charge.auth.exchange-upgrade',
             'Cancellation'          => 'emails.charge.auth.cancellation',
             'Refund'                => 'emails.charge.auth.refund',
             'Seat selection'        => 'emails.charge.auth.seat-assignment',
             'Baggage edition'       => 'emails.charge.auth.baggage-edition',
             'Pet edition'           => 'emails.charge.auth.pet-edition',
+            'Others'                => 'emails.charge.auth.others',
+            'Cancel & Refund'       => 'emails.charge.auth.cancel-and-refund',
+            'Change'                => 'emails.charge.auth.change',
+            'Exchange & Upgrade'    => 'emails.charge.auth.exchange-upgrade',
         ];
 
         $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';
