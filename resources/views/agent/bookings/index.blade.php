@@ -6,7 +6,7 @@
                 <h1 class="m-0 text-dark">My Bookings</h1>
             </div>
             <div class="col-sm-6">
-                <a href="{{ route('agent.bookings.create') }}" class="btn btn-primary float-right">
+                <a href="{{ route('agent.bookings.createbooking') }}" class="btn btn-primary float-right">
                     <i class="fas fa-plus"></i> Create New Booking
                 </a>
             </div>

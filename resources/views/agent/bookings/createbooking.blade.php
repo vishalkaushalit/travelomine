@@ -5,9 +5,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h1 class="h3 mb-0">Create Booking</h1>
             <div>
-                <button type="button" class="btn btn-outline-primary" id="quickFillDemoBtn">
-                    <i class="bi bi-speedometer2"></i> Quick Fill Demo
-                </button>
+
                 <button type="button" class="btn btn-outline-info" id="showItineraryModalBtn">
                     <i class="bi bi-file-text"></i> Parse Itinerary
                 </button>
@@ -84,7 +82,12 @@
                     </span>
                 </div>
                 <div class="card-body">
+                        <div class="row">
+                            <p class="text-muted mb-3">Enter flight details for the booking. Add Atleast one pnr from
+                                Airline, Gk PNR to create booking.</p>
+                        </div>
                     <div class="row flight-row">
+
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Flight Type <span class="text-danger">*</span></label>
                             <select name="flight_type" id="flight_type" class="form-control">
@@ -99,8 +102,8 @@
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">GK PNR</label>
-                            <input type="text" name="gk_pnr" class="form-control" value="{{ old('gk_pnr') }}">
+                            <label class="form-label">GK PNR <span class</label>
+                                    <input type="text" name="gk_pnr" class="form-control" value="{{ old('gk_pnr') }}">
                         </div>
 
                         <div class="col-md-3 mb-3">
@@ -590,7 +593,7 @@
                     <button type="reset" class="btn btn-secondary btn-lg me-2" id="resetFormBtn">
                         <i class="bi bi-arrow-counterclockwise"></i> Reset
                     </button>
-                    <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                    <button type="submit" class="btn btn-success btn-lg" id="submitBtn" target="_blank">
                         <i class="bi bi-check-circle"></i> Create Booking
                     </button>
                 </div>
@@ -803,7 +806,7 @@
                                 </div>
                                 <hr>
                                 <div class="col-12 mt-3">
-                                    <h5>Additional Details (optional)</h5> 
+                                    <p>Additional Details (optional)</p>
                                 </div>
                                 <div class="col-md-3 col-lg-2 mb-3">
                                     <label>Passport Number</label>
@@ -881,30 +884,7 @@
                 }
             }
 
-            function quickFillDemo() {
-                if (confirm('Fill with demo data? This will overwrite any existing data in the form.')) {
-                    document.querySelector('[name="customer_name"]').value = 'John Doe';
-                    document.querySelector('[name="customer_email"]').value = 'john.doe@example.com';
-                    document.querySelector('[name="customer_phone"]').value = '+1234567890';
-                    document.querySelector('[name="billing_phone"]').value = '+1234567890';
-                    document.querySelector('[name="billing_address"]').value = '123 Main Street, New York, NY 10001';
-                    document.querySelector('[name="amount_charged"]').value = '500.00';
-                    document.querySelector('[name="amount_paid_airline"]').value = '450.00';
-                    elements.flightType.value = 'oneway';
-                    buildSegments();
-                    const fromCityInput = document.querySelector('[name="segments[0][from_city]"]');
-                    const toCityInput = document.querySelector('[name="segments[0][to_city]"]');
-                    const departureDate = document.querySelector('[name="segments[0][departure_date]"]');
-                    const airlineName = document.querySelector('[name="segments[0][airline_name]"]');
-                    if (fromCityInput) fromCityInput.value = 'JFK';
-                    if (toCityInput) toCityInput.value = 'LAX';
-                    if (departureDate) departureDate.value = new Date().toISOString().split('T')[0];
-                    if (airlineName) airlineName.value = 'Delta Air Lines';
-                    document.querySelector('[name="agent_remarks"]').value = 'Demo booking created via quick fill';
-                    document.querySelector('[name="payment_card_details"]').value = 'VISA ****1234 Exp: 12/25 CVV: 123';
-                    updateProgress();
-                }
-            }
+
 
             function resetForm() {
                 if (confirm('Are you sure you want to reset the form? All data will be lost.')) {
