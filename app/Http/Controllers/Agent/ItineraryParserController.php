@@ -216,37 +216,36 @@ class ItineraryParserController extends Controller
     // BUILD SEGMENT ARRAY
     // ─────────────────────────────────────────────────────────────────────────
 
-    private function buildSegment(
-        string  $airlineCode,
-        string  $flightNo,
-        string  $cabinCode,
-        string  $dateRaw,
-        string  $from,
-        string  $to,
-        string  $depTimeRaw,
-        string  $arrTimeRaw,
-        ?string $arrDateRaw = null
-    ): array {
-        $departureDate = $this->parseAmadeusDate($dateRaw);
-        $arrivalDate   = $arrDateRaw
-            ? $this->parseAmadeusDate($arrDateRaw)
-            : $departureDate;
+private function buildSegment(
+    string  $airlineCode,
+    string  $flightNo,
+    string  $cabinCode,
+    string  $dateRaw,
+    string  $from,
+    string  $to,
+    string  $depTimeRaw,
+    string  $arrTimeRaw,
+    ?string $arrDateRaw = null
+): array {
+    $departureDate = $this->parseAmadeusDate($dateRaw);
+    $arrivalDate   = $arrDateRaw
+        ? $this->parseAmadeusDate($arrDateRaw)
+        : $departureDate;
 
-        return [
-            'airline_code'   => strtoupper($airlineCode),
-            'airline_name'   => $this->getAirlineName($airlineCode),
-            'flight_number'  => ltrim($flightNo, '0') ?: $flightNo,
-            'from_city'      => strtoupper($from),
-            'to_city'        => strtoupper($to),
-            'departure_date' => $departureDate,
-            'arrival_date'   => $arrivalDate,
-            'departure_time' => $depTimeRaw ? $this->parseAmadeusTime($depTimeRaw) : null,
-            'arrival_time'   => $arrTimeRaw ? $this->parseAmadeusTime($arrTimeRaw) : null,
-            'cabin_class'    => $this->mapCabinClass($cabinCode),
-            'segment_pnr'    => null,
-        ];
-    }
-
+    return [
+        'airline_code'   => strtoupper($airlineCode),
+        'airline_name'   => $this->getAirlineName($airlineCode),
+        'flight_number'  => ltrim($flightNo, '0') ?: $flightNo,
+        'from_city'      => strtoupper($from),
+        'to_city'        => strtoupper($to),
+        'departure_date' => $departureDate,
+        'arrival_date'   => $arrivalDate,
+        'departure_time' => $depTimeRaw ? $this->parseAmadeusTime($depTimeRaw) : null,
+        'arrival_time'   => $arrTimeRaw ? $this->parseAmadeusTime($arrTimeRaw) : null,
+        'cabin_class'    => $this->mapCabinClass($cabinCode),
+        'segment_pnr'    => null,
+    ];
+}
     // ─────────────────────────────────────────────────────────────────────────
     // DATE HELPERS
     // ─────────────────────────────────────────────────────────────────────────

@@ -189,6 +189,9 @@ class AgentBookingController extends Controller
             'segments.*.flight_number' => 'nullable|string|max:10',
             'segments.*.segment_pnr' => 'nullable|string|max:50',
             'segments.*.cabin_class' => 'required|string|max:50',
+            'segments.*.departure_time' => 'nullable|date_format:H:i',
+            'segments.*.arrival_time' => 'nullable|date_format:H:i',
+
 
             // Passenger Counts
             'adults' => 'required|integer|min:1|max:9',
@@ -339,10 +342,13 @@ class AgentBookingController extends Controller
                 'to_airport' => $segment['to_city'],
                 'departure_date' => $segment['departure_date'],
                 'return_date' => $segment['return_date'] ?? null,
+                'departure_time' => $segment['departure_time'] ?? null,
+                'arrival_time' => $segment['arrival_time'] ?? null,
                 'airline_name' => $segment['airline_name'],
                 'flight_number' => $segment['flight_number'] ?? null,
                 'cabin_class' => $segment['cabin_class'],
                 'airline_code' => $segment['airline_name'],
+
             ]);
         }
     }

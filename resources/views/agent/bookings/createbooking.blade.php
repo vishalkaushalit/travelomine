@@ -639,50 +639,59 @@
             let segmentIndex = 0;
 
             function makeSegmentCard(index, isReturnSegment = false, removable = false) {
+                // Get current flight type to determine label text
+                const flightType = document.getElementById('flight_type')?.value || 'oneway';
+
+                // For roundtrip and second segment (index 1), show "Return Date", otherwise "Departure Date"
+                const dateLabelText = (flightType === 'roundtrip' && index === 1) ? 'Return Date' : 'Departure Date';
+
                 return `
-                <div class="border rounded p-3 mb-3 segment-item animate__animated animate__fadeIn">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0 text-primary">
-                            <i class="bi bi-airplane"></i> Flight Segment ${index + 1}
-                        </h6>
-                        ${removable ? '<button type="button" class="btn btn-sm btn-outline-danger remove-segment-btn"><i class="bi bi-trash"></i> Remove</button>' : ''}
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3 col-lg-2 mb-3">
-                            <label>From City <span class="text-danger">*</span></label>
-                            <input type="text" name="segments[${index}][from_city]" class="form-control" placeholder="e.g., JFK" required>
-                        </div>
-                        <div class="col-md-3 col-lg-2 mb-3">
-                            <label>To City <span class="text-danger">*</span></label>
-                            <input type="text" name="segments[${index}][to_city]" class="form-control" placeholder="e.g., LAX" required>
-                        </div>
-                        <div class="col-md-3 col-lg-2 mb-3">
-                            <label>Departure Date <span class="text-danger">*</span></label>
-                            <input type="date" name="segments[${index}][departure_date]" class="form-control" required>
-                        </div>
-                       
-                        <div class="col-md-3 mb-3">
-                            <label>Airline Name <span class="text-danger">*</span></label>
-                            <input type="text" name="segments[${index}][airline_name]" class="form-control" placeholder="e.g., Delta" required>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label>Flight Number</label>
-                            <input type="text" name="segments[${index}][flight_number]" class="form-control" placeholder="e.g., DL123">
-                        </div>
-                        <!--    <div class="col-md-3 mb-3">
-                                <label>Segment PNR</label>
-                                <input type="text" name="segments[${index}][segment_pnr]" class="form-control" placeholder="Optional">
-                            </div> -->
-                        <div class="col-md-3 mb-3">
-                            <label>Cabin Class <span class="text-danger">*</span></label>
-                            <select name="segments[${index}][cabin_class]" class="form-control" required>
-                                <option value="">Select Cabin</option>
-                                ${cabinClasses.map(cabin => `<option value="${cabin}">${cabin}</option>`).join('')}
-                            </select>
-                        </div>
-                    </div>
+        <div class="border rounded p-3 mb-3 segment-item animate__animated animate__fadeIn">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 text-primary">
+                    <i class="bi bi-airplane"></i> Flight Segment ${index + 1}
+                </h6>
+                ${removable ? '<button type="button" class="btn btn-sm btn-outline-danger remove-segment-btn"><i class="bi bi-trash"></i> Remove</button>' : ''}
+            </div>
+            <div class="row">
+                <div class="col-md-3 col-lg-2 mb-3">
+                    <label>From City <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][from_city]" class="form-control" placeholder="e.g., JFK" required>
                 </div>
-            `;
+                <div class="col-md-3 col-lg-2 mb-3">
+                    <label>To City <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][to_city]" class="form-control" placeholder="e.g., LAX" required>
+                </div>
+                <div class="col-md-2 col-lg-2 mb-3">
+                    <label>${dateLabelText} <span class="text-danger">*</span></label>
+                    <input type="date" name="segments[${index}][departure_date]" class="form-control" required>
+                </div>
+                <div class="col-md-2 col-lg-2 mb-3">
+                    <label>Departure Time</label>
+                    <input type="time" name="segments[${index}][departure_time]" class="form-control" placeholder="e.g., 14:30">
+                </div>
+                <div class="col-md-2 col-lg-2 mb-3">
+                    <label>Arrival Time</label>
+                    <input type="time" name="segments[${index}][arrival_time]" class="form-control" placeholder="e.g., 18:45">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label>Airline Name <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][airline_name]" class="form-control" placeholder="e.g., Delta" required>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label>Flight Number</label>
+                    <input type="text" name="segments[${index}][flight_number]" class="form-control" placeholder="e.g., DL123">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label>Cabin Class <span class="text-danger">*</span></label>
+                    <select name="segments[${index}][cabin_class]" class="form-control" required>
+                        <option value="">Select Cabin</option>
+                        ${cabinClasses.map(cabin => `<option value="${cabin}">${cabin}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+        </div>
+    `;
             }
 
             function buildSegments() {
@@ -1080,18 +1089,20 @@
                 const fromCity = container.querySelector('[name*="[from_city]"]');
                 const toCity = container.querySelector('[name*="[to_city]"]');
                 const depDate = container.querySelector('[name*="[departure_date]"]');
+                const depTime = container.querySelector('[name*="[departure_time]"]');
+                const arrTime = container.querySelector('[name*="[arrival_time]"]');
                 const airline = container.querySelector('[name*="[airline_name]"]');
                 const flightNo = container.querySelector('[name*="[flight_number]"]');
                 const cabin = container.querySelector('[name*="[cabin_class]"]');
-                const segPnr = container.querySelector('[name*="[segment_pnr]"]');
 
                 if (fromCity && seg.from_city) fromCity.value = seg.from_city;
                 if (toCity && seg.to_city) toCity.value = seg.to_city;
                 if (depDate && seg.departure_date) depDate.value = seg.departure_date;
+                if (depTime && seg.departure_time) depTime.value = seg.departure_time;
+                if (arrTime && seg.arrival_time) arrTime.value = seg.arrival_time;
                 if (airline && seg.airline_name) airline.value = seg.airline_name;
                 if (flightNo && seg.flight_number) flightNo.value = seg.flight_number;
                 if (cabin && seg.cabin_class) cabin.value = seg.cabin_class;
-                if (segPnr && seg.segment_pnr) segPnr.value = seg.segment_pnr;
             }
 
             // Trigger change events to update progress
@@ -1102,23 +1113,23 @@
     </script>
     <script>
         function updateSegmentDateLabels() {
-    const flightType = document.querySelector('[name="flight_type"]')?.value || 'oneway';
+            const flightType = document.querySelector('[name="flight_type"]')?.value || 'oneway';
 
-    document.querySelectorAll('.segment-card').forEach(function (card, index) {
-        const label = card.querySelector('.segment-date-label');
-        const input = card.querySelector('.segment-date-input');
+            document.querySelectorAll('.segment-card').forEach(function(card, index) {
+                const label = card.querySelector('.segment-date-label');
+                const input = card.querySelector('.segment-date-input');
 
-        if (!label || !input) return;
+                if (!label || !input) return;
 
-        if (flightType === 'roundtrip' && index === 1) {
-            // Second segment in a round trip = Return Date
-            label.innerHTML = 'Return Date <span class="text-danger">*</span>';
-            input.name = 'segments[' + index + '][return_date]';
-        } else {
-            // All other cases = Departure Date
-            label.innerHTML = 'Departure Date <span class="text-danger">*</span>';
-            input.name = 'segments[' + index + '][departure_date]';
-        }
-    });
+                if (flightType === 'roundtrip' && index === 1) {
+                    // Second segment in a round trip = Return Date
+                    label.innerHTML = 'Return Date <span class="text-danger">*</span>';
+                    input.name = 'segments[' + index + '][return_date]';
+                } else {
+                    // All other cases = Departure Date
+                    label.innerHTML = 'Departure Date <span class="text-danger">*</span>';
+                    input.name = 'segments[' + index + '][departure_date]';
+                }
+            });
     </script>
 @endpush

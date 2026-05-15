@@ -284,7 +284,9 @@
                                                             <div class="city-name">
                                                                 {{ $segment->from_city ?? 'Departure' }}</div>
                                                             <div class="time">
-                                                                {{ \Carbon\Carbon::parse($segment->departure_date)->format('h:i A') ?? 'N/A' }}
+                                                                {{-- {{ \Carbon\Carbon::parse($segment->departure_date)->format('h:i A') ?? 'N/A' }} --}}
+                                                                {{ \Carbon\Carbon::parse($segment->departure_time ?? $segment->departure_time)->format('h:i A') ?? 'N/A' }}
+
                                                             </div>
                                                             <div class="date">
                                                                 {{ \Carbon\Carbon::parse($segment->departure_date)->format('d M Y') ?? 'N/A' }}
@@ -319,10 +321,11 @@
                                                             <div class="city-name">{{ $segment->to_city ?? 'Arrival' }}
                                                             </div>
                                                             <div class="time">
-                                                                {{ \Carbon\Carbon::parse($segment->arrival_date ?? $segment->departure_date)->format('h:i A') ?? 'N/A' }}
+                                                                {{ \Carbon\Carbon::parse($segment->arrival_time ?? $segment->departure_time)->format('h:i A') ?? 'N/A' }}
                                                             </div>
                                                             <div class="date">
                                                                 {{ \Carbon\Carbon::parse($segment->arrival_date ?? $segment->departure_date)->format('d M Y') }}
+
                                                             </div>
                                                         </div>
                                                     </div>
@@ -342,14 +345,6 @@
                                                             <div>
                                                                 <code>{{ $booking->airline_pnr ?? ($booking->gk_pnr ?? 'N/A') }}</code>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-5 text-right">
-                                                        <div class="boarding-time">
-                                                            <small>BOARDING TIME</small>
-                                                            <div><strong>
-                                                                    {{ \Carbon\Carbon::parse($segment->departure_date)->subMinutes(45)->format('h:i A') }}
-                                                                </strong></div>
                                                         </div>
                                                     </div>
                                                 </div>

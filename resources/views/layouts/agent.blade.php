@@ -170,19 +170,13 @@
                                     </li>
 
                                     <li class="nav-item">
-                                        <a href="{{ route('agent.bookings.create') }}"
+                                        <a href="{{ route('agent.bookings.createbooking') }}"
                                             class="nav-link {{ request()->routeIs('agent.bookings.create') ? 'active' : '' }}">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Create Booking</p>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a href="{{ route('agent.bookings.index') }}"
-                                            class="nav-link {{ request()->routeIs('agent.bookings.*') ? 'active' : '' }}">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Update Booking</p>
-                                        </a>
-                                    </li>
+                                  
                                 </ul>
                             </li>
 

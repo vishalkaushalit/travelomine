@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>Travel Authorization Request</title>
+    <style>
+        /* Reset Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f7fb;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+
+        /* Main Container */
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+            opacity: 0.3;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo span {
+            font-weight: 300;
+        }
+
+        .tagline {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Content Section */
+        .content {
+            padding: 40px 35px;
+        }
+
+        .greeting {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 20px;
+        }
+
+        .greeting-detail {
+            color: #4a5568;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+
+        /* Info Boxes */
+        .info-box {
+            background: #f7f9fc;
+            border-left: 4px solid #2a5298;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .amount-highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .amount-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .amount-value {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .refund-note {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+
+        /* Flight Cards */
+        .flight-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .flight-header {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .flight-direction {
+            font-weight: 700;
+            color: #1e3c72;
+            font-size: 16px;
+        }
+
+        .flight-duration {
+            color: #718096;
+            font-size: 13px;
+        }
+
+        .flight-body {
+            padding: 20px;
+        }
+
+        .flight-segment {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flight-segment:last-child {
+            margin-bottom: 0;
+        }
+
+        .airport-info {
+            flex: 2;
+        }
+
+        .airport-code {
+            font-weight: 700;
+            font-size: 20px;
+            color: #2d3748;
+        }
+
+        .airport-name {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .flight-time {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .flight-date {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 2px;
+        }
+
+        .flight-icon {
+            flex: 1;
+            text-align: center;
+            color: #2a5298;
+            font-size: 24px;
+        }
+
+        .flight-details {
+            flex: 1;
+            text-align: right;
+        }
+
+        .airline-name {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .flight-number {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 2px;
+        }
+
+        .cabin-class {
+            display: inline-block;
+            background: #e8f0fe;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #2a5298;
+            margin-top: 8px;
+        }
+
+        .transit-info {
+            background: #fef5e7;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 13px;
+            color: #e67e22;
+        }
+
+        /* Passenger Table */
+        .passenger-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+
+        .passenger-table th {
+            background: #f8fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 13px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .passenger-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        /* Payment Card */
+        .payment-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .payment-row:last-child {
+            border-bottom: none;
+        }
+
+        .payment-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .payment-value {
+            color: #2d3748;
+        }
+
+        /* Authorization Section */
+        .authorization-box {
+            background: #fff9e6;
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .authorization-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #d4a000;
+            margin-bottom: 15px;
+        }
+
+        .authorization-text {
+            font-size: 14px;
+            color: #856404;
+            margin-bottom: 20px;
+        }
+
+        .btn-agree {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+
+        .btn-decline {
+            display: inline-block;
+            background: white;
+            color: #e53e3e;
+            padding: 14px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 2px solid #e53e3e;
+            margin: 10px 5px;
+        }
+
+        /* Disclaimer Section */
+        .disclaimer {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .disclaimer-title {
+            font-weight: 700;
+            color: #c53030;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .disclaimer-text {
+            font-size: 12px;
+            color: #742a2a;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        .footer {
+            background: #f8fafc;
+            padding: 30px 35px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .contact-info {
+            margin-bottom: 15px;
+        }
+
+        .contact-item {
+            display: inline-block;
+            margin: 0 10px;
+            color: #4a5568;
+            font-size: 13px;
+        }
+
+        .contact-item a {
+            color: #2a5298;
+            text-decoration: none;
+        }
+
+        .copyright {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 15px;
+        }
+
+        .social-links {
+            margin: 15px 0;
+        }
+
+        .social-links a {
+            display: inline-block;
+            margin: 0 8px;
+            color: #2a5298;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+
+            .flight-segment {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .flight-icon {
+                margin: 15px 0;
+            }
+
+            .flight-details {
+                text-align: center;
+                margin-top: 10px;
+            }
+
+            .payment-row {
+                flex-direction: column;
+            }
+
+            .payment-value {
+                margin-top: 5px;
+                font-weight: 500;
+            }
+
+            .btn-agree,
+            .btn-decline {
+                display: block;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">Travelo<span>Mile</span></div>
+            <div class="tagline">Your Journey, Our Priority</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">Dear {{ $customerName }},</div>
+            <div class="greeting-detail">
+                Greetings of the day! As per our conversation, we have updated your reservation. Please review the
+                details below and provide your authorization.
+            </div>
+
+            <!-- Amount Highlight -->
+            <div class="amount-highlight">
+                <div class="amount-label">Total Amount to be Charged</div>
+                <div class="amount-value">{{ $currency }} {{ number_format($totalAmount, 2) }}</div>
+                <div style="font-size: 12px; margin-top: 8px;">Including all taxes and fees</div>
+            </div>
+
+            <!-- Refund Note -->
+            @if($refundAmount)
+            <div class="info-box refund-note">
+                <div class="info-box-title">💰 Refund Information</div>
+                <div>You will receive a refund of <strong>{{ $currency }} {{ number_format($refundAmount, 2) }}</strong>
+                    to the same form of payment within 15-20 business days.</div>
+            </div>
+            @endif
+
+            <!-- Flight Itinerary -->
+            <div class="info-box">
+                <div class="info-box-title">✈️ Flight Itinerary</div>
+                <div style="font-size: 13px; color: #718096; margin-bottom: 15px;">{{ $tripSummary }}</div>
+
+                @foreach($flights as $flight)
+                <div class="flight-card">
+                    <div class="flight-header">
+                        <span class="flight-direction">{{ $flight['direction'] }}</span>
+                        <span class="flight-duration">Total: {{ $flight['duration'] }}</span>
+                    </div>
+                    <div class="flight-body">
+                        @foreach($flight['segments'] as $segment)
+                        <div class="flight-segment">
+                            <div class="airport-info">
+                                <div class="airport-code">{{ $segment['from_code'] }}</div>
+                                <div class="airport-name">{{ $segment['from_airport'] }}</div>
+                                <div class="flight-time">{{ $segment['departure_time'] }}</div>
+                                <div class="flight-date">{{ $segment['departure_date'] }}</div>
+                            </div>
+
+                            <div class="flight-icon">✈️ →</div>
+
+                            <div class="airport-info">
+                                <div class="airport-code">{{ $segment['to_code'] }}</div>
+                                <div class="airport-name">{{ $segment['to_airport'] }}</div>
+                                <div class="flight-time">{{ $segment['arrival_time'] }}</div>
+                                <div class="flight-date">{{ $segment['arrival_date'] }}</div>
+                            </div>
+
+                            <div class="flight-details">
+                                <div class="airline-name">{{ $segment['airline'] }}</div>
+                                <div class="flight-number">{{ $segment['flight_number'] }}</div>
+                                <div class="cabin-class">{{ $segment['cabin_class'] }}</div>
+                            </div>
+                        </div>
+
+                        @if($segment['transit_duration'])
+                        <div class="transit-info">
+                            ⏱️ Transit: {{ $segment['transit_duration'] }} at {{ $segment['transit_airport'] }}
+                        </div>
+                        @endif
+                        @endforeach
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <!-- Passenger Details -->
+            <div class="info-box">
+                <div class="info-box-title">👤 Passenger Details</div>
+                <table class="passenger-table">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Gender</th>
+                            <th>DOB</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($passengers as $index => $passenger)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $passenger['type'] }}</td>
+                            <td>{{ $passenger['name'] }}</td>
+                            <td>{{ $passenger['gender'] }}</td>
+                            <td>{{ $passenger['dob'] }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="payment-card">
+                <div class="info-box-title" style="margin-bottom: 15px;">💳 Payment Authorization</div>
+                <div class="payment-row">
+                    <span class="payment-label">Card Holder Name:</span>
+                    <span class="payment-value">{{ $cardHolderName }}</span>
+                </div>
+                <div class="payment-row">
+                    <span class="payment-label">Card Type:</span>
+                    <span class="payment-value">{{ $cardType }}</span>
+                </div>
+                <div class="payment-row">
+                    <span class="payment-label">Card Number:</span>
+                    <span class="payment-value">•••• •••• •••• {{ $cardLastFour }}</span>
+                </div>
+                <div class="payment-row">
+                    <span class="payment-label">Expiration:</span>
+                    <span class="payment-value">{{ $cardExpiry }}</span>
+                </div>
+                <div class="payment-row">
+                    <span class="payment-label">Billing Address:</span>
+                    <span class="payment-value">{{ $billingAddress }}</span>
+                </div>
+                <div class="payment-row">
+                    <span class="payment-label">Phone Number:</span>
+                    <span class="payment-value">{{ $phoneNumber }}</span>
+                </div>
+                <div class="payment-row">
+                    <span class="payment-label">Email:</span>
+                    <span class="payment-value">{{ $email }}</span>
+                </div>
+                <div class="payment-row">
+                    <span class="payment-label">Transaction Date:</span>
+                    <span class="payment-value">{{ $transactionDate }}</span>
+                </div>
+            </div>
+
+            <!-- Authorization -->
+            <div class="authorization-box">
+                <div class="authorization-title">📝 Payment Authorization Required</div>
+                <div class="authorization-text">
+                    By clicking "I Agree" or replying with "I Agree" or "I Authorize", you confirm that you are an
+                    authorized user of the above-mentioned card and that you will not dispute this payment with your
+                    bank.
+                </div>
+                <div>
+                    <a href="{{ $agreeLink }}" class="btn-agree">✓ I Agree & Authorize</a>
+                    <a href="{{ $declineLink }}" class="btn-decline">✗ Decline</a>
+                </div>
+            </div>
+
+            <!-- Important Notes -->
+            <div class="info-box">
+                <div class="info-box-title">⚠️ Important Information</div>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                    <li>Please review names, dates, cities, and departure/arrival times carefully.</li>
+                    <li>Your e-tickets will be sent within 24 hours.</li>
+                    <li>Baggage fees may apply. Please check with the airline.</li>
+                    <li>Any changes after ticketing may incur penalties and fare differences.</li>
+                </ul>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="disclaimer">
+                <div class="disclaimer-title">📌 Disclaimer</div>
+                <div class="disclaimer-text">
+                    TraveloMile is an independent travel agency with no third-party association. Your credit card may be
+                    charged in split transactions not exceeding the total amount. All service fees are non-refundable.
+                    Airline tickets are non-refundable unless eligible within 24 hours of purchase based on airline
+                    policy.
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="contact-info">
+                <div class="contact-item">📞 <a href="tel:+18884760932">+1 (888) 476-0932</a></div>
+                <div class="contact-item">✉️ <a
+                        href="mailto:reservation@travelomile.com">reservation@travelomile.com</a></div>
+                <div class="contact-item">💬 <a href="tel:+17472530262">+1 (747) 253-0262</a></div>
+            </div>
+
+            <div class="social-links">
+                <a href="#">🌐</a>
+                <a href="#">📘</a>
+                <a href="#">📷</a>
+                <a href="#">🐦</a>
+            </div>
+
+            <div class="copyright">
+                &copy; {{ date('Y') }} TraveloMile. All rights reserved.<br>
+                24/7 Customer Support Available
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
