@@ -68,8 +68,8 @@
 
     <h4>Passenger Details:</h4>
 
-    <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-        <thead>
+    <table style="width: 100%; border: 1px solid #000; border-collapse: collapse; margin: 16px 0;">
+        <thead style="border: 1px solid #000;">
             <tr style="background-color: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
                 <th style="padding: 12px 16px; text-align: left; font-weight: 600;">S. No.</th>
                 <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Type</th>

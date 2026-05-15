@@ -23,14 +23,20 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: var(--text-main);
         }
-        table{
+        table {
             width: 100% !important;
-        
+            border-collapse: collapse;
+            border: 1px solid #000;
         }
-        table tr th{
-            padding: 6px 0;
-            line-height: 1.6;
+
+        table tr th,
+        table tr td {
+            font-size: 14px;
+            line-height: 24px;
+            padding: 6px;
+            border: 1px solid #e5e7eb;
         }
+
         .page-shell {
             min-height: 100vh;
             display: flex;
