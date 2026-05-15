@@ -842,12 +842,11 @@ class AgentBookingController extends Controller
         return view('agent.bookings.show', compact('booking'));
     }
 
-    public function addRemark(Request $request, $bookingId)
+   public function addRemark(Request $request, $bookingId)
     {
         try {
             $booking = Booking::findOrFail($bookingId);
-            $this->authorizeBookingAccess($booking);
-
+            
             $validator = Validator::make($request->all(), [
                 'remark_text' => 'required|string|min:1',
                 'remark_type' => 'required|in:general,payment,modification,customer_request,followup',
@@ -877,14 +876,17 @@ class AgentBookingController extends Controller
             // Store old/new values if modification
             if ($request->remark_type === 'modification') {
                 if ($request->old_value) {
-                    $remarkData['old_data'] = json_encode(['value' => $request->old_value]);
+                    $remarkData['old_data'] = ['value' => $request->old_value];
                 }
                 if ($request->new_value) {
-                    $remarkData['new_data'] = json_encode(['value' => $request->new_value]);
+                    $remarkData['new_data'] = ['value' => $request->new_value];
                 }
             }
 
             $remark = BookingRemark::create($remarkData);
+            
+            // Load the agent relationship
+            $remark->load('agent');
 
             return response()->json([
                 'success' => true,
@@ -903,49 +905,73 @@ class AgentBookingController extends Controller
     /**
      * Get all remarks for a booking
      */
-    public function getRemarks($bookingId)
+  public function getRemarks($bookingId)
     {
-        $booking = Booking::with(['remarks.agent', 'agent'])->findOrFail($bookingId);
-        $this->authorizeBookingAccess($booking);
+        try {
+            $booking = Booking::with(['remarks.agent', 'agent'])->findOrFail($bookingId);
+            
+            $remarks = $booking->getAllRemarksAttribute();
 
-        $remarks = $booking->getAllRemarksAttribute();
+            if (request()->ajax()) {
+                $html = view('agent.bookings.partials.remarks-timeline', compact('remarks'))->render();
 
-        if (request()->ajax()) {
-            $html = view('agent.bookings.partials.remarks-timeline', compact('remarks'))->render();
+                return response()->json([
+                    'success' => true,
+                    'remarks' => $remarks,
+                    'html' => $html,
+                ]);
+            }
 
-            return response()->json([
-                'success' => true,
-                'remarks' => $remarks,
-                'html' => $html,
-            ]);
+            return view('agent.bookings.partials.remarks-timeline', compact('booking', 'remarks'));
+
+        } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error: '.$e->getMessage(),
+                ], 500);
+            }
+            throw $e;
         }
-
-        return view('agent.bookings.partials.remarks-timeline', compact('booking', 'remarks'));
     }
+
 
     /**
      * Update existing remark (optional, for editing)
      */
-    public function updateRemark(Request $request, $remarkId)
+      public function updateRemark(Request $request, $remarkId)
     {
-        $remark = BookingRemark::findOrFail($remarkId);
-        $booking = $remark->booking;
-        $this->authorizeBookingAccess($booking);
+        try {
+            $remark = BookingRemark::findOrFail($remarkId);
+            $booking = $remark->booking;
 
-        $validator = Validator::make($request->all(), [
-            'remark_text' => 'required|string|min:1',
-            'remark_type' => 'required|in:general,payment,modification,customer_request,followup',
-        ]);
+            $validator = Validator::make($request->all(), [
+                'remark_text' => 'required|string|min:1',
+                'remark_type' => 'required|in:general,payment,modification,customer_request,followup',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            }
+
+            $remark->update([
+                'remark_text' => $request->remark_text,
+                'remark_type' => $request->remark_type,
+            ]);
+
+            $remark->load('agent');
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Remark updated successfully',
+                'remark' => $remark
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: '.$e->getMessage(),
+            ], 500);
         }
-
-        $remark->update([
-            'remark_text' => $request->remark_text,
-            'remark_type' => $request->remark_type,
-        ]);
-
-        return response()->json(['success' => true, 'message' => 'Remark updated']);
     }
 }

@@ -12,12 +12,12 @@ use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Admin\OldBookingUploadController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Agent\AgentBookingUpdatesController;
 use App\Http\Controllers\Agent\Auth\AgentAuthController;
 use App\Http\Controllers\Agent\bookings\AgentBookingSearchController;
 use App\Http\Controllers\Agent\ChargingController;
 use App\Http\Controllers\Agent\DashboardController;
+use App\Http\Controllers\Agent\ItineraryParserController;
 use App\Http\Controllers\AgentBookingController;
 use App\Http\Controllers\Auth\ChargeLoginController;
 use App\Http\Controllers\AuthConsentController;
@@ -33,12 +33,9 @@ use App\Http\Controllers\MisManager\MisManagerBookingsController;
 use App\Http\Controllers\MisManager\MisManagerDashboardController;
 use App\Http\Controllers\MisManager\MisManagerLoginController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\PublicPaymentController;
-
-use App\Http\Controllers\Agent\AssignBookingController;
-use App\Http\Controllers\Charge\ChangesTeamController;
-
+use App\Http\Controllers\ProfileController;
 // payment contollers
+use App\Http\Controllers\PublicPaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\Support\CsLoginController;
@@ -47,12 +44,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+// tetsing new feature
 use Illuminate\Support\Facades\Route;
 
-// tetsing new feature 
-use App\Http\Controllers\Agent\ItineraryParserController;
 // use App\Mail\TestMail;
-
 
 Route::get('/', function () {
     return view('welcome');
@@ -149,7 +144,7 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
     });
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 
-        Route::get('/assignments/dashboard', [App\Http\Controllers\Charge\ChangesTeamController::class, 'dashboard'])
+    Route::get('/assignments/dashboard', [App\Http\Controllers\Charge\ChangesTeamController::class, 'dashboard'])
         ->name('assignments.dashboard');
     Route::get('/assignments/{assignment}', [App\Http\Controllers\Charge\ChangesTeamController::class, 'show'])
         ->name('assignments.show');
@@ -168,7 +163,6 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
     Route::get('/bookings/createbooking', [ItineraryParserController::class, 'create'])->name('bookings.createbooking');
     Route::post('/itinerary/decode', [ItineraryParserController::class, 'decode'])->name('itinerary.decode');
 
-
     Route::get('/dashboard', [DashboardController::class, 'Index'])->name('dashboard');
     // Route::get('/dashboard', [BookingController::class, 'agentIndex'])->name('dashboard');
     Route::get('/bookings', [BookingController::class, 'agentIndex'])->name('bookings.index');
@@ -183,17 +177,17 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
     Route::post('/bookings/{booking}/charge/assign', [ChargingController::class, 'assignForCharging'])->name('bookings.charge.assign');
 
     Route::get('/booking-search', [AgentBookingSearchController::class, 'index'])->name('bookings.search');
-    Route::get('/booking-search/results', [AgentBookingSearchController::class, 'search'])->name('bookings.search.results');
+    Route::post('/booking-search/results', [AgentBookingSearchController::class, 'search'])->name('bookings.search.results');
+    Route::get('/bookings/{id}/show', [AgentBookingSearchController::class, 'show'])->name('bookings.show');
 
     Route::post('/booking-updates/search', [AgentBookingUpdatesController::class, 'searchByPnr'])->name('booking-updates.search');
     Route::post('/booking-updates', [AgentBookingUpdatesController::class, 'store'])->name('booking-updates.store');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 
     // Add remark route
-    Route::post('/bookings/{bookingId}/add-remark', [AgentBookingController::class, 'addRemark'])
-         ->name('agent.bookings.add-remark');
+    Route::post('/bookings/{bookingId}/add-remark', [AgentBookingController::class, 'addRemark'])->name('agent.bookings.add-remark');
 
-            Route::get('/bookings/{booking}/assign', [App\Http\Controllers\Agent\AssignBookingController::class, 'create'])
+    Route::get('/bookings/{booking}/assign', [App\Http\Controllers\Agent\AssignBookingController::class, 'create'])
         ->name('bookings.assign.create');
     Route::post('/bookings/{booking}/assign', [App\Http\Controllers\Agent\AssignBookingController::class, 'store'])
         ->name('bookings.assign.store');
@@ -201,42 +195,34 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
         ->name('assignments.index');
     Route::get('/assignments/{assignment}', [App\Http\Controllers\Agent\AssignBookingController::class, 'show'])
         ->name('assignments.show');
-
-
-        // testing new feature routes 
-
-
 });
 
 // ADMIN ROUTES
-Route::middleware(['auth', 'role:admin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-        Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-        Route::get('/activity-logs', [ActivityLogController::class, 'index'])
-            ->name('activity.logs');
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])
+        ->name('activity.logs');
 
-        Route::get('/activity-logs/latest', [ActivityLogController::class, 'latest'])
-            ->name('activity.logs.latest');
-        Route::resource('merchants', MerchantController::class)->except(['show']);
+    Route::get('/activity-logs/latest', [ActivityLogController::class, 'latest'])
+        ->name('activity.logs.latest');
+    Route::resource('merchants', MerchantController::class)->except(['show']);
 
-        // export csv of single booking
-        Route::get('/bookings/{booking}/export-csv', [App\Http\Controllers\Admin\BookingExportController::class, 'exportSingle'])
-            ->name('bookings.export.csv');
-        Route::post('/bookings/export/all', [AllBookingImportController::class, 'export'])
-            ->name('bookings.export.all');
-        Route::post('/bookings/export-selected', [AllBookingImportController::class, 'exportSelected'])
-            ->name('bookings.export.selected');
+    // export csv of single booking
+    Route::get('/bookings/{booking}/export-csv', [App\Http\Controllers\Admin\BookingExportController::class, 'exportSingle'])
+        ->name('bookings.export.csv');
+    Route::post('/bookings/export/all', [AllBookingImportController::class, 'export'])
+        ->name('bookings.export.all');
+    Route::post('/bookings/export-selected', [AllBookingImportController::class, 'exportSelected'])
+        ->name('bookings.export.selected');
 
-        // upload old bookings feature
-        Route::get('/bookings/upload-old', [OldBookingUploadController::class, 'index'])
-            ->name('bookings.upload-old');
+    // upload old bookings feature
+    Route::get('/bookings/upload-old', [OldBookingUploadController::class, 'index'])
+        ->name('bookings.upload-old');
 
-        Route::post('/bookings/upload-old', [OldBookingUploadController::class, 'store'])
-            ->name('bookings.upload-old.store');
+    Route::post('/bookings/upload-old', [OldBookingUploadController::class, 'store'])
+        ->name('bookings.upload-old.store');
 
-    });
+});
 Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
@@ -250,17 +236,17 @@ Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.
 });
 Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardController::class, 'index'])->name('dashboard');
-    
+
     // Bookings
     Route::get('/bookings/all', [\App\Http\Controllers\Support\SupportBookingsController::class, 'all'])->name('bookings.all');
     Route::get('/bookings', [\App\Http\Controllers\Support\SupportBookingsController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'show'])->name('bookings.show');
     Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Support\SupportBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'update'])->name('bookings.update');
-    
+
     // NEW: Chargeback record creation
     Route::post('/bookings/{id}/chargeback', [\App\Http\Controllers\Support\SupportBookingsController::class, 'storeChargeback'])->name('bookings.chargeback.store');
-    
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 });
@@ -336,7 +322,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
 
     // Delete option
     Route::delete('/settings/bookings/{key}/{id}', [SettingsController::class, 'destroy'])
-    ->name('settings.destroy');
+        ->name('settings.destroy');
 
     // Reports (Both Admin and Manager can access)
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

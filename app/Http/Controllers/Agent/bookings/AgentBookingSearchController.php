@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class AgentBookingSearchController extends Controller
 {
- public function index()
+    public function index()
     {
         return view('agent.bookings.search');
     }
@@ -21,7 +21,8 @@ class AgentBookingSearchController extends Controller
 
         $search = trim($request->search);
 
-        $booking = Booking::query()
+        $bookings = Booking::query()
+            ->with(['agent', 'segments']) // Load agent and segments relationships
             ->where(function ($query) use ($search) {
                 $query->where('booking_reference', 'like', "%{$search}%")
                     ->orWhere('customer_email', 'like', "%{$search}%")
@@ -31,16 +32,23 @@ class AgentBookingSearchController extends Controller
                         $segmentQuery->where('segment_pnr', 'like', "%{$search}%");
                     });
             })
-            ->first();
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        if (!$booking) {
+        if ($bookings->isEmpty()) {
             return redirect()
                 ->route('agent.bookings.search')
-                ->with('error', 'Booking not found. Try with a different booking reference, email, airline PNR, or GK PNR.');
+                ->with('error', 'No bookings found. Try with a different booking reference, email, airline PNR, or GK PNR.');
         }
 
-        return redirect()->route('agent.bookings.show', $booking->id);
+        // Pass the results to the search results view
+        return view('agent.bookings.search-results', compact('bookings'));
     }
 
-
+    public function show($id)
+    {
+        $booking = Booking::with(['agent', 'segments', 'passengers', 'cards', 'remarks'])->findOrFail($id);
+        
+        return view('agent.bookings.show', compact('booking'));
+    }
 }
