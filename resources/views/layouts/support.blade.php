@@ -49,10 +49,9 @@
                         </a>
                     </li>
 
-                    <li class="nav-item d-none d-sm-inline-block">
+                    <li class="nav-item">
                         <a href="{{ route('support.dashboard') }}" class="nav-link">Dashboard</a>
                     </li>
-
                 @endauth
             </ul>
 
