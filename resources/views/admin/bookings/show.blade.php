@@ -86,7 +86,7 @@
                                     <td>{{ $segment->departure_date ? $segment->departure_date->format('d M Y') : 'N/A' }}
                                     </td>
                                     <td>{{ $segment->return_date ? $segment->return_date->format('d M Y') : 'N/A' }}</td>
-                                    <td>{{ $segment->airline_pnr ?? ($segment->gk_pnr ?? 'N/A') }}</td>
+                                    <td>{{ $booking->airline_pnr ?? ($booking->gk_pnr ?? 'N/A') }}</td>
                                     <td>{{ $segment->flight_number ?? 'N/A' }}</td>
                                 </tr>
                             @endforeach
