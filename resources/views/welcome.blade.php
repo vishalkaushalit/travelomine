@@ -318,22 +318,25 @@
                                         </div>
                                     </div>
                                 </a>
-
-                                {{-- Visual orbit element --}}
-                                <div class="d-flex justify-content-center align-items-center mt-2">
-                                    <div class="orbit">
-                                        <div class="orbit-dot"></div>
-                                        <div class="orbit-dot"></div>
-                                        <div class="orbit-dot"></div>
-                                        <div class="orbit-dot"></div>
-                                        <div class="position-absolute top-50 start-50 translate-middle text-center">
-                                            <i class="bi bi-airplane-engines text-primary fs-3 mb-1"></i>
-                                            <div class="small text-secondary">
-                                                All teams orbit around<br>the same booking data.
+                                <a href="{{ route('support.login') }}" class="text-decoration-none text-light">
+                                    <div class="role-card p-3 h-100">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div
+                                                class="role-icon bg-danger bg-opacity-10 text-danger border border-danger border-opacity-50">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">Changes</div>
+                                                <small class="text-secondary">
+                                                    Future module for disputes, refunds & audits.
+                                                </small>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </a>
+
+                                {{-- Visual orbit element --}}
+                               
                             </div>
                         </div> {{-- row --}}
                     </div>

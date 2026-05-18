@@ -134,7 +134,7 @@ class ItineraryParserController extends Controller
             ^\s*                        # optional leading whitespace
             \d+                         # sequence number  (1, 2, 3 …)
             \s+
-            ([A-Z]{2})                  # (1) airline code
+            ([A-Z0-9]{1,2})             # (1) airline code - 1-2 alphanumeric chars
             \s*                         # optional space between code & number
             (\d+)                       # (2) flight number digits
             \s+
@@ -411,6 +411,34 @@ private function buildSegment(
             'RJ' => 'Royal Jordanian',
             'PK' => 'Pakistan International',
             'UL' => 'SriLankan Airlines',
+            'F9'=> 'Frontier Airlines',
+            'WN'=> 'Southwest Airlines',
+            'AS'=> 'Alaska Airlines',
+            'B6'=> 'JetBlue Airways',
+            'NK'=> 'Spirit Airlines',
+            'HA'=> 'Hawaiian Airlines',
+            'G4'=> 'Allegiant Air',
+            'SY'=> 'Sun Country Airlines',
+            'F8'=> 'Norwegian Air Shuttle',
+            'VY'=> 'Vueling Airlines',
+            'IB'=> 'Iberia Express',
+            'AY'=> 'Finnair',
+            'S7'=> 'S7 Airlines',
+            'SU'=> 'Aeroflot',
+            'AZ'=> 'ITA Airways',
+            'TP'=> 'TAP Air Portugal',
+            'SN'=> 'Brussels Airlines',
+            'LO'=> 'LOT Polish Airlines',
+            'OK'=> 'Czech Airlines',
+            'RO'=> 'TAROM',
+            'WY'=> 'Oman Air',
+            'GF'=> 'Gulf Air',
+            'KU'=> 'Kuwait Airways',
+            'ME'=> 'Middle East Airlines',
+            'RJ'=> 'Royal Jordanian',
+            'PK'=> 'Pakistan International',
+            'UL'=> 'SriLankan Airlines',
+            '9k'=> 'Cape Air',
         ];
 
         return $names[strtoupper($code)] ?? $code;

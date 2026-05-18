@@ -178,7 +178,7 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 
     Route::get('/booking-search', [AgentBookingSearchController::class, 'index'])->name('bookings.search');
     Route::post('/booking-search/results', [AgentBookingSearchController::class, 'search'])->name('bookings.search.results');
-    Route::get('/bookings/{id}/show', [AgentBookingSearchController::class, 'show'])->name('bookings.show');
+    // Route::get('/bookings/{id}/show', [AgentBookingSearchController::class, 'show'])->name('bookings.show');
 
     Route::post('/booking-updates/search', [AgentBookingUpdatesController::class, 'searchByPnr'])->name('booking-updates.search');
     Route::post('/booking-updates', [AgentBookingUpdatesController::class, 'store'])->name('booking-updates.store');
