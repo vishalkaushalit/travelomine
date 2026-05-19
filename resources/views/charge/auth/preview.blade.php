@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Preview Authorization Email | {{ $booking->booking_reference }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <style>
         :root {
             --brand-primary: #1a237e;
@@ -23,6 +23,7 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: var(--text-main);
         }
+
         table {
             width: 100% !important;
             border-collapse: collapse;
@@ -322,12 +323,10 @@
             border-radius: 14px;
             padding: 18px 18px 16px;
             border: 1px solid rgba(245, 158, 11, 0.38);
-            background: linear-gradient(
-                135deg,
-                rgba(255, 243, 205, 0.85) 0,
-                rgba(255, 249, 230, 0.96) 45%,
-                #ffffff 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(255, 243, 205, 0.85) 0,
+                    rgba(255, 249, 230, 0.96) 45%,
+                    #ffffff 100%);
         }
 
         .auth-box p {
@@ -411,127 +410,129 @@
         }
     </style>
 </head>
+
 <body>
-<div class="page-shell">
-    <div class="top-bar">
-        <div class="top-bar-inner">
-            <div class="d-flex align-items-center gap-2">
-                <span class="top-bar-badge">
-                    <span>Preview</span>
-                </span>
-                <span class="text-muted">Customer-facing authorization email layout</span>
-            </div>
+    <div class="page-shell">
+        <div class="top-bar">
+            <div class="top-bar-inner">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="top-bar-badge">
+                        <span>Preview</span>
+                    </span>
+                    <span class="text-muted">Customer-facing authorization email layout</span>
+                </div>
 
-            <div class="top-bar-actions">
-                <a href="{{ route('charge.authorize.edit', $booking->id) }}" class="btn btn-sm btn-outline-primary">
-                    ← Back to Editor
-                </a>
+                <div class="top-bar-actions">
+                    <a href="{{ route('charge.authorize.edit', $booking->id) }}" class="btn btn-sm btn-outline-primary">
+                        ← Back to Editor
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="preview-shell">
-        <div class="email-card">
+        <div class="preview-shell">
+            <div class="email-card">
 
-            <div class="email-header">
-                <div class="email-header-main">
-                    <div class="brand-block">
-                        
-                        <div>
-                            <div class="brand-text-title">Payment Authorization</div>
+                <div class="email-header">
+                    <div class="email-header-main">
+                        <div class="brand-block">
+
+                            <div>
+                                <div class="brand-text-title">Payment Authorization</div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <div class="status-pill">
+                                <span class="status-dot"></span>
+                                <span>Ready to send</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="text-end">
-                        <div class="status-pill">
-                            <span class="status-dot"></span>
-                            <span>Ready to send</span>
+                    <div class="email-header-meta">
+                        <span>
+                            <span class="badge-ref">Ref: {{ $booking->booking_reference }}</span>
+                        </span>
+                        <span>
+                            <span class="text-xs">Previewing as customer email</span>
+                        </span>
+                    </div>
+                </div>
+                <hr>
+                <br>
+                <div class="email-body">
+                    <div class="editable-content-area">
+                        {!! $finalContent !!}
+                    </div>
+
+                    <div class="itinerary-card">
+                        <div class="itinerary-header">
+                            <span>Flight details</span>
+                            <span>PNR: {{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}</span>
                         </div>
+
+                        @foreach ($booking->segments as $segment)
+                            <div class="segment-row">
+                                <div class="city-block text-start">
+                                    <p class="city-code">{{ $segment->from_airport ?? 'DEPARTURE' }}</p>
+                                    <p class="city-name">{{ $segment->from_city }}</p>
+                                </div>
+
+                                <div class="flight-path">
+                                    <div class="flight-path-line"></div>
+                                    <span class="flight-icon">✈</span>
+                                </div>
+
+                                <div class="city-block text-end">
+                                    <p class="city-code">{{ $segment->to_airport ?? 'ARRIVAL' }}</p>
+                                    <p class="city-name">{{ $segment->to_city }}</p>
+                                </div>
+                            </div>
+
+                            <div class="segment-meta">
+                                <span>
+                                    <span class="segment-meta-label">Flight</span>
+                                    {{ $segment->airline_name }} {{ $segment->flight_number }}
+                                </span>
+                                <span>
+                                    <span class="segment-meta-label">Date</span>
+                                    {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, d M Y') }}
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="auth-box">
+                        <p class="small text-muted mb-1">
+                            By replying to this email or clicking the consent link, you authorize
+                        </p>
+                        <div class="amount-text">
+                            {{ $booking->currency }} {{ number_format($booking->amount_charged, 2) }}
+                        </div>
+                        <p class="sub-label mb-0">
+                            Total charge amount · All inclusive
+                        </p>
                     </div>
                 </div>
 
-                <div class="email-header-meta">
-                    <span>
-                        <span class="badge-ref">Ref: {{ $booking->booking_reference }}</span>
-                    </span>
-                    <span>
-                        <span class="text-xs">Previewing as customer email</span>
-                    </span>
-                </div>
             </div>
-            <hr>
-            <br>
-            <div class="email-body">
-                <div class="editable-content-area">
-                    {!! $finalContent !!}
-                </div>
-
-                <div class="itinerary-card">
-                    <div class="itinerary-header">
-                        <span>Flight details</span>
-                        <span>PNR: {{ $booking->airline_pnr ?  $booking->airline_pnr : $booking->gk_pnr }}</span>
-                    </div>
-
-                    @foreach($booking->segments as $segment)
-                        <div class="segment-row">
-                            <div class="city-block text-start">
-                                <p class="city-code">{{ $segment->from_airport ?? 'DEPARTURE' }}</p>
-                                <p class="city-name">{{ $segment->from_city }}</p>
-                            </div>
-
-                            <div class="flight-path">
-                                <div class="flight-path-line"></div>
-                                <span class="flight-icon">✈</span>
-                            </div>
-
-                            <div class="city-block text-end">
-                                <p class="city-code">{{ $segment->to_airport ?? 'ARRIVAL' }}</p>
-                                <p class="city-name">{{ $segment->to_city }}</p>
-                            </div>
-                        </div>
-
-                        <div class="segment-meta">
-                            <span>
-                                <span class="segment-meta-label">Flight</span>
-                                {{ $segment->airline_name }} {{ $segment->flight_number }}
-                            </span>
-                            <span>
-                                <span class="segment-meta-label">Date</span>
-                                {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, d M Y') }}
-                            </span>
-                        </div>
-                    @endforeach
-                </div>
-
-                <div class="auth-box">
-                    <p class="small text-muted mb-1">
-                        By replying to this email or clicking the consent link, you authorize
-                    </p>
-                    <div class="amount-text">
-                        {{ $booking->currency }} {{ number_format($booking->amount_charged, 2) }}
-                    </div>
-                    <p class="sub-label mb-0">
-                        Total charge amount · All inclusive
-                    </p>
-                </div>
-            </div>
-
         </div>
-    </div>
 
-    <div class="page-actions">
-    <form action="{{ route('charge.authorize.send', $booking->id) }}" method="POST">
-        @csrf
-        <textarea name="final_content" style="display:none;">{{ $finalContent }}</textarea>
-        <button type="submit" class="btn btn-primary primary-send-btn">
-            Confirm &amp; Send to Customer
-        </button>
-    </form>
-    <div class="helper-text">
-        This sends the authorization email using the design shown above.
-    </div>
-</div>
+        <div class="page-actions">
+            <form action="{{ route('charge.authorize.send', $booking->id) }}" method="POST">
+                @csrf
+                <textarea name="final_content" style="display:none;">{{ $finalContent }}</textarea>
+                <button type="submit" class="btn btn-primary primary-send-btn">
+                    Confirm &amp; Send to Customer
+                </button>
+            </form>
+            <div class="helper-text">
+                This sends the authorization email using the design shown above.
+            </div>
+        </div>
 
-</div>
+    </div>
 </body>
+
 </html>

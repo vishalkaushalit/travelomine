@@ -202,9 +202,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
         ->name('activity.logs');
-
-    Route::get('/activity-logs/latest', [ActivityLogController::class, 'latest'])
-        ->name('activity.logs.latest');
+    
     Route::resource('merchants', MerchantController::class)->except(['show']);
 
     // export csv of single booking
@@ -223,7 +221,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('bookings.upload-old.store');
 
 });
-Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/agents-list', [\App\Http\Controllers\Admin\AdminAgentsController::class, 'index'])->name('agents.index');
@@ -276,8 +274,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 });
 
-// Protected Admin Routes (Both Admin and Manager can access)
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'])->group(function () {
+// Protected Admin Routes (Only Admin can access)
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])
@@ -312,7 +310,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
         Route::delete('/{id}', [AdminNotifyController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/stats', [AdminNotifyController::class, 'stats'])->name('stats');
     });
-    // Settings (Both Admin and Manager can access)
+    // Settings (Only Admin can access)
     Route::get('/settings/bookings', [SettingsController::class, 'bookings'])
         ->name('settings.bookings'); // used for the page itself
 

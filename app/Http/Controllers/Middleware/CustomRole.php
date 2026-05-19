@@ -45,6 +45,10 @@ class CustomRole
             if ($request->is('mis-manager/*')) {
                 return redirect()->route('mis-manager.login');
             }
+
+            // if ($request->is('changes/*')) {
+            //     return redirect()->route('changes.login');
+            // }
             
             abort(403, 'You must be logged in to access this page.');
         }
