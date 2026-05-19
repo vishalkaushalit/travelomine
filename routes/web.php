@@ -202,7 +202,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
         ->name('activity.logs');
-    
+
     Route::resource('merchants', MerchantController::class)->except(['show']);
 
     // export csv of single booking

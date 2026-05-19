@@ -11,6 +11,7 @@
 <div class="card shadow-sm border-0">
     <div class="card-body">
         <form action="{{ route('admin.merchants.store') }}" method="POST">
+            @csrf
             @include('admin.merchants._form')
 
             <div class="mt-4 d-flex gap-2">
