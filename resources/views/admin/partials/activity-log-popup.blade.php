@@ -37,7 +37,7 @@
 @push('scripts')
 <script>
 document.getElementById('activityLogModal').addEventListener('shown.bs.modal', function () {
-    // fetch("{{ route('admin.activity.logs.latest') }}")
+    fetch("{{ route('admin.activity.logs') }}")
         .then(res => res.json())
         .then(rows => {
             let html = '';

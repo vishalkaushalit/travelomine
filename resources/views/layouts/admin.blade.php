@@ -166,6 +166,13 @@
                                     <p>All Bookings</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.activity.logs') }}"
+                                    class="nav-link {{ request()->routeIs('admin.activity.logs') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-history"></i>
+                                    <p>Activity Logs</p>
+                                </a>
+                            </li>
 
                             <li class="nav-item {{ request()->is('admin/settings*') ? 'menu-open' : '' }}">
                                 <a href="#"
