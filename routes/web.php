@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Agent\AgentBookingUpdatesController;
 use App\Http\Controllers\Agent\Auth\AgentAuthController;
 use App\Http\Controllers\Agent\bookings\AgentBookingSearchController;
+use App\Http\Controllers\Agent\CallLogController;
 use App\Http\Controllers\Agent\ChargingController;
 use App\Http\Controllers\Agent\DashboardController;
 use App\Http\Controllers\Agent\ItineraryParserController;
@@ -43,11 +44,11 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-// tetsing new feature
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+// tetsing new feature
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 // use App\Mail\TestMail;
 
@@ -197,6 +198,13 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
         ->name('assignments.index');
     Route::get('/assignments/{assignment}', [App\Http\Controllers\Agent\AssignBookingController::class, 'show'])
         ->name('assignments.show');
+    // call log routes
+    Route::prefix('call-log')->name('call-log.')->group(function () {
+        Route::get('/', [CallLogController::class, 'index'])->name('index');
+        Route::get('/create', [CallLogController::class, 'create'])->name('create');
+        Route::post('/', [CallLogController::class, 'store'])->name('store');
+        Route::get('/{callLog}', [CallLogController::class, 'show'])->name('show');
+    });
 });
 
 // ADMIN ROUTES
@@ -404,21 +412,21 @@ Route::middleware(['auth', 'role:mis-manager'])->prefix('mis-manager')->name('mi
 });
 
 // refresh with ajax route for activity logs in admin dashboard
-Route::get('/admin/logs/latest', function() {
+Route::get('/admin/logs/latest', function () {
     try {
         $logs = DB::table('activity_logs')
             ->orderBy('id', 'desc')
             ->limit(50)
             ->get();
-        
+
         return response()->json([
             'success' => true,
-            'logs' => $logs
+            'logs' => $logs,
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => $e->getMessage()
+            'message' => $e->getMessage(),
         ], 500);
     }
-})->name('admin.logs.latest'); 
+})->name('admin.logs.latest');

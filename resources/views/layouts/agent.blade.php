@@ -176,7 +176,34 @@
                                             <p>Create Booking</p>
                                         </a>
                                     </li>
-                                  
+
+                                </ul>
+                            </li>
+                            <!-- Call Logs -->
+                            <li class="nav-item {{ request()->routeIs('agent.call-log.*') ? 'menu-open' : '' }}">
+                                <a href="#"
+                                    class="nav-link {{ request()->routeIs('agent.call-log.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-phone-alt"></i>
+                                    <p>
+                                        Call Logs
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ route('agent.call-log.index') }}"
+                                            class="nav-link {{ request()->routeIs('agent.call-log.index') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>All Call Logs</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('agent.call-log.create') }}"
+                                            class="nav-link {{ request()->routeIs('agent.call-log.create') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>New Call Log</p>
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
 
