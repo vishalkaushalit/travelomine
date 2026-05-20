@@ -46,6 +46,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 // tetsing new feature
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // use App\Mail\TestMail;
 
@@ -400,3 +402,23 @@ Route::middleware(['auth', 'role:mis-manager'])->prefix('mis-manager')->name('mi
     Route::delete('/bookings/{id}', [MisManagerBookingsController::class, 'destroy'])->name('bookings.destroy');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 });
+
+// refresh with ajax route for activity logs in admin dashboard
+Route::get('/admin/logs/latest', function() {
+    try {
+        $logs = DB::table('activity_logs')
+            ->orderBy('id', 'desc')
+            ->limit(50)
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'logs' => $logs
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+})->name('admin.logs.latest'); 
