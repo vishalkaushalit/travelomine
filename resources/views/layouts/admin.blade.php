@@ -51,6 +51,7 @@
                     <li class="nav-item d-none d-sm-inline-block">
                         <a href="{{ route('admin.activity.logs') }}" class="nav-link">Activity Logs</a>
                     </li>
+
                 @endauth
 
                 @guest
@@ -171,6 +172,26 @@
                                     <i class="nav-icon fas fa-history"></i>
                                     <p>Activity Logs</p>
                                 </a>
+                            </li>
+                            <!-- Call Logs (Admin) -->
+                            <li class="nav-item {{ request()->routeIs('admin.call-log.*') ? 'menu-open' : '' }}">
+                                <a href="#"
+                                    class="nav-link {{ request()->routeIs('admin.call-log.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-phone-alt"></i>
+                                    <p>
+                                        Call Logs
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.call-log.index') }}"
+                                            class="nav-link {{ request()->routeIs('admin.call-log.index') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>All Call Logs</p>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
 
                             <li class="nav-item {{ request()->is('admin/settings*') ? 'menu-open' : '' }}">

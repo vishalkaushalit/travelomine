@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminNotifyController;
 use App\Http\Controllers\Admin\AllBookingImportController;
+use App\Http\Controllers\Admin\CallLogsController;
 use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Admin\OldBookingUploadController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -198,6 +199,7 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
         ->name('assignments.index');
     Route::get('/assignments/{assignment}', [App\Http\Controllers\Agent\AssignBookingController::class, 'show'])
         ->name('assignments.show');
+        
     // call log routes
     Route::prefix('call-log')->name('call-log.')->group(function () {
         Route::get('/', [CallLogController::class, 'index'])->name('index');
@@ -229,6 +231,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::post('/bookings/upload-old', [OldBookingUploadController::class, 'store'])
         ->name('bookings.upload-old.store');
+
+    Route::prefix('call-log')->name('call-log.')->group(function () {
+        Route::get('/', [CallLogsController::class, 'index'])->name('index');
+        Route::get('/{callLog}', [CallLogsController::class, 'show'])->name('show');
+        Route::get('/export/csv', [CallLogsController::class, 'export'])->name('export');
+    });
 
 });
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
