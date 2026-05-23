@@ -23,20 +23,18 @@ class AssignBookingController extends Controller
         $existingAssignment = $booking->assignments()
             ->where('status', 'pending')
             ->first();
-            
+
         if ($existingAssignment) {
-            return redirect()->route('agent.bookings.show', $booking)
-                ->with('error', 'This booking already has a pending assignment to changes team.');
+            return redirect()->route('assignments.show', $existingAssignment);
         }
-        
-        return view('agent.bookings.assign', compact('booking'));
     }
-    
     /**
      * Store the assignment
      */
     public function store(Request $request, Booking $booking)
     {
+        \Log::info('Store assignment started for booking: ' . $booking->id);
+        
         $request->validate([
             'message' => 'required|string|min:5|max:1000',
         ]);
@@ -44,6 +42,8 @@ class AssignBookingController extends Controller
         DB::beginTransaction();
         
         try {
+            \Log::info('Creating assignment for booking: ' . $booking->id);
+            
             // Create assignment
             $assignment = BookingAssignment::create([
                 'booking_id' => $booking->id,
@@ -52,24 +52,27 @@ class AssignBookingController extends Controller
                 'message' => $request->message,
             ]);
             
-            // Update booking status if needed
-            if ($booking->status !== 'change_requested') {
-                $booking->update(['status' => 'change_requested']);
-            }
+            \Log::info('Assignment created with ID: ' . $assignment->id);
             
-            // Notify changes team (all users with role 'change' or 'charge' as per your system)
+            // Notify changes team (all users with role 'charge' or 'admin' as per your system)
             $changesTeam = User::whereIn('role', ['charge', 'admin'])->get();
+            
+            \Log::info('Notifying ' . $changesTeam->count() . ' users');
             
             Notification::send($changesTeam, new BookingAssignedToChangesTeam($assignment));
             
             DB::commit();
             
-            return redirect()->route('agent.bookings.show', $booking)
+            \Log::info('Assignment stored successfully, redirecting to assignments.show');
+            
+            return redirect()->route('agent.assignments.show', $assignment)
                 ->with('success', 'Booking has been assigned to changes team successfully.');
                 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to assign booking. Please try again.')->withInput();
+            \Log::error('Assignment creation failed: ' . $e->getMessage());
+            \Log::error('Exception trace: ' . $e->getTraceAsString());
+            return back()->with('error', 'Failed to assign booking: ' . $e->getMessage())->withInput();
         }
     }
     

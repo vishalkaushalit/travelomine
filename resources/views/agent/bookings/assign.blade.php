@@ -1,7 +1,7 @@
 @extends('layouts.agent')
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -16,7 +16,6 @@
 
                     <form action="{{ route('agent.bookings.assign.store', $booking) }}" method="POST" id="assignForm">
                         @csrf
-
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">

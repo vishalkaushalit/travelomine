@@ -1,7 +1,7 @@
 @extends('layouts.agent')
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid py-4">
     <div class="row">
         <div class="col-md-8 offset-md-2">
             <div class="card">

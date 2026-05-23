@@ -34,6 +34,9 @@ use App\Http\Controllers\Mis\MisLoginController;
 use App\Http\Controllers\MisManager\MisManagerBookingsController;
 use App\Http\Controllers\MisManager\MisManagerDashboardController;
 use App\Http\Controllers\MisManager\MisManagerLoginController;
+use App\Http\Controllers\Changes\ChangesBookingsController;
+use App\Http\Controllers\Changes\ChangesDashboardController;
+use App\Http\Controllers\Changes\ChangesLoginController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 // payment contollers
@@ -68,7 +71,6 @@ Route::get('/consent/{id}', [AuthConsentController::class, 'customerConsentView'
 
 // agent auth routes
 Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
-// Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
 Route::post('/agent/login', [AgentAuthController::class, 'login']);
 Route::post('/agent/logout', [AgentAuthController::class, 'logout'])->name('agent.logout');
 
@@ -91,6 +93,11 @@ Route::post('/charge/logout', [ChargeLoginController::class, 'logout'])->name('c
 Route::get('/mis/login', [MisLoginController::class, 'showLoginForm'])->name('mis.login');
 Route::post('/mis/login', [MisLoginController::class, 'login']);
 Route::post('/mis/logout', [MisLoginController::class, 'logout'])->name('mis.logout');
+
+// Changes routes
+Route::get('/changes/login', [ChangesLoginController::class, 'showLoginForm'])->name('changes.login');
+Route::post('/changes/login', [ChangesLoginController::class, 'login']);
+Route::post('/changes/logout', [ChangesLoginController::class, 'logout'])->name('changes.logout');
 
 // MIS MANAGER routes (login)
 Route::get('/mis-manager/login', [MisManagerLoginController::class, 'showLoginForm'])->name('mis-manager.login');
@@ -381,6 +388,9 @@ Route::get('/mis/notifications', function () {
 Route::get('/mis-manager/notifications', function () {
     return view('mis-manager.notifications');
 })->middleware(['auth', 'role:mis-manager'])->name('mis-manager.notifications');
+Route::get('/changes/notifications', function () {
+    return view('changes.notifications');
+})->middleware(['auth', 'role:changes'])->name('changes.notifications');
 
 // clear all cache
 Route::get('/clear-all-cache', function () {
@@ -416,6 +426,17 @@ Route::middleware(['auth', 'role:mis-manager'])->prefix('mis-manager')->name('mi
     Route::get('/bookings/{id}/edit', [MisManagerBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [MisManagerBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [MisManagerBookingsController::class, 'destroy'])->name('bookings.destroy');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+});
+
+Route::middleware(['auth', 'role:changes'])->prefix('changes')->name('changes.')->group(function () {
+    Route::get('/dashboard', [ChangesDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/bookings/all', [ChangesBookingsController::class, 'all'])->name('bookings.all');
+    Route::get('/bookings', [ChangesBookingsController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{id}', [ChangesBookingsController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/edit', [ChangesBookingsController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{id}', [ChangesBookingsController::class, 'update'])->name('bookings.update');
+    Route::delete('/bookings/{id}', [ChangesBookingsController::class, 'destroy'])->name('bookings.destroy');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 });
 

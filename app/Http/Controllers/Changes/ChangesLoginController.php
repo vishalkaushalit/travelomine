@@ -23,8 +23,6 @@ class ChangesLoginController extends Controller
             $request->session()->regenerate();
             
             if (auth()->user()->role === 'changes') {
-                // Ensure the authenticated user has the Spatie role required by role:changes middleware.
-                auth()->user()->syncRoles(['changes']);
                 return redirect()->intended(route('changes.dashboard'));
             }
             
