@@ -24,6 +24,10 @@ class ChangesBookingsController extends Controller
                 $q->where('customer_email', 'like', "%{$search}%")
                     ->orWhere('customer_phone', 'like', "%{$search}%")
                     ->orWhere('agent_custom_id', 'like', "%{$search}%")
+                    ->orWhere('booking_reference', 'like', "%{$search}%")
+                    ->orWhere('airline_pnr', 'like', "%{$search}%")
+                    ->orWhere('gk_pnr', 'like', "%{$search}%")
+                    ->orWhere('customer_name', 'like', "%{$search}%")
                     ->orWhere('id', 'like', "%{$search}%");
             });
         }
@@ -44,17 +48,17 @@ class ChangesBookingsController extends Controller
         }
 
         // Filter by date range
-        if ($request->filled('date_from')) {
-            $query->whereDate('booking_date', '>=', $request->date_from);
+        if ($request->filled('from_date')) {
+            $query->whereDate('booking_date', '>=', $request->from_date);
         }
 
-        if ($request->filled('date_to')) {
-            $query->whereDate('booking_date', '<=', $request->date_to);
+        if ($request->filled('to_date')) {
+            $query->whereDate('booking_date', '<=', $request->to_date);
         }
 
-        // Per page limit, max 500
+        // Per page limit, match available UI options
         $perPage = (int) $request->get('per_page', 25);
-        $allowedPerPage = [25, 50, 100, 250, 500];
+        $allowedPerPage = [5, 25, 50, 100, 250, 500, 1000, 5000];
 
         if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 25;
@@ -105,10 +109,7 @@ class ChangesBookingsController extends Controller
      */
     public function edit($id)
     {
-        $booking = Booking::with(['passengers', 'segments'])
-            ->findOrFail($id);
-
-        return view('changes.bookings.edit', compact('booking'));
+        return redirect()->route('changes.bookings.show', ['id' => $id]);
     }
 
     /**
@@ -116,21 +117,7 @@ class ChangesBookingsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $booking = Booking::findOrFail($id);
-
-        $validated = $request->validate([
-            'status' => 'required|in:pending,assigned_to_charging,auth_email_sent,payment_processing,confirmed,ticketed,failed,cancelled,hold,refund,charging_in_progress,Alert,RDR,retrieval,chargeback,charged',
-            'mis_remarks' => 'nullable|string',
-            'amount_charged' => 'required|numeric',
-            'amount_paid_airline' => 'required|numeric',
-            'total_mco' => 'required|numeric',
-        ]);
-
-        $booking->update($validated);
-
-        return redirect()
-            ->route('changes.bookings.index', ['agent_id' => $booking->user_id])
-            ->with('success', 'Booking updated successfully!');
+        abort(403, 'Editing bookings is not allowed from the changes panel.');
     }
 
     /**
@@ -138,13 +125,6 @@ class ChangesBookingsController extends Controller
      */
     public function destroy($id)
     {
-        $booking = Booking::findOrFail($id);
-        $agentId = $booking->user_id;
-
-        $booking->delete();
-
-        return redirect()
-            ->route('changes.bookings.index', ['agent_id' => $agentId])
-            ->with('success', 'Booking deleted successfully!');
+        abort(403, 'Deleting bookings is not allowed from the changes panel.');
     }
 }

@@ -259,7 +259,7 @@ class Booking extends Model
 
     public function activeAssignment(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasOne(BookingAssignment::class)->whereIn('status', ['pending', 'accepted'])->latest();
+        return $this->hasOne(BookingAssignment::class)->whereIn('status', ['pending', 'accepted', 'rejected'])->latest();
     }
 
     public function chargebackRecords()

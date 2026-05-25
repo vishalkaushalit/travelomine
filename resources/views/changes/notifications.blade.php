@@ -1,4 +1,4 @@
-@extends('layouts.charging')
+@extends('layouts.changes')
 
 @section('content')
     <div class="container-fluid py-4">
@@ -37,32 +37,37 @@
                         <h6>User: {{ $user->name }} ({{ $user->role }})</h6>
                         <h6>Total Notifications Found: {{ $notifications->count() }}</h6>
 
-                        <table class="table table-bordered mt-3">
-                            <thead>
-                                <tr>
-                                    <th>Sr.No.</th>
-                                    <th>Title</th>
-                                    <th>Message</th>
-                                    <th>Priority</th>
-                                    <th>Expiry</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($notifications as $key => $notification)
+                        @if ($notifications->count() > 0)
+                            <h5 class="mt-4">📢 System Announcements</h5>
+                            <table class="table table-bordered mt-3">
+                                <thead>
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $notification->title }}</td>
-                                        <td>{{ $notification->message }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $notification->priority }}">
-                                                {{ $notification->priority }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $notification->expiry_date ?? 'Never' }}</td>
+                                        <th>Sr.No.</th>
+                                        <th>Title</th>
+                                        <th>Message</th>
+                                        <th>Priority</th>
+                                        <th>Expiry</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach ($notifications as $key => $notification)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $notification->title }}</td>
+                                            <td>{{ $notification->message }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ $notification->priority }}">
+                                                    {{ $notification->priority }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $notification->expiry_date ?? 'Never' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @else
+                            <div class="alert alert-info mt-4">No system announcements at this time.</div>
+                        @endif
                     </div>
                 </div>
             </div>

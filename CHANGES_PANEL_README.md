@@ -217,3 +217,13 @@ For technical support or feature requests, please contact the development team.
 ---
 
 **Note**: This panel provides powerful administrative capabilities. Ensure proper access controls and audit logging when deploying to production environments.
+
+## Changes panel changes
+
+1. When agent request a change in booking and click on submit for changes then it must be assigned to the changes team and show to them as a notification in booking requests where they can accept or reject that request.
+2. If change team accept or reject the change in booking request then it must show in the booking requests in changing panel and the status will be updated in the agent panel that the request is accepted or rejected.
+3. Also the Change Request Details message will be shown in bookings requests and also add an option to add a remark in changes panel booking requests.
+4. Change panel me just booking show krni h change kuch nhi krna h and panel me to complete detail show hogi jaise charging team me hoti h but payment details show nhi krni h.
+5. All bookings ko pnr se search krke dekh skte h changes team like agent panel
+
+---

@@ -177,6 +177,15 @@
                                 </a>
                             </li>
 
+                            <!-- Booking Requests -->
+                            <li class="nav-item">
+                                <a href="{{ route('changes.booking-requests') }}"
+                                    class="nav-link {{ request()->routeIs('changes.booking-requests') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-inbox"></i>
+                                    <p>Booking Requests</p>
+                                </a>
+                            </li>
+
                             <!-- Settings (Placeholder) -->
                             <li class="nav-item">
                                 <a href="#" class="nav-link">

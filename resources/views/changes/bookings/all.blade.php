@@ -32,7 +32,7 @@
                 <form method="GET" action="{{ url('/changes/bookings/all') }}" class="row g-3 mb-3">
                     <div class="col-md-3">
                         <input type="text" name="search" class="form-control" value="{{ request('search') }}"
-                            placeholder="Search bookings">
+                            placeholder="Search by PNR, reference, email, phone, agent">
                     </div>
 
                     <div class="col-md-2">

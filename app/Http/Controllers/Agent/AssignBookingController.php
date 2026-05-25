@@ -25,8 +25,10 @@ class AssignBookingController extends Controller
             ->first();
 
         if ($existingAssignment) {
-            return redirect()->route('assignments.show', $existingAssignment);
+            return redirect()->route('agent.assignments.show', $existingAssignment);
         }
+        // Show the assign form to the agent
+        return view('agent.bookings.assign', compact('booking'));
     }
     /**
      * Store the assignment
@@ -54,8 +56,8 @@ class AssignBookingController extends Controller
             
             \Log::info('Assignment created with ID: ' . $assignment->id);
             
-            // Notify changes team (all users with role 'charge' or 'admin' as per your system)
-            $changesTeam = User::whereIn('role', ['charge', 'admin'])->get();
+            // Notify changes team (all users with role 'charge', 'admin', or 'changes')
+            $changesTeam = User::whereIn('role', ['charge', 'admin', 'changes'])->get();
             
             \Log::info('Notifying ' . $changesTeam->count() . ' users');
             

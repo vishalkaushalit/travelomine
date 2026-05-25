@@ -165,6 +165,8 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
         ->name('assignments.reject');
     Route::post('/assignments/{assignment}/complete', [App\Http\Controllers\Charge\ChangesTeamController::class, 'complete'])
         ->name('assignments.complete');
+    Route::post('/assignments/{assignment}/remarks', [App\Http\Controllers\Charge\ChangesTeamController::class, 'addRemark'])
+        ->name('assignments.remarks');
 });
 
 // AGENT DASHBOARD ROUTES ONLY (POST-LOGIN)
@@ -379,6 +381,9 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/agent/notifications', function () {
     return view('agent.notifications');
 })->middleware(['auth', 'role:agent'])->name('agent.notifications');
+Route::get('/agent/booking-requests', function () {
+    return view('changes.booking-requests');
+})->middleware(['auth', 'role:agent'])->name('agent.booking-requests');
 Route::get('/charge/notifications', function () {
     return view('charge.notifications');
 })->middleware(['auth', 'role:charge'])->name('charge.notifications');
@@ -437,6 +442,33 @@ Route::middleware(['auth', 'role:changes'])->prefix('changes')->name('changes.')
     Route::get('/bookings/{id}/edit', [ChangesBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [ChangesBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [ChangesBookingsController::class, 'destroy'])->name('bookings.destroy');
+    Route::get('/booking-requests', function () {
+        return view('changes.booking-requests');
+    })->name('booking-requests');
+    Route::post('/booking-requests/{id}/remark', function (Illuminate\Http\Request $request, $id) {
+        $request->validate([
+            'remark_text' => 'required|string|min:3|max:1000',
+        ]);
+
+        $assignment = \App\Models\BookingAssignment::findOrFail($id);
+        $assignment->booking->remarks()->create([
+            'agent_id' => auth()->id(),
+            'remark_text' => $request->remark_text,
+            'remark_type' => 'changes_team',
+        ]);
+
+        return redirect()->back()->with('success', 'Remark added successfully.');
+    })->name('booking-requests.remark');
+    Route::post('/booking-requests/{id}/accept', function ($id) {
+        $assignment = \App\Models\BookingAssignment::findOrFail($id);
+        $assignment->update(['status' => 'completed']);
+        return redirect()->back()->with('success', 'Booking request accepted successfully!');
+    })->name('booking-requests.accept');
+    Route::post('/booking-requests/{id}/reject', function ($id) {
+        $assignment = \App\Models\BookingAssignment::findOrFail($id);
+        $assignment->update(['status' => 'rejected']);
+        return redirect()->back()->with('success', 'Booking request rejected successfully!');
+    })->name('booking-requests.reject');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 });
 

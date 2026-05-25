@@ -176,6 +176,13 @@
                                             <p>Create Booking</p>
                                         </a>
                                     </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('agent.booking-requests') }}"
+                                            class="nav-link {{ request()->routeIs('agent.booking-requests') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Booking Requests</p>
+                                        </a>
+                                    </li>
 
                                 </ul>
                             </li>

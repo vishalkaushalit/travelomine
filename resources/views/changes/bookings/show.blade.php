@@ -1,22 +1,17 @@
-@extends('layouts.admin')
+@extends('layouts.changes')
 
 @section('title', 'Booking of ' . $booking->customer_name)
 
 @section('content')
-    <div class="container py-4">
+    <div class="container-fluid py-4">
         <div class="row mb-4">
             <div class="col">
                 <h2><i class="bi bi-file-earmark-text"></i> Booking #{{ $booking->id }}</h2>
+                <p class="text-muted">Change team view-only booking details</p>
             </div>
             <div class="col-auto">
-                <a href="{{ route('admin.bookings.index', ['agent_id' => $booking->user_id]) }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Back
-                </a>
-                <a href="{{ route('admin.bookings.edit', $booking->id) }}" class="btn btn-warning">
-                    <i class="bi bi-pencil"></i> Edit
-                </a>
-                <a href="{{ route('admin.bookings.export.csv', $booking->id) }}" class="btn btn-success">
-                    <i class="bi bi-download"></i> Export CSV
+                <a href="{{ route('changes.bookings.all') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Bookings
                 </a>
             </div>
         </div>
@@ -31,9 +26,11 @@
                     <div class="card-body">
                         <p><strong>Agent:</strong> {{ $booking->user->name }} ({{ $booking->agent_custom_id }})</p>
                         <p><strong>Booking Date:</strong> {{ $booking->booking_date->format('d M Y') }}</p>
-                        <p><strong>Language:</strong> {{ ($booking->language)?? 'N/A' }}</p>
-                        <p><strong>Merchant:</strong> {{ ($booking->agency_merchant_name)?? 'N/A' }}</p>
-                     
+                        <p><strong>Language:</strong> {{ $booking->language ?? 'N/A' }}</p>
+                        <p><strong>Merchant:</strong> {{ $booking->agency_merchant_name ?? 'N/A' }}</p>
+                        <p><strong>Booking Reference:</strong> {{ $booking->booking_reference ?? 'N/A' }}</p>
+                        <p><strong>Airline PNR:</strong> {{ $booking->airline_pnr ?? 'N/A' }}</p>
+                        <p><strong>GK PNR:</strong> {{ $booking->gk_pnr ?? 'N/A' }}</p>
                         <p><strong>Service Type:</strong> {{ $booking->service_type }}</p>
                         <p><strong>Call Type:</strong> {{ $booking->call_type }}</p>
                         <p><strong>Service Provided:</strong> {{ $booking->service_provided }}</p>
@@ -129,25 +126,22 @@
             </div>
         </div>
 
-        <!-- Financials -->
+        <!-- Booking Status & Notes -->
         <div class="card mb-3">
             <div class="card-header bg-dark text-white">
-                <strong>Financial Details</strong>
+                <strong>Booking Status & Notes</strong>
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <p><strong>Currency:</strong> {{ $booking->currency }}</p>
                     </div>
-                    <div class="col-md-3">
-                        <p><strong>Amount Charged:</strong> {{ number_format($booking->amount_charged, 2) }}</p>
-                    </div>
-                    <div class="col-md-3">
-                        <p><strong>Paid to Airline:</strong> {{ number_format($booking->amount_paid_airline, 2) }}</p>
-                    </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <p><strong>Total MCO:</strong> <span
                                 class="badge bg-primary">{{ number_format($booking->total_mco, 2) }}</span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Booking Reference:</strong> {{ $booking->booking_reference ?? 'N/A' }}</p>
                     </div>
                 </div>
                 <hr>
@@ -156,12 +150,15 @@
                         <span class="badge bg-warning text-dark">Pending</span>
                     @elseif($booking->status == 'charged')
                         <span class="badge bg-success">Charged</span>
+                    @elseif($booking->status == 'confirmed')
+                        <span class="badge bg-success">Confirmed</span>
+                    @elseif($booking->status == 'cancelled')
+                        <span class="badge bg-danger">Cancelled</span>
                     @else
-                        <span class="badge bg-danger">{{ ucfirst($booking->status) }}</span>
+                        <span class="badge bg-secondary">{{ ucfirst($booking->status) }}</span>
                     @endif
                 </p>
                 <p><strong>Agent Remarks:</strong><br>{{ $booking->agent_remarks ?? 'No remarks' }}</p>
-                <p><strong>Payment Details:</strong><br>{{ $booking->payment_card_details ?? 'No payment details' }}</p>
                 <p><strong>MIS Remarks:</strong><br>{{ $booking->mis_remarks ?? 'No remarks' }}</p>
             </div>
         </div>

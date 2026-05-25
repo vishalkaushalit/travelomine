@@ -74,6 +74,8 @@
                                             'assigned_to_charging' => 'info',
                                             'auth_email_sent' => 'primary',
                                             'payment_processing' => 'secondary',
+                                            'change_in_progress' => 'info',
+                                            'change_rejected' => 'danger',
                                             'confirmed' => 'success',
                                             'ticketed' => 'dark',
                                             'failed' => 'danger',
@@ -105,15 +107,39 @@
                                         class="btn btn-xs btn-warning">
                                         <i class="fas fa-edit"></i> Update PNR
                                     </a>
+
                                     @if (!$booking->activeAssignment)
                                         <a href="{{ route('agent.bookings.assign.create', $booking) }}"
                                             class="btn btn-warning">
                                             <i class="fas fa-exchange-alt"></i> Request Changes
                                         </a>
                                     @else
-                                        <button class="btn btn-secondary" disabled>
-                                            <i class="fas fa-clock"></i> Changes Requested (Pending)
-                                        </button>
+                                        <a href="{{ route('agent.assignments.show', $booking->activeAssignment) }}"
+                                            class="btn btn-sm btn-info mb-2">
+                                            <i class="fas fa-eye"></i> View Change Request
+                                        </a>
+
+                                        @if ($booking->activeAssignment->status === 'pending')
+                                            <button class="btn btn-secondary" disabled>
+                                                <i class="fas fa-clock"></i> Pending Change Request
+                                            </button>
+                                        @elseif ($booking->activeAssignment->status === 'accepted')
+                                            <button class="btn btn-success" disabled>
+                                                <i class="fas fa-check-circle"></i> Change Request Accepted
+                                            </button>
+                                        @elseif ($booking->activeAssignment->status === 'rejected')
+                                            <button class="btn btn-danger" disabled>
+                                                <i class="fas fa-times-circle"></i> Change Request Rejected
+                                            </button>
+                                        @else
+                                            <button class="btn btn-secondary" disabled>
+                                                <i class="fas fa-clock"></i> Change Request In Progress
+                                            </button>
+                                        @endif
+
+                                        <div class="mt-2 text-muted small">
+                                            {{ Str::limit($booking->activeAssignment->message, 80) }}
+                                        </div>
                                     @endif
                                 </td>
                             </tr>

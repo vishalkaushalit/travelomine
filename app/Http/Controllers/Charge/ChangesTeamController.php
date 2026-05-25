@@ -27,6 +27,12 @@ class ChangesTeamController extends Controller
             ->orderBy('accepted_at', 'desc')
             ->paginate(15);
             
+        $rejectedAssignments = BookingAssignment::where('status', 'rejected')
+            ->where('assigned_to', Auth::id())
+            ->with(['booking', 'assignedBy'])
+            ->orderBy('updated_at', 'desc')
+            ->paginate(15);
+            
         $completedAssignments = BookingAssignment::where('status', 'completed')
             ->where('assigned_to', Auth::id())
             ->with(['booking', 'assignedBy'])
@@ -36,10 +42,11 @@ class ChangesTeamController extends Controller
         $stats = [
             'pending' => BookingAssignment::where('status', 'pending')->count(),
             'accepted' => BookingAssignment::where('status', 'accepted')->where('assigned_to', Auth::id())->count(),
+            'rejected' => BookingAssignment::where('status', 'rejected')->where('assigned_to', Auth::id())->count(),
             'completed' => BookingAssignment::where('status', 'completed')->where('assigned_to', Auth::id())->count(),
         ];
         
-        return view('charge.assignments.dashboard', compact('pendingAssignments', 'acceptedAssignments', 'completedAssignments', 'stats'));
+        return view('charge.assignments.dashboard', compact('pendingAssignments', 'acceptedAssignments', 'rejectedAssignments', 'completedAssignments', 'stats'));
     }
     
     /**
@@ -138,7 +145,7 @@ class ChangesTeamController extends Controller
             // Add completion remark
             if ($request->completion_message) {
                 $assignment->booking->remarks()->create([
-                    'user_id' => Auth::id(),
+                    'agent_id' => Auth::id(),
                     'remark_text' => $request->completion_message,
                     'remark_type' => 'changes_completed',
                 ]);
@@ -156,5 +163,24 @@ class ChangesTeamController extends Controller
             DB::rollBack();
             return back()->with('error', 'Failed to complete changes. Please try again.');
         }
+    }
+
+    /**
+     * Add a remark to the booking from the changes team.
+     */
+    public function addRemark(Request $request, BookingAssignment $assignment)
+    {
+        $request->validate([
+            'remark_text' => 'required|string|min:3|max:1000',
+        ]);
+
+        $assignment->booking->remarks()->create([
+            'agent_id' => Auth::id(),
+            'remark_text' => $request->remark_text,
+            'remark_type' => 'changes_team',
+        ]);
+
+        return redirect()->route('charge.assignments.show', $assignment)
+            ->with('success', 'Remark added successfully.');
     }
 }
