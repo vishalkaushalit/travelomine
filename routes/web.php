@@ -382,7 +382,7 @@ Route::get('/agent/notifications', function () {
     return view('agent.notifications');
 })->middleware(['auth', 'role:agent'])->name('agent.notifications');
 Route::get('/agent/booking-requests', function () {
-    return view('agent.booking-requests');
+    return view('changes.booking-requests');
 })->middleware(['auth', 'role:agent'])->name('agent.booking-requests');
 Route::get('/charge/notifications', function () {
     return view('charge.notifications');
