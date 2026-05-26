@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Notifications\BookingAssignedToChangesTeam;
 
 class AssignBookingController extends Controller
@@ -62,6 +64,17 @@ class AssignBookingController extends Controller
             \Log::info('Notifying ' . $changesTeam->count() . ' users');
             
             Notification::send($changesTeam, new BookingAssignedToChangesTeam($assignment));
+            
+            // Send email to changes team email address
+            Mail::send([], [], function ($message) use ($assignment, $booking) {
+                $message->to('changes@callinggenie.com')
+                    ->subject('New Booking Assignment for Changes - ' . $booking->booking_reference)
+                    ->html(view('emails.booking-assignment-notification', [
+                        'assignment' => $assignment,
+                        'booking' => $booking,
+                        'assignedByName' => $assignment->assignedBy->name,
+                    ])->render());
+            });
             
             DB::commit();
             
