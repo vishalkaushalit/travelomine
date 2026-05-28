@@ -44,7 +44,7 @@ return [
     ],
     
     'mis_manager' => [
-        'anand.shankar@callinggenie.com.com',
+        'anand.shankar@callinggenie.com',
     ],
 
     'mailers' => [
