@@ -223,6 +223,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
         ->name('activity.logs');
+    Route::get('/online-users', [ActivityLogController::class, 'onlineUsers'])
+        ->name('online.users');
 
     Route::resource('merchants', MerchantController::class)->except(['show']);
 
@@ -473,21 +475,4 @@ Route::middleware(['auth', 'role:changes'])->prefix('changes')->name('changes.')
 });
 
 // refresh with ajax route for activity logs in admin dashboard
-Route::get('/admin/logs/latest', function () {
-    try {
-        $logs = DB::table('activity_logs')
-            ->orderBy('id', 'desc')
-            ->limit(50)
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'logs' => $logs,
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ], 500);
-    }
-})->name('admin.logs.latest');
+Route::get('/admin/logs/latest', [ActivityLogController::class, 'latest'])->name('admin.logs.latest');

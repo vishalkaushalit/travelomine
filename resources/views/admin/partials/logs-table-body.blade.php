@@ -6,10 +6,11 @@
         <td>{{ $log->module }}</td>
         <td>{{ $log->action }}</td>
         <td>{{ $log->description }}</td>
-        <td>{{ $log->activity_at }}</td>
+        <td><code>{{ $log->ip_address ?? '-' }}</code></td>
+        <td>{{ $log->activity_at ?? '-' }}</td>
     </tr>
 @empty
     <tr>
-        <td colspan="7" class="text-center">No logs found.</td>
+        <td colspan="8" class="text-center">No logs found.</td>
     </tr>
 @endforelse

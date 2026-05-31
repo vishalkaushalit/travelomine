@@ -1,5 +1,5 @@
-
-<button type="button" class="btn btn-primary position-relative mb-3" data-bs-toggle="modal" data-bs-target="#activityLogModal">
+<button type="button" class="btn btn-primary position-relative mb-3" data-bs-toggle="modal"
+    data-bs-target="#activityLogModal">
     Activity Logs
 </button>
 
@@ -22,6 +22,7 @@
                                 <th>Module</th>
                                 <th>Action</th>
                                 <th>Description</th>
+                                <th>IP Address</th>
                             </tr>
                         </thead>
                         <tbody id="activity-log-body">
@@ -35,14 +36,14 @@
 </div>
 
 @push('scripts')
-<script>
-document.getElementById('activityLogModal').addEventListener('shown.bs.modal', function () {
-    fetch("{{ route('admin.activity.logs') }}")
-        .then(res => res.json())
-        .then(rows => {
-            let html = '';
-            rows.forEach(log => {
-                html += `
+    <script>
+        document.getElementById('activityLogModal').addEventListener('shown.bs.modal', function() {
+            fetch("{{ route('admin.activity.logs') }}")
+                .then(res => res.json())
+                .then(rows => {
+                    let html = '';
+                    rows.forEach(log => {
+                        html += `
                     <tr>
                         <td>${log.activity_at ?? ''}</td>
                         <td>${log.user_name ?? '-'}</td>
@@ -50,11 +51,12 @@ document.getElementById('activityLogModal').addEventListener('shown.bs.modal', f
                         <td>${log.module}</td>
                         <td>${log.action}</td>
                         <td>${log.description}</td>
+                        <td><code>${log.ip_address ?? '-'}</code></td>
                     </tr>
                 `;
-            });
-            document.getElementById('activity-log-body').innerHTML = html;
+                    });
+                    document.getElementById('activity-log-body').innerHTML = html;
+                });
         });
-});
-</script>
+    </script>
 @endpush
