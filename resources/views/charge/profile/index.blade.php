@@ -1,4 +1,4 @@
-@extends('layouts.charge')
+@extends('layouts.charging')
 @section('title', 'My Profile')
 
 @section('content')
