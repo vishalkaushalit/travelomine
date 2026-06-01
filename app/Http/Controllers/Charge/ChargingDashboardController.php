@@ -8,17 +8,26 @@ use Illuminate\Http\Request;
 
 class ChargingDashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!auth()->check()) {
             return redirect()->route('charge.login');
         }
 
-        // Show all accepted assignments for charge team
+        $search = trim($request->input('search', ''));
+
+        // Show latest accepted assignments for charge team, paginated 10 per page
         $assignments = ChargeAssignment::with(['booking', 'agent', 'merchant'])
             ->where('status', 'accepted')
-            ->latest()
-            ->paginate(10);
+            ->when($search, function ($query, $search) {
+                $query->whereHas('booking', function ($bookingQuery) use ($search) {
+                    $bookingQuery->where('booking_reference', 'like', "%{$search}%")
+                        ->orWhere('customer_email', 'like', "%{$search}%");
+                });
+            })
+            ->latest('assigned_at')
+            ->paginate(10)
+            ->appends(['search' => $search]);
 
         // Count all pending assignments for dashboard badge
         $pendingCount = ChargeAssignment::where('status', 'pending')->count();
@@ -32,7 +41,8 @@ class ChargingDashboardController extends Controller
         return view('charge.dashboard', compact(
             'assignments',
             'pendingCount',
-            'latestPending'
+            'latestPending',
+            'search'
         ));
     }
 }

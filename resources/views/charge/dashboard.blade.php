@@ -1,6 +1,6 @@
 @extends('layouts.charging')
 @section('content')
-@include('components.user-notifications')
+    @include('components.user-notifications')
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
@@ -57,7 +57,16 @@
                             </div>
                         @endif
 
+
                         <h5>All Assignments</h5>
+                        <form method="GET" action="{{ route('charge.dashboard') }}" class="mb-3">
+                            <div class="input-group">
+                                <input type="search" name="search" class="form-control"
+                                    placeholder="Search by Booking PNR or email"
+                                    value="{{ old('search', $search ?? '') }}">
+                                <button class="btn btn-primary" type="submit">Search</button>
+                            </div>
+                        </form>
                         <div class="card-body table-responsive p-0">
                             <table class="table table-hover text-nowrap mb-0">
                                 <thead>
@@ -67,6 +76,7 @@
                                         <th>Amount <br>
                                             <p class="small text-muted"> MCO Amount </p>
                                         </th>
+                                        <th>Merchant</th>
                                         <th>Assigned By</th>
                                         <th>Assigned At</th>
                                         <th>Email Auth Taken</th>
@@ -81,15 +91,17 @@
                                             $authSent =
                                                 $booking->status === 'auth_email_sent' ||
                                                 !empty($booking->auth_email_sent_at);
+                                            $emailAuthTaken = (bool) $booking->email_auth_taken;
                                         @endphp
                                         <tr>
                                             <td>{{ $booking->booking_reference }}</td>
                                             <td>{{ $booking->customer_name }}</td>
                                             <td>${{ number_format($booking->amount_charged, 2) }}</td>
+                                            <td>{{ optional($assign->merchant)->name ?? '-' }}</td>
                                             <td>{{ $assign->agent->name }}</td>
                                             <td>{{ $assign->assigned_at->format('d M Y H:i') }}</td>
                                             <td>
-                                                @if ($booking->email_auth_taken == 1)
+                                                @if ($emailAuthTaken)
                                                     <span class="badge badge-success">Yes</span>
                                                 @else
                                                     <span class="badge badge-danger">No</span>
@@ -138,7 +150,7 @@
 
 
                                                 <!-- 3. Get Auth & Resend Auth (Only visible if Auth is NOT done yet) -->
-                                                @if ($booking->email_auth_taken == 0)
+                                                @if (!$emailAuthTaken)
                                                     @if (!$authSent && in_array($assign->booking->status, ['pending', 'assigned_to_charging']))
                                                         <a href="{{ route('charge.authorize.edit', $assign->booking->id) }}"
                                                             class="btn btn-sm btn-success">Get Auth</a>

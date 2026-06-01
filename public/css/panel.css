@@ -161,6 +161,53 @@ small {
     justify-content: space-between;
 }
 
+nav[role="navigation"] {
+    gap: 8px;
+}
+
+nav[role="navigation"] a,
+nav[role="navigation"] span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    transition: all 0.2s ease-in-out;
+}
+
+nav[role="navigation"] a {
+    color: #000;
+}
+
+nav[role="navigation"]
+    .hidden.sm\:flex-1.sm\:flex.sm\:items-center.sm\:justify-between {
+    display: none;
+}
+
+nav[role="navigation"] span {
+    background-color: #e5e7eb;
+    border-color: #d1d5db;
+    color: #9ca3af !important;
+    cursor: not-allowed;
+}
+
+.input-group {
+    gap: 5px;
+}
+
+.card-header {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.table:not(.table-dark) {
+    color: inherit;
+    border: 1px solid #ddd;
+}
+
 @media (max-width: 991.98px) {
     .mco_chart {
         height: unset !important;

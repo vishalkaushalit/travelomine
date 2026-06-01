@@ -22,8 +22,10 @@
         <div class="row justify-content-center align-items-center g-2">
             <div class="card text-start w-100">
                 <div class="card-body">
-                    <h4 class="card-title"><a href="{{ route('charge.authorize.edit', $assignment->booking->id) }}"
-                            class="btn btn-lg btn-primary">Get Auth</a></h4>
+                    @if (!$booking->email_auth_taken)
+                        <h4 class="card-title"><a href="{{ route('charge.authorize.edit', $assignment->booking->id) }}"
+                                class="btn btn-lg btn-primary">Get Auth</a></h4>
+                    @endif
                 </div>
             </div>
 
