@@ -57,7 +57,6 @@ class User extends Authenticatable
         });
     }
     // Helper Methods for Role Checking
-    // ✅ FILAMENT PANEL ACCESS - Updated for multiple roles per panel
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {

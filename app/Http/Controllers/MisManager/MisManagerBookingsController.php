@@ -7,7 +7,6 @@ use App\Mail\MisManagerBookingChangeMail;
 use App\Models\Booking;
 use App\Models\BookingChange;
 use App\Models\CallType;
-use App\Models\FlightSegment;
 use App\Models\Merchant;
 use App\Models\ServiceType;
 use App\Models\User;
@@ -31,47 +30,43 @@ class MisManagerBookingsController extends Controller
     {
         $query = Booking::with(['user', 'passengers', 'segments']);
 
-        // Search functionality
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('customer_email', 'like', "%{$search}%")
-                  ->orWhere('customer_phone', 'like', "%{$search}%")
-                  ->orWhere('agent_custom_id', 'like', "%{$search}%")
-                  ->orWhere('booking_reference', 'like', "%{$search}%")
-                  ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$search}%");
+                    ->orWhere('customer_phone', 'like', "%{$search}%")
+                    ->orWhere('agent_custom_id', 'like', "%{$search}%")
+                    ->orWhere('booking_reference', 'like', "%{$search}%")
+                    ->orWhere('customer_name', 'like', "%{$search}%")
+                    ->orWhere('id', 'like', "%{$search}%");
             });
         }
 
-        // Filter by status
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
-        // Filter by service
         if ($request->has('service') && $request->service != '') {
             $query->where('service_provided', $request->service);
         }
 
-        // Filter by agent
         if ($request->has('agent_id') && $request->agent_id != '') {
             $query->where('user_id', $request->agent_id);
         }
 
-        // Filter by date range
         if ($request->has('date_from') && $request->date_from != '') {
             $query->whereDate('booking_date', '>=', $request->date_from);
         }
+
         if ($request->has('date_to') && $request->date_to != '') {
             $query->whereDate('booking_date', '<=', $request->date_to);
         }
 
         $bookings = $query->orderBy('created_at', 'desc')->paginate(25);
-        
-        $agents = User::whereHas('roles', function ($q) {
-            $q->where('name', 'agent');
-        })->orderBy('name')->get();
+
+        $agents = User::where('role', 'agent')
+            ->orderBy('name')
+            ->get();
 
         return view('mis-manager.bookings.all', compact('bookings', 'agents'));
     }
@@ -89,7 +84,7 @@ class MisManagerBookingsController extends Controller
             ->where('user_id', $agentId)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
-        
+
         return view('mis-manager.bookings.index', compact('bookings', 'agent'));
     }
 
@@ -99,10 +94,10 @@ class MisManagerBookingsController extends Controller
     public function show($id)
     {
         $booking = Booking::with(['passengers', 'segments', 'user'])->findOrFail($id);
-        
+
         // Check if booking can be edited
-        $canEdit = !$this->isBookingRestricted($booking);
-        
+        $canEdit = ! $this->isBookingRestricted($booking);
+
         ActivityLogger::log(
             'booking',
             'view',
@@ -121,7 +116,7 @@ class MisManagerBookingsController extends Controller
     public function edit($id)
     {
         $booking = Booking::with(['passengers', 'segments', 'user'])->findOrFail($id);
-        
+
         // Check if booking can be edited
         if ($this->isBookingRestricted($booking)) {
             return redirect()
@@ -139,7 +134,7 @@ class MisManagerBookingsController extends Controller
         $languages = ['English-Flight', 'Spanish-Flight'];
         $flightTypes = ['oneway', 'roundtrip', 'multicity'];
         $cabinClasses = ['Economy', 'Premium Economy', 'Business', 'First Class'];
-        
+
         return view('mis-manager.bookings.edit', compact(
             'booking',
             'callTypes',
@@ -226,7 +221,7 @@ class MisManagerBookingsController extends Controller
             'agent_custom_id', 'billing_phone', 'billing_address', 'flight_type', 'gk_pnr',
             'airline_pnr', 'departure_city', 'arrival_city', 'departure_date', 'return_date',
             'airline_name', 'flight_number', 'cabin_class', 'adults', 'children', 'infants',
-            'currency', 'amount_charged', 'amount_paid_airline', 'total_mco', 'status', 'mis_remarks'
+            'currency', 'amount_charged', 'amount_paid_airline', 'total_mco', 'status', 'mis_remarks',
         ];
 
         foreach ($editableFields as $field) {
@@ -283,16 +278,16 @@ class MisManagerBookingsController extends Controller
     public function destroy($id)
     {
         $booking = Booking::findOrFail($id);
-        
+
         // Check if booking can be deleted (same restrictions as edit)
         if ($this->isBookingRestricted($booking)) {
             return redirect()
                 ->route('mis-manager.bookings.all')
                 ->with('error', 'This booking cannot be deleted. It has been confirmed, paid, or ticketed.');
         }
-        
+
         $booking->delete();
-        
+
         return redirect()
             ->route('mis-manager.bookings.all')
             ->with('success', 'Booking deleted successfully!');
@@ -303,8 +298,8 @@ class MisManagerBookingsController extends Controller
      */
     private function isBookingRestricted(Booking $booking): bool
     {
-        return in_array($booking->status, ['confirmed', 'ticketed', 'charged']) 
-            || !is_null($booking->payment_confirmed_at)
-            || !is_null($booking->ticketed_at);
+        return in_array($booking->status, ['confirmed', 'ticketed', 'charged'])
+            || ! is_null($booking->payment_confirmed_at)
+            || ! is_null($booking->ticketed_at);
     }
 }
