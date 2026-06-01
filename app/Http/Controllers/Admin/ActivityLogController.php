@@ -30,8 +30,13 @@ class ActivityLogController extends Controller
                 'action',
                 'description',
                 'activity_at',
-                'ip_address'
+                'ip_address',
+                'subject_type',
+                'subject_id',
+                'meta',
             ])->map(function ($log) {
+                $bookingReference = $log->meta['booking_reference'] ?? null;
+
                 return [
                     'id' => $log->id,
                     'user_name' => $log->user_name,
@@ -39,6 +44,8 @@ class ActivityLogController extends Controller
                     'module' => $log->module,
                     'action' => $log->action,
                     'description' => $log->description,
+                    'booking_reference' => $bookingReference,
+                    'booking_id' => $log->subject_type === \App\Models\Booking::class ? $log->subject_id : null,
                     'activity_at' => Carbon::parse($log->activity_at)->format('d-m-Y H:i:s'),
                     'ip_address' => $log->ip_address,
                 ];

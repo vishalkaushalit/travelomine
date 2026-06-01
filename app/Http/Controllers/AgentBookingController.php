@@ -11,6 +11,7 @@ use App\Models\ServiceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\ActivityLogger;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -838,6 +839,15 @@ class AgentBookingController extends Controller
     {
         $booking = Booking::with(['remarks.agent', 'agent', 'passengers', 'flightSegments'])->findOrFail($id);
         $this->authorizeBookingAccess($booking);
+
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
 
         return view('agent.bookings.show', compact('booking'));
     }

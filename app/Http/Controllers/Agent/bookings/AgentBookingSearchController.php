@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Agent\bookings;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class AgentBookingSearchController extends Controller
@@ -49,6 +50,15 @@ class AgentBookingSearchController extends Controller
     {
         $booking = Booking::with(['agent', 'segments', 'passengers', 'cards', 'remarks'])->findOrFail($id);
         
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
+
         return view('agent.bookings.show', compact('booking'));
     }
 }

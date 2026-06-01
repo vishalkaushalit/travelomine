@@ -9,6 +9,7 @@ use App\Models\CallType;
 use App\Models\ChargeAssignment;
 use App\Models\Merchant;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -120,6 +121,15 @@ class BookingController extends Controller
 
         $booking->load(['passengers', 'segments', 'cards.merchant', 'hotel', 'cab', 'insurance']);
 
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
+
         return view('agent.bookings.show', compact('booking'));
     }
 
@@ -129,6 +139,15 @@ class BookingController extends Controller
         // OR only those "assignedtocharging"/assigned to them—apply your real rule here.
 
         $booking->load(['passengers', 'segments', 'cards.merchant', 'hotel', 'cab', 'insurance']);
+
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
 
         // If you want it EXACTLY same UI:
         return view('agent.bookings.show', compact('booking')); // reuse same blade
@@ -154,6 +173,15 @@ class BookingController extends Controller
     public function adminShow(Booking $booking)
     {
         $booking->load(['user', 'passengers', 'segments', 'cards']);
+
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
 
         return view('admin.bookings.show', compact('booking'));
     }

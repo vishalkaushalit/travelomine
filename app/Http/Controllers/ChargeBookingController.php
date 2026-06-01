@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\ChargeAssignment;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class ChargeBookingController extends Controller
@@ -35,6 +36,15 @@ class ChargeBookingController extends Controller
             ->firstOrFail();
 
         $booking->load(['user', 'passengers', 'segments', 'cards']);
+
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
 
         return view('charge.bookings.show', compact('booking', 'assignment'));
     }

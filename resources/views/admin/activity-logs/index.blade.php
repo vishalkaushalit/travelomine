@@ -77,6 +77,7 @@
                                 <th>Role</th>
                                 <th>Module</th>
                                 <th>Action</th>
+                                <th>Booking</th>
                                 <th>Description</th>
                                 <th>IP Address</th>
                                 <th>Date Time</th>
@@ -154,7 +155,7 @@
             if (logs.length === 0) {
                 tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center">No logs found.</td>
+                    <td colspan="9" class="text-center">No logs found.</td>
                 </tr>
             `;
                 return;
@@ -169,8 +170,9 @@
                     <td>${log.role || '-'}</td>
                     <td>${log.module}</td>
                     <td>${log.action}</td>
-                    <td>${log.description}</td>
-                    <td><code>${log.ip_address || '-'}</code></td>
+                    <td>${log.booking_reference ? escapeHtml(log.booking_reference) + (log.booking_id ? '<br><small class="text-muted">ID: ' + escapeHtml(log.booking_id) + '</small>' : '') : '-'}</td>
+                    <td>${escapeHtml(log.description)}</td>
+                    <td><code>${escapeHtml(log.ip_address || '-')}</code></td>
                     <td>${log.activity_at}</td>
                 </tr>
             `;

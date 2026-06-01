@@ -9,6 +9,7 @@ use App\Models\ChargeAssignment;
 use App\Models\Merchant;
 use App\Models\User;
 use App\Notifications\NewChargingAssignment;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
@@ -69,6 +70,15 @@ class ChargingController extends Controller
         }
 
         $booking->load(['user', 'passengers', 'segments', 'cards']);
+
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
 
         return view('charge.bookings.show', compact('booking'));
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class AdminBookingsController extends Controller
@@ -96,6 +97,15 @@ class AdminBookingsController extends Controller
     {
         $booking = Booking::with(['passengers', 'segments', 'user'])
             ->findOrFail($id);
+
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
 
         return view('admin.bookings.show', compact('booking'));
     }

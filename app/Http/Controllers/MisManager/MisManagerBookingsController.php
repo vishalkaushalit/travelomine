@@ -12,6 +12,7 @@ use App\Models\Merchant;
 use App\Models\ServiceType;
 use App\Models\User;
 use App\Notifications\MisManagerBookingChangeNotification;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -102,6 +103,15 @@ class MisManagerBookingsController extends Controller
         // Check if booking can be edited
         $canEdit = !$this->isBookingRestricted($booking);
         
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
+
         return view('mis-manager.bookings.show', compact('booking', 'canEdit'));
     }
 

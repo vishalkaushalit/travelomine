@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Changes;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class ChangesBookingsController extends Controller
@@ -100,6 +101,15 @@ class ChangesBookingsController extends Controller
     {
         $booking = Booking::with(['passengers', 'segments', 'user'])
             ->findOrFail($id);
+
+        ActivityLogger::log(
+            'booking',
+            'view',
+            'Viewed booking '.($booking->booking_reference ?? $booking->id).' (ID: '.$booking->id.')',
+            Booking::class,
+            $booking->id,
+            ['booking_reference' => $booking->booking_reference]
+        );
 
         return view('changes.bookings.show', compact('booking'));
     }
