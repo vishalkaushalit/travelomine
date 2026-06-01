@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -20,9 +21,8 @@ class ActivityLogController extends Controller
 
     public function latest()
     {
-        $logs = ActivityLog::latest('activity_at')
-            ->take(30)
-            ->get([
+        $paginatedLogs = ActivityLog::latest('activity_at')
+            ->paginate(20, [
                 'id',
                 'user_name',
                 'role',
@@ -34,34 +34,41 @@ class ActivityLogController extends Controller
                 'subject_type',
                 'subject_id',
                 'meta',
-            ])->map(function ($log) {
-                $bookingReference = $log->meta['booking_reference'] ?? null;
+            ]);
 
-                return [
-                    'id' => $log->id,
-                    'user_name' => $log->user_name,
-                    'role' => $log->role,
-                    'module' => $log->module,
-                    'action' => $log->action,
-                    'description' => $log->description,
-                    'booking_reference' => $bookingReference,
-                    'booking_id' => $log->subject_type === \App\Models\Booking::class ? $log->subject_id : null,
-                    'activity_at' => Carbon::parse($log->activity_at)->format('d-m-Y H:i:s'),
-                    'ip_address' => $log->ip_address,
-                ];
-            })
-            ->values();
+        $logs = $paginatedLogs->getCollection()->map(function ($log) {
+            $bookingReference = $log->meta['booking_reference'] ?? null;
+
+            return [
+                'id' => $log->id,
+                'user_name' => $log->user_name,
+                'role' => $log->role,
+                'module' => $log->module,
+                'action' => $log->action,
+                'description' => $log->description,
+                'booking_reference' => $bookingReference,
+                'booking_id' => $log->subject_type === \App\Models\Booking::class ? $log->subject_id : null,
+                'activity_at' => Carbon::parse($log->activity_at)->format('d-m-Y H:i:s'),
+                'ip_address' => $log->ip_address,
+            ];
+        })->values();
 
         return response()->json([
             'success' => true,
-            'logs' => $logs
+            'logs' => $logs,
+            'pagination' => [
+                'current_page' => $paginatedLogs->currentPage(),
+                'last_page' => $paginatedLogs->lastPage(),
+                'per_page' => $paginatedLogs->perPage(),
+                'total' => $paginatedLogs->total(),
+            ],
         ]);
     }
 
     /**
      * Get currently online users (logged in but not logged out)
      */
-    public function getOnlineUsers()
+    public function getOnlineUsers($perPage = 10)
     {
         // Get the latest login event for each user
         $onlineUsers = DB::table('activity_logs as al')
@@ -95,7 +102,19 @@ class ActivityLogController extends Controller
             ->sortByDesc('last_login')
             ->values();
 
-        return $onlineUsers;
+        $currentPage = request()->input('online_page', 1);
+
+        return new LengthAwarePaginator(
+            $onlineUsers->forPage($currentPage, $perPage),
+            $onlineUsers->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'online_page',
+                'query' => request()->query(),
+            ]
+        );
     }
 
     public function onlineUsers()
@@ -104,7 +123,13 @@ class ActivityLogController extends Controller
 
         return response()->json([
             'success' => true,
-            'users' => $onlineUsers
+            'users' => $onlineUsers->items(),
+            'pagination' => [
+                'current_page' => $onlineUsers->currentPage(),
+                'last_page' => $onlineUsers->lastPage(),
+                'per_page' => $onlineUsers->perPage(),
+                'total' => $onlineUsers->total(),
+            ],
         ]);
     }
 }

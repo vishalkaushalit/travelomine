@@ -50,6 +50,9 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-3 d-flex justify-content-end">
+                    {{ $onlineUsers->withQueryString()->links() }}
+                </div>
             </div>
         </div>
 
@@ -88,6 +91,9 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-3 d-flex justify-content-end">
+                    {{ $logs->withQueryString()->links() }}
+                </div>
             </div>
         </div>
     </div>
@@ -100,12 +106,18 @@
         let isLoading = false;
 
         // Function to fetch latest logs
+        function getQueryParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name) || '1';
+        }
+
         function fetchLatestLogs() {
             if (isLoading) return;
 
             isLoading = true;
+            const page = getQueryParam('page');
 
-            fetch('{{ route('admin.logs.latest') }}', {
+            fetch(`{{ route('admin.logs.latest') }}?page=${page}`, {
                     method: 'GET',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -130,7 +142,9 @@
 
         // Function to fetch online users
         function fetchOnlineUsers() {
-            fetch('{{ route('admin.online.users') }}', {
+            const onlinePage = getQueryParam('online_page');
+
+            fetch(`{{ route('admin.online.users') }}?online_page=${onlinePage}`, {
                     method: 'GET',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
