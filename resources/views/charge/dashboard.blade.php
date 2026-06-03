@@ -121,7 +121,7 @@
                                             <td>
                                                 <span class="badge badge-info small">{{ $booking->status }}</span>
                                             </td>
-                                            {{-- @if ($booking->auth_email_sent_at)
+                                            @if ($booking->auth_email_sent_at)
                                                 <form method="POST"
                                                     action="{{ route('charge.authorize.resend', $booking->id) }}">
                                                     @csrf
@@ -135,7 +135,7 @@
                                                         @endif
                                                     </button>
                                                 </form>
-                                            @endif --}}
+                                            @endif
                                             <td>
                                                 <!-- 1. Details button (Always visible) -->
                                                 <a href="{{ route('charge.assignments.details', $assign) }}"

@@ -22,7 +22,7 @@ class AuthConsentController extends Controller
     public function edit($id)
     {
         $booking = Booking::with([
-            'segments',
+            'segments.airline',
             'cards.merchant',
             'passengers',
             'agencyMerchant',
@@ -30,17 +30,17 @@ class AuthConsentController extends Controller
 
         // Map service_type to a specific body template
         $templateMap = [
-            'New Booking'           => 'emails.charge.auth.new-booking',
-            'Exchange'              => 'emails.charge.auth.exchange',
-            'Cancellation'          => 'emails.charge.auth.cancellation',
-            'Refund'                => 'emails.charge.auth.refund',
-            'Seat selection'        => 'emails.charge.auth.seat-assignment',
-            'Baggage edition'       => 'emails.charge.auth.baggage-edition',
-            'Pet edition'           => 'emails.charge.auth.pet-edition',
-            'Others'                => 'emails.charge.auth.others',
-            'Cancel & Refund'       => 'emails.charge.auth.cancel-and-refund',
-            'Change'                => 'emails.charge.auth.change',
-            'Exchange & Upgrade'    => 'emails.charge.auth.exchange-upgrade',
+            'New Booking' => 'emails.charge.auth.new-booking',
+            'Exchange' => 'emails.charge.auth.exchange',
+            'Cancellation' => 'emails.charge.auth.cancellation',
+            'Refund' => 'emails.charge.auth.refund',
+            'Seat selection' => 'emails.charge.auth.seat-assignment',
+            'Baggage edition' => 'emails.charge.auth.baggage-edition',
+            'Pet edition' => 'emails.charge.auth.pet-edition',
+            'Others' => 'emails.charge.auth.others',
+            'Cancel & Refund' => 'emails.charge.auth.cancel-and-refund',
+            'Change' => 'emails.charge.auth.change',
+            'Exchange & Upgrade' => 'emails.charge.auth.exchange-upgrade',
         ];
 
         $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';
@@ -92,8 +92,8 @@ class AuthConsentController extends Controller
 
         // This view should show the full email (layout + body) in-browser
         return view('charge.auth.preview', [
-            'booking'     => $booking,
-            'finalContent'=> $finalContent,
+            'booking' => $booking,
+            'finalContent' => $finalContent,
         ]);
     }
 
@@ -102,7 +102,13 @@ class AuthConsentController extends Controller
      */
     public function send(Request $request, $id)
     {
-        $booking = Booking::with(['agencyMerchant', 'cards'])->findOrFail($id);
+        $booking = Booking::with([
+            'agencyMerchant',
+            'cards',
+            'segments.airline',
+            'passengers',
+            'user',
+        ])->findOrFail($id);
 
         if ($booking->auth_email_sent_at || $booking->status === 'auth_email_sent') {
             return redirect()
@@ -120,7 +126,7 @@ class AuthConsentController extends Controller
 
         // Wrap body into full layout
         $finalHtml = view('emails.customer-final-auth', [
-            'booking'   => $booking,
+            'booking' => $booking,
             'emailBody' => $emailBody,
         ])->render();
 
@@ -128,8 +134,8 @@ class AuthConsentController extends Controller
             $this->merchantMailerService->sendAuthMail($booking, $finalHtml);
 
             $booking->update([
-                'status'            => 'auth_email_sent',
-                'auth_email_sent_at'=> now(),
+                'status' => 'auth_email_sent',
+                'auth_email_sent_at' => now(),
             ]);
 
             session()->forget('authorize_preview_'.$id);
@@ -140,10 +146,10 @@ class AuthConsentController extends Controller
 
         } catch (TransportExceptionInterface $e) {
             Log::error('Mail transport failed', [
-                'booking_id'     => $booking->id,
-                'merchant_id'    => $booking->agency_merchant_id,
+                'booking_id' => $booking->id,
+                'merchant_id' => $booking->agency_merchant_id,
                 'customer_email' => $booking->customer_email,
-                'error'          => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return redirect()
@@ -152,10 +158,10 @@ class AuthConsentController extends Controller
 
         } catch (\Exception $e) {
             Log::error('General mail send error', [
-                'booking_id'     => $booking->id,
-                'merchant_id'    => $booking->agency_merchant_id,
+                'booking_id' => $booking->id,
+                'merchant_id' => $booking->agency_merchant_id,
                 'customer_email' => $booking->customer_email,
-                'error'          => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return redirect()
@@ -169,16 +175,22 @@ class AuthConsentController extends Controller
      */
     public function resend(Request $request, $id)
     {
-        $booking = Booking::with(['agencyMerchant', 'cards'])->findOrFail($id);
+        $booking = Booking::with([
+            'agencyMerchant',
+            'cards',
+            'segments.airline',
+            'passengers',
+            'user',
+        ])->findOrFail($id);
 
         $emailBody = $request->input('final_content') ?? session('authorize_preview_'.$id);
 
         if (! $emailBody) {
-            // fallback to default body for current service_type
+            // fallback to default body for current service_typec
             $templateMap = [
-                'New Booking'           => 'emails.charge.auth.new-booking',
-                'Exchange'              => 'emails.charge.auth.exchange',
-                'Exchange & Upgrade'    => 'emails.charge.auth.exchange-upgrade',
+                'New Booking' => 'emails.charge.auth.new-booking',
+                'Exchange' => 'emails.charge.auth.exchange',
+                'Exchange & Upgrade' => 'emails.charge.auth.exchange-upgrade',
                 'Cancellation' => 'emails.charge.auth.cancellation',
                 'Refund' => 'emails.charge.auth.refund',
                 'Changes Confirmation' => 'emails.charge.auth.changes-confirmation',
@@ -191,7 +203,7 @@ class AuthConsentController extends Controller
         }
 
         $finalHtml = view('emails.customer-final-auth', [
-            'booking'   => $booking,
+            'booking' => $booking,
             'emailBody' => $emailBody,
         ])->render();
 
@@ -199,13 +211,13 @@ class AuthConsentController extends Controller
             $this->merchantMailerService->sendAuthMail($booking, $finalHtml);
 
             $booking->update([
-                'auth_email_sent_at'      => now(),
+                'auth_email_sent_at' => now(),
                 'auth_email_resend_count' => ($booking->auth_email_resend_count ?? 0) + 1,
             ]);
 
             Log::info('Authorization email re-sent', [
-                'booking_id'     => $booking->id,
-                'merchant_id'    => $booking->agency_merchant_id,
+                'booking_id' => $booking->id,
+                'merchant_id' => $booking->agency_merchant_id,
                 'customer_email' => $booking->customer_email,
             ]);
 
@@ -215,9 +227,9 @@ class AuthConsentController extends Controller
 
         } catch (TransportExceptionInterface $e) {
             Log::error('Resend mail transport failed', [
-                'booking_id'  => $booking->id,
+                'booking_id' => $booking->id,
                 'merchant_id' => $booking->agency_merchant_id,
-                'error'       => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return redirect()
@@ -226,9 +238,9 @@ class AuthConsentController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Resend mail general error', [
-                'booking_id'  => $booking->id,
+                'booking_id' => $booking->id,
                 'merchant_id' => $booking->agency_merchant_id,
-                'error'       => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return redirect()

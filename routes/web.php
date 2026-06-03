@@ -39,6 +39,7 @@ use App\Http\Controllers\Changes\ChangesDashboardController;
 use App\Http\Controllers\Changes\ChangesLoginController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\AirlineController;
 // payment contollers
 use App\Http\Controllers\PublicPaymentController;
 use App\Http\Controllers\ReportController;
@@ -220,6 +221,9 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 
 // ADMIN ROUTES
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    
+    Route::resource('airlines', AirlineController::class);
+
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
         ->name('activity.logs');

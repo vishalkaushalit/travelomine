@@ -23,7 +23,7 @@ class FlightSegment extends Model
         'airline_code',
         'airline_pnr',
     ];
-    
+
     protected $casts = [
         'departure_date' => 'date',
         'return_date' => 'date',
@@ -35,7 +35,7 @@ class FlightSegment extends Model
     {
         return $this->belongsTo(Booking::class);
     }
-    
+
     protected static function booted(): void
     {
         static::saved(function ($segment) {
@@ -45,5 +45,14 @@ class FlightSegment extends Model
         static::deleted(function ($segment) {
             $segment->booking?->syncCitiesFromSegments();
         });
+    }
+
+    public function airline()
+    {
+        return $this->belongsTo(
+            Airline::class,
+            'airline_code',
+            'airline_code'
+        );
     }
 }

@@ -465,44 +465,8 @@
                     <div class="editable-content-area">
                         {!! $finalContent !!}
                     </div>
-
-                    <div class="itinerary-card">
-                        <div class="itinerary-header">
-                            <span>Flight details</span>
-                            <span>PNR: {{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}</span>
-                        </div>
-
-                        @foreach ($booking->segments as $segment)
-                            <div class="segment-row">
-                                <div class="city-block text-start">
-                                    <p class="city-code">{{ $segment->from_airport ?? 'DEPARTURE' }}</p>
-                                    <p class="city-name">{{ $segment->from_city }}</p>
-                                </div>
-
-                                <div class="flight-path">
-                                    <div class="flight-path-line"></div>
-                                    <span class="flight-icon">✈</span>
-                                </div>
-
-                                <div class="city-block text-end">
-                                    <p class="city-code">{{ $segment->to_airport ?? 'ARRIVAL' }}</p>
-                                    <p class="city-name">{{ $segment->to_city }}</p>
-                                </div>
-                            </div>
-
-                            <div class="segment-meta">
-                                <span>
-                                    <span class="segment-meta-label">Flight</span>
-                                    {{ $segment->airline_name }} {{ $segment->flight_number }}
-                                </span>
-                                <span>
-                                    <span class="segment-meta-label">Date</span>
-                                    {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, d M Y') }}
-                                </span>
-                            </div>
-                        @endforeach
-                    </div>
-
+                        @include('components.flight-itinerary')
+                        @include('components.flight-terms')
                     <div class="auth-box">
                         <p class="small text-muted mb-1">
                             By replying to this email or clicking the consent link, you authorize
@@ -533,6 +497,8 @@
         </div>
 
     </div>
+
+
 </body>
 
 </html>

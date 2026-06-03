@@ -193,6 +193,12 @@
                                     </li>
                                 </ul>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.airlines.index') }}" class="nav-link">
+                                    <i class="nav-icon fas fa-plane"></i>
+                                    <p>Airlines</p>
+                                </a>
+                            </li>
 
                             <li class="nav-item {{ request()->is('admin/settings*') ? 'menu-open' : '' }}">
                                 <a href="#"
