@@ -463,10 +463,11 @@
                 <br>
                 <div class="email-body">
                     <div class="editable-content-area">
-                        {!! $finalContent !!}
+                        {!! $mainContent !!}
                     </div>
-                        @include('components.flight-itinerary')
-                        @include('components.flight-terms')
+                    @include('components.flight-itinerary')
+                    {!! $purchaseSummary !!}
+                    @include('components.flight-terms')
                     <div class="auth-box">
                         <p class="small text-muted mb-1">
                             By replying to this email or clicking the consent link, you authorize
@@ -486,7 +487,10 @@
         <div class="page-actions">
             <form action="{{ route('charge.authorize.send', $booking->id) }}" method="POST">
                 @csrf
-                <textarea name="final_content" style="display:none;">{{ $finalContent }}</textarea>
+                <textarea name="final_content" style="display:none;">
+                    {!! $mainContent !!}
+                    {!! $purchaseSummary !!}
+                </textarea>
                 <button type="submit" class="btn btn-primary primary-send-btn">
                     Confirm &amp; Send to Customer
                 </button>

@@ -1,34 +1,54 @@
-<!DOCTYPE html>
-<html>
+<body style="margin:0;padding:30px;background:#f3f4f6;">
 
-<head>
-    <meta charset="utf-8">
-    <title>Authorization Mail</title>
-</head>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td align="center">
 
-<body>
+<table width="850" cellpadding="0" cellspacing="0" border="0"
+       style="
+            background:#ffffff;
+            border:1px solid #dcdcdc;
+            border-radius:12px;
+            overflow:hidden;
+       ">
 
-    {{-- Header --}}
-    <p>
-        Dear {{ $booking->customer_name }},<br>
-        Greetings of the day !!
-    </p>
+    <tr>
+        <td style="
+            background:#1e3a8a;
+            color:#fff;
+            padding:20px;
+            font-size:24px;
+            font-weight:bold;
+        ">
+            Payment Authorization
+        </td>
+    </tr>
 
-    {{-- Dynamic body (edited per booking) --}}
-        {!! $emailBody !!}
-        @include('components.flight-itinerary-email')    
-    <p>
-        This payment authorization is for the amount indicated above and is valid for one-time use only.
-        I certify that I am {{ $booking->customer_name }}, an authorized user of this card and that I
-        will not dispute the payment with my credit/debit card company/bank.
-    </p>
+    <tr>
+        <td style="padding:30px;">
+            {!! $emailBody !!}
+            @include('components.flight-itinerary-email')
+            @include('components.flight-terms')
+        </td>
+    </tr>
 
-    <p>
-        Kindly confirm your acceptance of the terms and agreement to the declaration by replying to this
-        email with 'I Agree' or 'I Authorize'.
-    </p>
+    <tr>
+        <td style="
+            background:#f8f9fa;
+            padding:15px;
+            text-align:center;
+            font-size:12px;
+            color:#666;
+        ">
+            Booking Reference:
+            {{ $booking->booking_reference }}
+        </td>
+    </tr>
 
+</table>
+
+</td>
+</tr>
+</table>
 
 </body>
-
-</html>

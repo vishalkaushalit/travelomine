@@ -48,7 +48,27 @@ class AuthConsentController extends Controller
         // Default email body content (can be edited in UI)
         $emailContent = view($bodyView, compact('booking'))->render();
 
-        return view('charge.auth.edit', compact('booking', 'emailContent'));
+        $parts = preg_split(
+            '/<h4[^>]*>\s*Purchase Summary\s*:?\s*<\/h4>/i',
+            $emailContent
+        );
+
+        $mainContent = $parts[0] ?? $emailContent;
+
+        $purchaseSummary = '';
+
+        if (isset($parts[1])) {
+            $purchaseSummary = '<h4>Purchase Summary:</h4>'.$parts[1];
+        }
+
+        return view(
+            'charge.auth.edit',
+            compact(
+                'booking',
+                'mainContent',
+                'purchaseSummary'
+            )
+        );
     }
 
     /**
@@ -63,9 +83,10 @@ class AuthConsentController extends Controller
             'agencyMerchant',
         ])->findOrFail($id);
 
-        $finalContent = $request->input('email_body');
-
-        session(['authorize_preview_'.$id => $finalContent]);
+        session([
+            'main_content_'.$id => $request->main_content,
+            'purchase_summary_'.$id => $request->purchase_summary,
+        ]);
 
         return redirect()->route('charge.authorize.preview.page', $id);
     }
@@ -82,18 +103,13 @@ class AuthConsentController extends Controller
             'agencyMerchant',
         ])->findOrFail($id);
 
-        $finalContent = session('authorize_preview_'.$id);
+        $mainContent = session('main_content_'.$id);
+        $purchaseSummary = session('purchase_summary_'.$id);
 
-        if (! $finalContent) {
-            return redirect()
-                ->route('charge.authorize.edit', $id)
-                ->with('error', 'Preview content not found. Please edit again.');
-        }
-
-        // This view should show the full email (layout + body) in-browser
         return view('charge.auth.preview', [
             'booking' => $booking,
-            'finalContent' => $finalContent,
+            'mainContent' => $mainContent,
+            'purchaseSummary' => $purchaseSummary,
         ]);
     }
 
@@ -116,7 +132,10 @@ class AuthConsentController extends Controller
                 ->with('error', 'Auth mail has already been sent for this booking.');
         }
 
-        $emailBody = $request->input('final_content') ?? session('authorize_preview_'.$id);
+        $emailBody =
+            session('main_content_'.$id)
+            .session('purchase_summary_'.$id);
+        $emailBody = $this->formatEmailContent($emailBody);
 
         if (! $emailBody) {
             return redirect()
@@ -184,6 +203,7 @@ class AuthConsentController extends Controller
         ])->findOrFail($id);
 
         $emailBody = $request->input('final_content') ?? session('authorize_preview_'.$id);
+        $emailBody = $this->formatEmailContent($emailBody);
 
         if (! $emailBody) {
             // fallback to default body for current service_typec
@@ -200,6 +220,7 @@ class AuthConsentController extends Controller
 
             $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';
             $emailBody = view($bodyView, compact('booking'))->render();
+            $emailBody = $this->formatEmailContent($emailBody);
         }
 
         $finalHtml = view('emails.customer-final-auth', [
@@ -254,11 +275,45 @@ class AuthConsentController extends Controller
      */
     public function markAuthDone($id)
     {
+
         $booking = Booking::findOrFail($id);
 
         $booking->email_auth_taken = 1;
         $booking->save();
 
         return redirect()->back()->with('success', 'Email Auth updated to Yes successfully.');
+    }
+
+    private function formatEmailContent($html)
+    {
+        // Style tables
+        $html = preg_replace(
+            '/<table(.*?)>/i',
+            '<table $1 style="width:100%;border-collapse:collapse;border:1px solid #dcdcdc;margin:15px 0;">',
+            $html
+        );
+
+        // Style TH
+        $html = preg_replace(
+            '/<th(.*?)>/i',
+            '<th $1 style="border:1px solid #dcdcdc;padding:10px;background:#f8f9fa;font-weight:bold;text-align:left;">',
+            $html
+        );
+
+        // Style TD
+        $html = preg_replace(
+            '/<td(.*?)>/i',
+            '<td $1 style="border:1px solid #dcdcdc;padding:10px;">',
+            $html
+        );
+
+        // Headings
+        $html = preg_replace(
+            '/<h4(.*?)>/i',
+            '<h4 $1 style="margin-top:25px;color:#1e3a8a;">',
+            $html
+        );
+
+        return $html;
     }
 }
