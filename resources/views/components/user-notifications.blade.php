@@ -54,7 +54,7 @@
 @endphp
 
 @if ($notifications->count() > 0)
-    <div class="p-3" style="z-index: 9999; max-width: 450px;">
+    <div class="p-3" style="z-index: 9999; max-width: 100%;">
         @foreach ($notifications as $notification)
             <div class="alert alert-{{ $notification->priority }} alert-dismissible fade show mb-3 shadow-lg notification-item"
                 role="alert" data-notification-id="{{ $notification->id }}"
@@ -80,11 +80,18 @@
                         @endif
                     </div>
                     <div class="flex-grow-1">
-                        <strong class="fs-6">{{ $notification->title }}</strong>
-                        <p class="mb-1 small">{{ $notification->message }}</p>
-                        <small class="text-muted">
-                            <i class="bi bi-clock"></i> {{ $notification->created_at->diffForHumans() }}
-                        </small>
+                        <p class="mb-0"><strong class="fs-6">{{ $notification->title }}</strong></p>
+                        <button type="button" class="btn btn-link p-0 notification-title-toggle text-start"
+                            aria-expanded="false">
+                            <span class="ms-2 text-decoration-underline text-white small toggle-text">Read
+                                more...</span>
+                        </button>
+                        <div class="notification-details mt-2" style="display: none;">
+                            <p class="mb-1 small">{{ $notification->message }}</p>
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> {{ $notification->created_at->diffForHumans() }}
+                            </small>
+                        </div>
                     </div>
                     @if ($notification->can_dismiss)
                         <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close">
@@ -118,6 +125,16 @@
             console.log('Number of notifications:', $('.notification-item').length);
 
             // Handle alert close
+            $('.notification-title-toggle').on('click', function() {
+                var $toggle = $(this);
+                var $details = $toggle.closest('.notification-item').find('.notification-details');
+                var isVisible = $details.is(':visible');
+
+                $details.slideToggle(150);
+                $toggle.attr('aria-expanded', !isVisible);
+                $toggle.find('.toggle-text').text(isVisible ? 'Read more' : 'Show less');
+            });
+
             $('.alert-dismissible').on('closed.bs.alert', function() {
                 var notificationId = $(this).data('notification-id');
                 var canDismiss = $(this).data('can-dismiss');
