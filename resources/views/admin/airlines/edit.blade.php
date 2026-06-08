@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container">
+<div class="container py-4">
 
 <form method="POST"
       enctype="multipart/form-data"
@@ -18,7 +18,7 @@
         <input type="text"
                name="airline_code"
                maxlength="2"
-               class="form-control">
+               class="form-control" value="{{ $airline->airline_code }}">
 
     </div>
 
@@ -28,17 +28,20 @@
 
         <input type="text"
                name="airline_name"
-               class="form-control">
+               class="form-control" value="{{ $airline->airline_name }}">
 
     </div>
 
     <div class="form-group">
 
         <label>Logo</label>
-
-        <input type="file"
-               name="logo"
-               class="form-control">
+        <div class="d-flex align-items-center" style="gap: 20px;">
+            <img src="{{ url('/') }}/storage/{{ $airline->logo }}" width="100px" alt="Logo">
+            
+            <input type="file"
+                   name="logo"
+                   class="form-control" value="{{ $airline->logo }}">
+        </div>
 
     </div>
 

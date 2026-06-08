@@ -1,9 +1,9 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid py-4">
 
-        <div class="d-flex justify-content-between mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3">
 
             <h3>Airlines</h3>
 
@@ -66,14 +66,10 @@
         </table>
 
         {{-- PAGINATION LINKS --}}
-        <div class="d-flex justify-content-center mt-4">
-            {{ $airlines->links() }}
-        </div>
-
-        {{-- Additional pagination info --}}
-        <div class="text-muted text-center mt-3">
+        <div class="d-flex align-items-center justify-content-between mt-4">
             Showing {{ $airlines->firstItem() ?? 0 }} to {{ $airlines->lastItem() ?? 0 }}
             of {{ $airlines->total() }} airlines
+            {{ $airlines->links() }}
         </div>
 
     </div>

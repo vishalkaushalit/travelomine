@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container">
+<div class="container py-4">
 
 <form method="POST"
       enctype="multipart/form-data"
