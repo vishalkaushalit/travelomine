@@ -176,14 +176,10 @@
                         </div>
 
                         <!-- Pagination -->
-                        <div class="d-flex justify-content-center mt-4">
-                            {{ $callLogs->appends(request()->query())->links() }}
-                        </div>
-
-                        {{-- Additional pagination info --}}
-                        <div class="text-muted text-center mt-3">
+                        <div class="d-flex align-items-center justify-content-between mt-4">
                             Showing {{ $callLogs->firstItem() ?? 0 }} to {{ $callLogs->lastItem() ?? 0 }}
                             of {{ $callLogs->total() }} call logs
+                            {{ $callLogs->appends(request()->query())->links() }}
                         </div>
                     </div>
                 </div>
