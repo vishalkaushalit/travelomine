@@ -10,8 +10,7 @@ class AirlineController extends Controller
 {
     public function index()
     {
-        $airlines = Airline::latest()->get();
-
+        $airlines = Airline::latest()->paginate(10);
         return view('admin.airlines.index', compact('airlines'));
     }
 
