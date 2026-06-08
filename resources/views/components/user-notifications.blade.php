@@ -132,7 +132,7 @@
 
                 $details.slideToggle(150);
                 $toggle.attr('aria-expanded', !isVisible);
-                $toggle.find('.toggle-text').text(isVisible ? 'Read more' : 'Show less');
+                $toggle.find('.toggle-text').text(isVisible ? 'Read more...' : 'Show less');
             });
 
             $('.alert-dismissible').on('closed.bs.alert', function() {
