@@ -106,6 +106,10 @@ class AuthConsentController extends Controller
         $mainContent = session('main_content_'.$id);
         $purchaseSummary = session('purchase_summary_'.$id);
 
+        // Format for preview as well to maintain consistency
+        $mainContent = $this->formatEmailContent($mainContent);
+        $purchaseSummary = $this->formatEmailContent($purchaseSummary);
+
         return view('charge.auth.preview', [
             'booking' => $booking,
             'mainContent' => $mainContent,
@@ -132,21 +136,23 @@ class AuthConsentController extends Controller
                 ->with('error', 'Auth mail has already been sent for this booking.');
         }
 
-        $emailBody =
-            session('main_content_'.$id)
-            .session('purchase_summary_'.$id);
-        $emailBody = $this->formatEmailContent($emailBody);
+        $mainContent = $request->input('main_content') ?? session('main_content_'.$id);
+        $purchaseSummary = $request->input('purchase_summary') ?? session('purchase_summary_'.$id);
 
-        if (! $emailBody) {
+        if (! $mainContent) {
             return redirect()
                 ->route('charge.authorize.edit', $id)
                 ->with('error', 'Email content missing. Please preview again.');
         }
 
-        // Wrap body into full layout
+        // Apply formatting to individual content parts
+        $mainContent = $this->formatEmailContent($mainContent);
+        $purchaseSummary = $this->formatEmailContent($purchaseSummary);
+
         $finalHtml = view('emails.customer-final-auth', [
             'booking' => $booking,
-            'emailBody' => $emailBody,
+            'mainContent' => $mainContent,
+            'purchaseSummary' => $purchaseSummary,
         ])->render();
 
         try {
@@ -157,7 +163,7 @@ class AuthConsentController extends Controller
                 'auth_email_sent_at' => now(),
             ]);
 
-            session()->forget('authorize_preview_'.$id);
+            session()->forget(['main_content_'.$id, 'purchase_summary_'.$id]);
 
             return redirect()
                 ->route('charge.dashboard')
@@ -202,11 +208,11 @@ class AuthConsentController extends Controller
             'user',
         ])->findOrFail($id);
 
-        $emailBody = $request->input('final_content') ?? session('authorize_preview_'.$id);
-        $emailBody = $this->formatEmailContent($emailBody);
+        $mainContent = $request->input('main_content') ?? session('main_content_'.$id);
+        $purchaseSummary = $request->input('purchase_summary') ?? session('purchase_summary_'.$id);
 
-        if (! $emailBody) {
-            // fallback to default body for current service_typec
+        if (! $mainContent) {
+            // fallback to default body for current service_type
             $templateMap = [
                 'New Booking' => 'emails.charge.auth.new-booking',
                 'Exchange' => 'emails.charge.auth.exchange',
@@ -219,13 +225,25 @@ class AuthConsentController extends Controller
             ];
 
             $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';
-            $emailBody = view($bodyView, compact('booking'))->render();
-            $emailBody = $this->formatEmailContent($emailBody);
+            $emailContent = view($bodyView, compact('booking'))->render();
+
+            $parts = preg_split(
+                '/<h4[^>]*>\s*Purchase Summary\s*:?\s*<\/h4>/i',
+                $emailContent
+            );
+
+            $mainContent = $parts[0] ?? $emailContent;
+            $purchaseSummary = isset($parts[1]) ? '<h4>Purchase Summary:</h4>'.$parts[1] : '';
         }
+
+        // Apply formatting
+        $mainContent = $this->formatEmailContent($mainContent);
+        $purchaseSummary = $this->formatEmailContent($purchaseSummary);
 
         $finalHtml = view('emails.customer-final-auth', [
             'booking' => $booking,
-            'emailBody' => $emailBody,
+            'mainContent' => $mainContent,
+            'purchaseSummary' => $purchaseSummary,
         ])->render();
 
         try {
@@ -286,31 +304,55 @@ class AuthConsentController extends Controller
 
     private function formatEmailContent($html)
     {
-        // Style tables
+        if (empty($html)) {
+            return $html;
+        }
+
+        // Style tables - ensure they have proper width
         $html = preg_replace(
             '/<table(.*?)>/i',
-            '<table $1 style="width:100%;border-collapse:collapse;border:1px solid #dcdcdc;margin:15px 0;">',
+            '<table $1 style="width:100%; border-collapse:collapse; border:1px solid #dcdcdc; margin:15px 0;">',
             $html
         );
 
         // Style TH
         $html = preg_replace(
             '/<th(.*?)>/i',
-            '<th $1 style="border:1px solid #dcdcdc;padding:10px;background:#f8f9fa;font-weight:bold;text-align:left;">',
+            '<th $1 style="border:1px solid #dcdcdc; padding:10px; background:#f8f9fa; font-weight:bold; text-align:left;">',
             $html
         );
 
         // Style TD
         $html = preg_replace(
             '/<td(.*?)>/i',
-            '<td $1 style="border:1px solid #dcdcdc;padding:10px;">',
+            '<td $1 style="border:1px solid #dcdcdc; padding:10px;">',
+            $html
+        );
+
+        // Add responsive wrapper for tables
+        $html = preg_replace(
+            '/<table/i',
+            '<div style="overflow-x:auto;"><table',
+            $html
+        );
+
+        $html = preg_replace(
+            '/<\/table>/i',
+            '</table></div>',
             $html
         );
 
         // Headings
         $html = preg_replace(
             '/<h4(.*?)>/i',
-            '<h4 $1 style="margin-top:25px;color:#1e3a8a;">',
+            '<h4 $1 style="margin-top:25px; color:#1e3a8a;">',
+            $html
+        );
+
+        // Fix any nested table issues
+        $html = preg_replace(
+            '/<div style="overflow-x:auto;"><div style="overflow-x:auto;">/i',
+            '<div style="overflow-x:auto;">',
             $html
         );
 

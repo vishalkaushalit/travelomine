@@ -487,10 +487,8 @@
         <div class="page-actions">
             <form action="{{ route('charge.authorize.send', $booking->id) }}" method="POST">
                 @csrf
-                <textarea name="final_content" style="display:none;">
-                    {!! $mainContent !!}
-                    {!! $purchaseSummary !!}
-                </textarea>
+                <input type="hidden" name="main_content" value="{{ $mainContent }}">
+                <input type="hidden" name="purchase_summary" value="{{ $purchaseSummary }}">
                 <button type="submit" class="btn btn-primary primary-send-btn">
                     Confirm &amp; Send to Customer
                 </button>
