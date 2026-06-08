@@ -50,7 +50,7 @@ class CallLogsController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
         
-        $callLogs = $query->latest()->paginate(20);
+        $callLogs = $query->latest()->paginate(10);
         
         // Get all agents for filter dropdown
         $agents = User::where('role', 'agent')->orderBy('name')->get();
