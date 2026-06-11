@@ -19,11 +19,20 @@ use Illuminate\Support\Facades\Mail;
 class ChargingController extends Controller
 {
     /**
-     * Display assigned + old charging bookings for all charge users.
+     * Check if user has charge or admin role
+     */
+    private function hasChargeAccess(): bool
+    {
+        $user = auth()->user();
+        return in_array($user->role, ['charge', 'admin']);
+    }
+
+    /**
+     * Display assigned + old charging bookings for all charge users and admins.
      */
     public function index()
     {
-        if (auth()->user()->role !== 'charge') {
+        if (!$this->hasChargeAccess()) {
             abort(403, 'Unauthorized');
         }
 
@@ -51,11 +60,11 @@ class ChargingController extends Controller
     }
 
     /**
-     * Show charging booking details for all charge users.
+     * Show charging booking details for all charge users and admins.
      */
     public function show(Booking $booking)
     {
-        if (auth()->user()->role !== 'charge') {
+        if (!$this->hasChargeAccess()) {
             abort(403, 'Unauthorized');
         }
 
@@ -98,7 +107,7 @@ class ChargingController extends Controller
     }
 
     /**
-     * Agent: Assign booking to random charging team member.
+     * Agent: Assign booking to random charging team member or admin.
      */
     public function assignForCharging(Request $request, Booking $booking)
     {
@@ -112,15 +121,19 @@ class ChargingController extends Controller
 
         $merchant = Merchant::findOrFail($request->merchant);
 
-        $charger = User::where('role', 'charge')->inRandomOrder()->first();
+        // Get users with role 'charge' OR 'admin'
+        $charger = User::whereIn('role', ['charge', 'admin'])
+            ->inRandomOrder()
+            ->first();
 
         if (! $charger) {
-            return back()->withErrors(['merchant' => 'No charging team member available!']);
+            return back()->withErrors(['merchant' => 'No charging team member or admin available!']);
         }
 
         $assignmentData = [
             'charger_id' => $charger->id,
             'charger_name' => $charger->name,
+            'charger_role' => $charger->role,
             'assigned_at' => now()->toDateTimeString(),
             'merchant_id' => $merchant->id,
             'merchant_name' => $merchant->name,
@@ -142,7 +155,8 @@ class ChargingController extends Controller
             'assigned_at' => now(),
         ]);
 
-        $chargeUsers = User::where('role', 'charge')->get();
+        // Notify both charge users and admins
+        $chargeUsers = User::whereIn('role', ['charge', 'admin'])->get();
 
         foreach ($chargeUsers as $chargeUser) {
             $chargeUser->notify(new NewChargingAssignment($booking, $assignment));
@@ -169,9 +183,12 @@ class ChargingController extends Controller
             'charger_id' => $charger->id,
             'assigned_at' => now(),
             'merchant_name' => $merchant->name,
+            'charger_role' => $charger->role,
         ], now()->addHours(24));
 
+        $roleLabel = $charger->role === 'admin' ? 'Admin' : 'Charge Team Member';
+        
         return redirect()->route('agent.dashboard')
-            ->with('success', "Booking #{$booking->booking_reference} assigned to {$charger->name}, visible to all charge team members | Merchant: {$merchant->name}");
+            ->with('success', "Booking #{$booking->booking_reference} assigned to {$roleLabel}: {$charger->name}, visible to all charge team members and admins | Merchant: {$merchant->name}");
     }
 }

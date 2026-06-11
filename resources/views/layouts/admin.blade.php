@@ -199,7 +199,12 @@
                                     <p>Airlines</p>
                                 </a>
                             </li>
-
+                            <li class="nav-item">
+                                <a href="{{ route('charge.dashboard') }}" class="nav-link">
+                                    <i class="nav-icon fas fa-tachometer-alt"></i>
+                                    <p>Charge Dashboard</p>
+                                </a>
+                            </li>
                             <li class="nav-item {{ request()->is('admin/settings*') ? 'menu-open' : '' }}">
                                 <a href="#"
                                     class="nav-link {{ request()->is('admin/settings*') ? 'active' : '' }}">

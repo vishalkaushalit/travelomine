@@ -31,6 +31,7 @@ use App\Http\Controllers\Charge\ChargingDashboardController;
 use App\Http\Controllers\Mis\MisBookingsController;
 use App\Http\Controllers\Mis\MisDashboardController;
 use App\Http\Controllers\Mis\MisLoginController;
+use App\Http\Controllers\Changes\ChangesTeamController;
 use App\Http\Controllers\MisManager\MisManagerBookingsController;
 use App\Http\Controllers\MisManager\MisManagerDashboardController;
 use App\Http\Controllers\MisManager\MisManagerLoginController;
@@ -106,7 +107,7 @@ Route::post('/mis-manager/login', [MisManagerLoginController::class, 'login']);
 Route::post('/mis-manager/logout', [MisManagerLoginController::class, 'logout'])->name('mis-manager.logout');
 
 // CHARGING TEAM
-Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->group(function () {
+Route::middleware(['auth', 'role:charge,admin'])->prefix('charge')->name('charge.')->group(function () {
     // Route::get('/dashboard', [ChargeController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [ChargingDashboardController::class, 'index'])->name('dashboard');
 

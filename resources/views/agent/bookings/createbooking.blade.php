@@ -102,13 +102,17 @@
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">GK PNR <span class</label>
+                            <label class="form-label">GK PNR </label>
                                     <input type="text" name="gk_pnr" class="form-control" value="{{ old('gk_pnr') }}">
                         </div>
 
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Airline PNR</label>
                             <input type="text" name="airline_pnr" class="form-control" value="{{ old('airline_pnr') }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Ticket ID</label>
+                                <input type="text" name="ticket_id" class="form-control" value="{{ old('ticket_id') }}">
                         </div>
                     </div>
 
