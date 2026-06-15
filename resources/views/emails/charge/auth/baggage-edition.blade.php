@@ -70,37 +70,6 @@
     </table>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
     
-    <h3 style="color: #1f2937; font-size: 16px;">Flight Itinerary</h3>
-
-    <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-        <thead>
-            <tr style="background-color: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
-                <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 14px;">Flight</th>
-                <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 14px;">Route</th>
-                <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 14px;">Departure</th>
-                <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 14px;">Arrival</th>
-                <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 14px;">PNR</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($booking->segments as $index => $segment)
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 12px;"><strong>{{ $segment->airline_name ?? '-' }}</strong> {{ $segment->flight_number ?? '-' }}</td>
-                    <td style="padding: 12px;">{{ $segment->from_airport ?? '-' }} → {{ $segment->to_airport ?? '-' }}</td>
-                    <td style="padding: 12px;">
-                        {{ $segment->departure_date ? \Carbon\Carbon::parse($segment->departure_date)->format('M d, Y') : '-' }}
-                    </td>
-                    <td style="padding: 12px;">
-                        {{ $segment->arrival_date ? \Carbon\Carbon::parse($segment->arrival_date)->format('M d, Y') : '-' }}
-                    </td>
-                    <td style="padding: 12px;">{{ $segment->airline_pnr ? $segment->airline_pnr : $booking->gk_pnr }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-    
     <h3 style="color: #1f2937; font-size: 16px;">Payment Summary</h3>
 
     <table style="width: 100%; border-collapse: collapse; margin: 16px 0; background-color: #f9fafb;">
