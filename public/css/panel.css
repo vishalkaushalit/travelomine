@@ -5,9 +5,11 @@ a.brand-link {
     font-size: 16px;
     gap: 8px;
 }
+
 section.content {
     margin-top: 24px;
 }
+
 .main-header {
     border-bottom: 0 !important;
     z-index: 1034;
@@ -16,41 +18,46 @@ section.content {
 .bg-gradient-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
 }
+
 .form-control:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 }
+
 .btn-primary,
 .nav-pills .nav-link.active,
-.nav-pills .show > .nav-link,
-.dataTables_wrapper
-    .dataTables_paginate
-    .paginate_button.page-item.active
-    .page-link {
+.nav-pills .show>.nav-link,
+.dataTables_wrapper .dataTables_paginate .paginate_button.page-item.active .page-link {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     border: none;
 }
+
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
+
 table#usersTable tr td span,
 table#bookingsTable tr td span {
     font-weight: 400;
 }
+
 .nav-link:focus,
 .nav-link:hover {
     color: #ffc107;
     border: none !important;
 }
+
 .sidebar a.active {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: #ffc107 !important;
     border-left: 4px solid #3498db;
 }
+
 .sidebar a {
     font-size: 14px;
 }
+
 .sidebar {
     min-height: 100vh;
     background: #1e1f27 !important;
@@ -62,28 +69,34 @@ table#bookingsTable tr td span {
     top: 0;
     transition: width 0.25s ease-in-out;
 }
+
 #bookingsTable tr th {
     font-size: 15px;
     font-weight: 500;
     line-height: 1.5;
     margin: 0;
 }
+
 .table tr th {
     font-size: 15px;
     font-weight: 500;
     line-height: 1.5;
 }
-[class*="sidebar-dark-"] .nav-treeview > .nav-item > .nav-link.active,
-[class*="sidebar-dark-"] .nav-treeview > .nav-item > .nav-link.active:focus,
-[class*="sidebar-dark-"] .nav-treeview > .nav-item > .nav-link.active:hover {
+
+[class*="sidebar-dark-"] .nav-treeview>.nav-item>.nav-link.active,
+[class*="sidebar-dark-"] .nav-treeview>.nav-item>.nav-link.active:focus,
+[class*="sidebar-dark-"] .nav-treeview>.nav-item>.nav-link.active:hover {
     background-color: transparent;
 }
+
 .btn-primary {
     color: #fff;
 }
+
 .table-hover .table-dark:hover {
     background-color: #000;
 }
+
 badge.badge-ticketed {
     color: #fff;
     background-color: #3c8dbc;
@@ -101,7 +114,8 @@ div#segments_container {
     margin: 32px 0;
     box-shadow: 0 0 5px -1px #ccc;
 }
-#segments_container > .card-body {
+
+#segments_container>.card-body {
     margin: 0;
     background-color: transparent !important;
     box-shadow: 0;
@@ -149,7 +163,7 @@ small {
     gap: 5px;
 }
 
-.btn-group-sm > .btn,
+.btn-group-sm>.btn,
 .btn-sm {
     border-radius: 0.2rem !important;
 }
@@ -182,8 +196,7 @@ nav[role="navigation"] a {
     color: #000;
 }
 
-nav[role="navigation"]
-    .hidden.sm\:flex-1.sm\:flex.sm\:items-center.sm\:justify-between {
+nav[role="navigation"] .hidden.sm\:flex-1.sm\:flex.sm\:items-center.sm\:justify-between {
     display: none;
 }
 
@@ -208,11 +221,16 @@ nav[role="navigation"] span {
     border: 1px solid #ddd;
 }
 
+.form-control {
+    padding: 4px !important;
+}
+
 @media (max-width: 991.98px) {
     .mco_chart {
         height: unset !important;
     }
 }
+
 @media (max-width: 575.98px) {
     .stat-card.card {
         margin-bottom: 15px;
