@@ -8,11 +8,35 @@ use Illuminate\Http\Request;
 
 class AirlineController extends Controller
 {
-    public function index()
-    {
-        $airlines = Airline::latest()->paginate(10);
-        return view('admin.airlines.index', compact('airlines'));
+   public function index(Request $request)
+{
+    $query = Airline::query();
+    
+    // Search functionality
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('airline_name', 'like', "%{$search}%")
+              ->orWhere('airline_code', 'like', "%{$search}%");
+        });
     }
+    
+    // Sorting functionality
+    if ($request->filled('sort_by')) {
+        if ($request->sort_by == 'name') {
+            $query->orderBy('airline_name', $request->get('sort_order', 'asc'));
+        } elseif ($request->sort_by == 'latest') {
+            $query->latest();
+        }
+    } else {
+        // Default sorting (you can change this as needed)
+        $query->latest();
+    }
+    
+    $airlines = $query->paginate(10); // Adjust pagination count as needed
+    
+    return view('admin.airlines.index', compact('airlines'));
+}
 
     public function create()
     {
