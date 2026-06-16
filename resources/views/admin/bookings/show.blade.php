@@ -12,9 +12,16 @@
                 <a href="{{ route('admin.bookings.index', ['agent_id' => $booking->user_id]) }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Back
                 </a>
-                <a href="{{ route('admin.bookings.edit', $booking->id) }}" class="btn btn-warning">
-                    <i class="bi bi-pencil"></i> Edit
-                </a>
+                @if ($canEdit)
+                    <a href="{{ route('admin.bookings.edit', $booking->id) }}" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                @else
+                    <button class="btn btn-warning disabled" disabled
+                        title="This booking cannot be edited. It has been confirmed, paid, or ticketed.">
+                        <i class="bi bi-lock"></i> Locked
+                    </button>
+                @endif
                 <a href="{{ route('admin.bookings.export.csv', $booking->id) }}" class="btn btn-success">
                     <i class="bi bi-download"></i> Export CSV
                 </a>
@@ -31,9 +38,9 @@
                     <div class="card-body">
                         <p><strong>Agent:</strong> {{ $booking->user->name }} ({{ $booking->agent_custom_id }})</p>
                         <p><strong>Booking Date:</strong> {{ $booking->booking_date->format('d M Y') }}</p>
-                        <p><strong>Language:</strong> {{ ($booking->language)?? 'N/A' }}</p>
-                        <p><strong>Merchant:</strong> {{ ($booking->agency_merchant_name)?? 'N/A' }}</p>
-                     
+                        <p><strong>Language:</strong> {{ $booking->language ?? 'N/A' }}</p>
+                        <p><strong>Merchant:</strong> {{ $booking->agency_merchant_name ?? 'N/A' }}</p>
+
                         <p><strong>Service Type:</strong> {{ $booking->service_type }}</p>
                         <p><strong>Call Type:</strong> {{ $booking->call_type }}</p>
                         <p><strong>Service Provided:</strong> {{ $booking->service_provided }}</p>
@@ -174,24 +181,24 @@
                     $remarksByType = $booking->remarks()->get()->groupBy('remark_type');
                 @endphp
 
-                @if($remarksByType->isEmpty() && !$booking->agent_remarks && !$booking->charging_remarks && !$booking->mis_remarks)
+                @if ($remarksByType->isEmpty() && !$booking->agent_remarks && !$booking->charging_remarks && !$booking->mis_remarks)
                     <p class="text-muted"><i class="bi bi-info-circle"></i> No remarks yet</p>
                 @else
                     <!-- Agent Remarks -->
-                    @if($booking->agent_remarks || $remarksByType->has('agent'))
+                    @if ($booking->agent_remarks || $remarksByType->has('agent'))
                         <div class="mb-4">
                             <h5><span class="badge bg-info">Agent</span></h5>
-                            @if($booking->agent_remarks)
+                            @if ($booking->agent_remarks)
                                 <div class="alert alert-info alert-sm mb-2">
                                     <small><strong>Legacy Remark:</strong></small><br>
                                     {{ $booking->agent_remarks }}
                                 </div>
                             @endif
-                            @foreach($remarksByType->get('agent', []) as $remark)
+                            @foreach ($remarksByType->get('agent', []) as $remark)
                                 <div class="alert alert-light border border-info mb-2">
                                     <small class="text-muted">
                                         <i class="bi bi-clock"></i> {{ $remark->created_at->format('d M Y H:i') }}
-                                        @if($remark->agent)
+                                        @if ($remark->agent)
                                             | <strong>{{ $remark->agent->name }}</strong>
                                         @endif
                                     </small><br>
@@ -202,20 +209,20 @@
                     @endif
 
                     <!-- MIS Remarks -->
-                    @if($booking->mis_remarks || $remarksByType->has('mis'))
+                    @if ($booking->mis_remarks || $remarksByType->has('mis'))
                         <div class="mb-4">
                             <h5><span class="badge bg-warning">MIS (Management Information System)</span></h5>
-                            @if($booking->mis_remarks)
+                            @if ($booking->mis_remarks)
                                 <div class="alert alert-warning alert-sm mb-2">
                                     <small><strong>Legacy Remark:</strong></small><br>
                                     {{ $booking->mis_remarks }}
                                 </div>
                             @endif
-                            @foreach($remarksByType->get('mis', []) as $remark)
+                            @foreach ($remarksByType->get('mis', []) as $remark)
                                 <div class="alert alert-light border border-warning mb-2">
                                     <small class="text-muted">
                                         <i class="bi bi-clock"></i> {{ $remark->created_at->format('d M Y H:i') }}
-                                        @if($remark->agent)
+                                        @if ($remark->agent)
                                             | <strong>{{ $remark->agent->name }}</strong>
                                         @endif
                                     </small><br>
@@ -226,20 +233,21 @@
                     @endif
 
                     <!-- Changes Remarks -->
-                    @if($remarksByType->has('changes'))
+                    @if ($remarksByType->has('changes'))
                         <div class="mb-4">
                             <h5><span class="badge bg-primary">Changes</span></h5>
-                            @foreach($remarksByType->get('changes', []) as $remark)
+                            @foreach ($remarksByType->get('changes', []) as $remark)
                                 <div class="alert alert-light border border-primary mb-2">
                                     <small class="text-muted">
                                         <i class="bi bi-clock"></i> {{ $remark->created_at->format('d M Y H:i') }}
-                                        @if($remark->agent)
+                                        @if ($remark->agent)
                                             | <strong>{{ $remark->agent->name }}</strong>
                                         @endif
                                     </small><br>
                                     {{ $remark->remark_text }}
-                                    @if($remark->amount_changed)
-                                        <div class="mt-2"><span class="badge bg-danger">Amount Changed: {{ $remark->amount_changed }}</span></div>
+                                    @if ($remark->amount_changed)
+                                        <div class="mt-2"><span class="badge bg-danger">Amount Changed:
+                                                {{ $remark->amount_changed }}</span></div>
                                     @endif
                                 </div>
                             @endforeach
@@ -247,14 +255,14 @@
                     @endif
 
                     <!-- Support Remarks -->
-                    @if($remarksByType->has('support'))
+                    @if ($remarksByType->has('support'))
                         <div class="mb-4">
                             <h5><span class="badge bg-danger">Support</span></h5>
-                            @foreach($remarksByType->get('support', []) as $remark)
+                            @foreach ($remarksByType->get('support', []) as $remark)
                                 <div class="alert alert-light border border-danger mb-2">
                                     <small class="text-muted">
                                         <i class="bi bi-clock"></i> {{ $remark->created_at->format('d M Y H:i') }}
-                                        @if($remark->agent)
+                                        @if ($remark->agent)
                                             | <strong>{{ $remark->agent->name }}</strong>
                                         @endif
                                     </small><br>
@@ -265,20 +273,20 @@
                     @endif
 
                     <!-- Charging Remarks -->
-                    @if($booking->charging_remarks || $remarksByType->has('charging'))
+                    @if ($booking->charging_remarks || $remarksByType->has('charging'))
                         <div class="mb-4">
                             <h5><span class="badge bg-success">Charging</span></h5>
-                            @if($booking->charging_remarks)
+                            @if ($booking->charging_remarks)
                                 <div class="alert alert-success alert-sm mb-2">
                                     <small><strong>Legacy Remark:</strong></small><br>
                                     {{ $booking->charging_remarks }}
                                 </div>
                             @endif
-                            @foreach($remarksByType->get('charging', []) as $remark)
+                            @foreach ($remarksByType->get('charging', []) as $remark)
                                 <div class="alert alert-light border border-success mb-2">
                                     <small class="text-muted">
                                         <i class="bi bi-clock"></i> {{ $remark->created_at->format('d M Y H:i') }}
-                                        @if($remark->agent)
+                                        @if ($remark->agent)
                                             | <strong>{{ $remark->agent->name }}</strong>
                                         @endif
                                     </small><br>
@@ -293,15 +301,15 @@
                         $standardTypes = ['agent', 'mis', 'changes', 'support', 'charging'];
                         $otherRemarks = $remarksByType->except($standardTypes);
                     @endphp
-                    @if($otherRemarks->count() > 0)
-                        @foreach($otherRemarks as $type => $remarks)
+                    @if ($otherRemarks->count() > 0)
+                        @foreach ($otherRemarks as $type => $remarks)
                             <div class="mb-4">
                                 <h5><span class="badge bg-secondary">{{ ucfirst($type) }}</span></h5>
-                                @foreach($remarks as $remark)
+                                @foreach ($remarks as $remark)
                                     <div class="alert alert-light border border-secondary mb-2">
                                         <small class="text-muted">
                                             <i class="bi bi-clock"></i> {{ $remark->created_at->format('d M Y H:i') }}
-                                            @if($remark->agent)
+                                            @if ($remark->agent)
                                                 | <strong>{{ $remark->agent->name }}</strong>
                                             @endif
                                         </small><br>

@@ -110,6 +110,12 @@
                             </thead>
                             <tbody>
                                 @forelse($bookings as $booking)
+                                    @php
+                                        $isRestricted =
+                                            in_array($booking->status, ['confirmed', 'ticketed', 'charged']) ||
+                                            !is_null($booking->payment_confirmed_at) ||
+                                            !is_null($booking->ticketed_at);
+                                    @endphp
                                     <tr>
                                         <td>
                                             <input type="checkbox" name="selected_bookings[]" value="{{ $booking->id }}"
@@ -148,9 +154,15 @@
                                         <td>{{ ucfirst($booking->status) }}</td>
                                         <td>
                                             <a href="{{ route('admin.bookings.show', $booking->id) }}"
-                                                class="btn btn-sm btn-info">
+                                                class="btn btn-sm btn-info" title="View">
                                                 <i class="bi bi-eye"></i>
                                             </a>
+                                            @if (!$isRestricted)
+                                                <a href="{{ route('admin.bookings.edit', $booking->id) }}"
+                                                    class="btn btn-sm btn-warning" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

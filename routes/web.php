@@ -365,8 +365,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/agents/{agent}', [AdminAgentsController::class, 'show'])->name('agents.show');
 
     // Bookings (Both Admin and Manager can access)
+    Route::get('/bookings/all', [AdminBookingsController::class, 'all'])->name('bookings.all');
     Route::get('/bookings', [AdminBookingsController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [AdminBookingsController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/edit', [AdminBookingsController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{id}', [AdminBookingsController::class, 'update'])->name('bookings.update');
+    Route::delete('/bookings/{id}', [AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
 });
 
 Route::middleware(['auth'])->group(function () {
