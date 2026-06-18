@@ -167,37 +167,31 @@ class AdminBookingsController extends Controller
         $validated = $request->validate([
             // Booking Information
             'booking_date' => 'nullable|date',
-            'call_type' => 'nullable|string|exists:call_type,type_name',
+            'call_type' => 'nullable|string',
             'service_provided' => 'nullable|string|in:Flight,Hotel,Package',
-            'service_type' => 'nullable|string|exists:service_type,type_name',
+            'service_type' => 'nullable|string',
             'booking_portal' => 'nullable|string|in:amadeus,sabre,worldspan,gds,website',
-            'language' => 'nullable|in:English-Flight,Spanish-Flight',
+            'language' => 'nullable|string',
             'email_auth_taken' => 'nullable|boolean',
 
             // Customer Information
             'customer_name' => 'nullable|string|max:255',
             'customer_email' => 'nullable|email|max:255',
             'customer_phone' => 'nullable|string|max:30',
-            'agent_custom_id' => 'nullable|string|max:255',
             'billing_phone' => 'nullable|string|max:30',
             'billing_address' => 'nullable|string',
 
             // Flight Details
-            'flight_type' => 'nullable|in:oneway,roundtrip,multicity',
+            'flight_type' => 'nullable|string|in:oneway,roundtrip,multicity',
             'gk_pnr' => 'nullable|string|max:50',
             'airline_pnr' => 'nullable|string|max:50',
-            'departure_city' => 'nullable|string|max:100',
-            'arrival_city' => 'nullable|string|max:100',
-            'departure_date' => 'nullable|date',
-            'return_date' => 'nullable|date',
-            'airline_name' => 'nullable|string|max:100',
-            'flight_number' => 'nullable|string|max:10',
-            'cabin_class' => 'nullable|string|max:50',
+            'cabin_class' => 'nullable|string',
 
             // Passenger Details
             'adults' => 'nullable|integer|min:0|max:9',
             'children' => 'nullable|integer|min:0|max:9',
             'infants' => 'nullable|integer|min:0|max:9',
+            'infant_in_lap' => 'nullable|integer|min:0|max:9',
 
             // Payment Details
             'currency' => 'nullable|string',
@@ -206,9 +200,22 @@ class AdminBookingsController extends Controller
             'total_mco' => 'nullable|numeric',
 
             // Status & Remarks
-            'status' => 'required|in:pending,assigned_to_charging,auth_email_sent,payment_processing,confirmed,ticketed,failed,cancelled,hold,refund,charging_in_progress,Alert,RDR,retrieval,chargeback,charged',
+            'status' => 'required|string',
+            'agent_remarks' => 'nullable|string',
+            'charging_remarks' => 'nullable|string',
             'mis_remarks' => 'nullable|string',
             'manager_remark' => 'nullable|string|max:1000',
+
+            // Additional Requirements
+            'hotel_required' => 'nullable|boolean',
+            'cab_required' => 'nullable|boolean',
+            'insurance_required' => 'nullable|boolean',
+
+            // Payment processing fields
+            'payment_type' => 'nullable|string|in:full,split',
+            'payment_card_details' => 'nullable|string',
+            'full_payment' => 'nullable|array',
+            'split_payment' => 'nullable|array',
         ]);
 
         // Track changes
@@ -216,19 +223,59 @@ class AdminBookingsController extends Controller
         $newValues = [];
         $changedFields = [];
 
+        // All fields that can be updated in the booking table
         $editableFields = [
-            'booking_date', 'call_type', 'service_provided', 'service_type', 'booking_portal',
-            'language', 'email_auth_taken', 'customer_name', 'customer_email', 'customer_phone',
-            'agent_custom_id', 'billing_phone', 'billing_address', 'flight_type', 'gk_pnr',
-            'airline_pnr', 'departure_city', 'arrival_city', 'departure_date', 'return_date',
-            'airline_name', 'flight_number', 'cabin_class', 'adults', 'children', 'infants',
-            'currency', 'amount_charged', 'amount_paid_airline', 'total_mco', 'status', 'mis_remarks',
+            'booking_date', 
+            'call_type', 
+            'service_provided', 
+            'service_type', 
+            'booking_portal',
+            'language', 
+            'email_auth_taken', 
+            'customer_name', 
+            'customer_email', 
+            'customer_phone',
+            'billing_phone', 
+            'billing_address', 
+            'flight_type', 
+            'gk_pnr',
+            'airline_pnr', 
+            'cabin_class', 
+            'adults', 
+            'children', 
+            'infants',
+            'infant_in_lap',
+            'currency', 
+            'amount_charged', 
+            'amount_paid_airline', 
+            'total_mco', 
+            'status', 
+            'agent_remarks',
+            'charging_remarks',
+            'mis_remarks',
+            'hotel_required',
+            'cab_required',
+            'insurance_required',
+            'payment_card_details',
+            'payment_type',
+            'manager_remark',
         ];
 
+        // Prepare data for update
+        $updateData = [];
         foreach ($editableFields as $field) {
             if (array_key_exists($field, $validated)) {
                 $oldVal = $booking->{$field};
                 $newVal = $validated[$field];
+
+                // Handle boolean values properly
+                if (in_array($field, ['email_auth_taken', 'hotel_required', 'cab_required', 'insurance_required'])) {
+                    $oldVal = (bool) $oldVal;
+                    $newVal = (bool) $newVal;
+                    $updateData[$field] = $newVal ? 1 : 0;
+                } else {
+                    $updateData[$field] = $newVal;
+                }
 
                 if ($oldVal != $newVal) {
                     $oldValues[$field] = $oldVal;
@@ -239,7 +286,61 @@ class AdminBookingsController extends Controller
         }
 
         // Update booking
-        $booking->update($validated);
+        $booking->update($updateData);
+
+        // Handle payment processing fields separately
+        if ($request->has('payment_type')) {
+            // If full payment, update agency merchant and card details
+            if ($request->payment_type == 'full' && $request->has('full_payment')) {
+                $fullPayment = $request->full_payment;
+                
+                if (isset($fullPayment['agency_merchant_id'])) {
+                    $booking->agency_merchant_id = $fullPayment['agency_merchant_id'];
+                    // Also update agency_merchant_name if needed
+                    if (isset($fullPayment['agency_merchant_id']) && $fullPayment['agency_merchant_id']) {
+                        $merchant = Merchant::find($fullPayment['agency_merchant_id']);
+                        if ($merchant) {
+                            $booking->agency_merchant_name = $merchant->name;
+                        }
+                    }
+                }
+                
+                if (isset($fullPayment['card_last_four'])) {
+                    $booking->card_last_four = $fullPayment['card_last_four'];
+                }
+                
+                $booking->save();
+            }
+            
+            // If split payment, store the details
+            if ($request->payment_type == 'split' && $request->has('split_payment')) {
+                $splitPayment = $request->split_payment;
+                
+                // Store airline payment details
+                if (isset($splitPayment['airline'])) {
+                    if (isset($splitPayment['airline']['airline_merchant_name'])) {
+                        $booking->airline_merchant_name = $splitPayment['airline']['airline_merchant_name'];
+                    }
+                }
+                
+                // Store agency payment details
+                if (isset($splitPayment['agency'])) {
+                    if (isset($splitPayment['agency']['agency_merchant_id'])) {
+                        $booking->agency_merchant_id = $splitPayment['agency']['agency_merchant_id'];
+                        $merchant = Merchant::find($splitPayment['agency']['agency_merchant_id']);
+                        if ($merchant) {
+                            $booking->agency_merchant_name = $merchant->name;
+                        }
+                    }
+                    
+                    if (isset($splitPayment['agency']['card_last_four'])) {
+                        $booking->card_last_four = $splitPayment['agency']['card_last_four'];
+                    }
+                }
+                
+                $booking->save();
+            }
+        }
 
         // Record booking change if there were any changes
         if (count($changedFields) > 0) {

@@ -153,16 +153,18 @@
                                         <td>${{ number_format($booking->total_mco, 2) }}</td>
                                         <td>{{ ucfirst($booking->status) }}</td>
                                         <td>
-                                            <a href="{{ route('admin.bookings.show', $booking->id) }}"
-                                                class="btn btn-sm btn-info" title="View">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            @if (!$isRestricted)
-                                                <a href="{{ route('admin.bookings.edit', $booking->id) }}"
-                                                    class="btn btn-sm btn-warning" title="Edit">
-                                                    <i class="fas fa-edit"></i>
+                                            <div class="d-flex align-items-center">
+                                                <a href="{{ route('admin.bookings.show', $booking->id) }}"
+                                                    class="btn btn-sm btn-info mr-2" title="View">
+                                                    <i class="bi bi-eye"></i>
                                                 </a>
-                                            @endif
+                                                @if (!$isRestricted)
+                                                    <a href="{{ route('admin.bookings.edit', $booking->id) }}"
+                                                        class="btn btn-sm btn-warning" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty

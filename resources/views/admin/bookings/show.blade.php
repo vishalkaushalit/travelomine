@@ -296,8 +296,32 @@
                         </div>
                     @endif
 
+                    <!-- Mis Manager Remarks -->
+                    @if ($booking->manager_remark || $remarksByType->has('mis-manager'))
+                        <div class="mb-4">
+                            <h5><span class="badge bg-primary">Mis Manager</span></h5>
+                            @if ($booking->manager_remark)
+                                <div class="alert alert-primary alert-sm mb-2">
+                                    <small><strong>Legacy Remark:</strong></small><br>
+                                    {{ $booking->manager_remark }}
+                                </div>
+                            @endif
+                            @foreach ($remarksByType->get('mis-manager', []) as $remark)
+                                <div class="alert alert-light border border-primary mb-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> {{ $remark->created_at->format('d M Y H:i') }}
+                                        @if ($remark->agent)
+                                            | <strong>{{ $remark->agent->name }}</strong>
+                                        @endif
+                                    </small><br>
+                                    {{ $remark->remark_text }}
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
                     <!-- Other Remarks -->
-                    @php
+                    {{-- @php
                         $standardTypes = ['agent', 'mis', 'changes', 'support', 'charging'];
                         $otherRemarks = $remarksByType->except($standardTypes);
                     @endphp
@@ -318,7 +342,7 @@
                                 @endforeach
                             </div>
                         @endforeach
-                    @endif
+                    @endif --}}
                 @endif
             </div>
         </div>

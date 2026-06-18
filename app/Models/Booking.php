@@ -43,6 +43,7 @@ class Booking extends Model
         'adults',
         'children',
         'infants',
+        'infant_in_lap', // Added this missing field
         'card_last_four',
         'expiration_month',
         'expiration_year',
@@ -53,7 +54,8 @@ class Booking extends Model
         'total_mco',
         'agency_merchant_id',
         'agency_merchant_name',
-        'airline_merchant',
+        'airline_merchant_id', // Added this missing field
+        'airline_merchant_name', // Added this missing field
         'status',
         'agent_remarks',
         'payment_card_details',
@@ -65,6 +67,8 @@ class Booking extends Model
         'auth_email_sent_at',
         'payment_confirmed_at',
         'ticketed_at',
+        'payment_type', // Added this missing field
+        'manager_remark', // Added this missing field
     ];
 
     protected $casts = [
@@ -98,12 +102,12 @@ class Booking extends Model
             // }
 
             // Calculate total passengers
-            $booking->total_passengers = ($booking->adults ?? 0) + ($booking->children ?? 0) + ($booking->infants ?? 0);
+            $booking->total_passengers = ($booking->adults ?? 0) + ($booking->children ?? 0) + ($booking->infants ?? 0) + ($booking->infant_in_lap ?? 0);
         });
 
         static::updating(function ($booking) {
-            if ($booking->isDirty(['adults', 'children', 'infants'])) {
-                $booking->total_passengers = ($booking->adults ?? 0) + ($booking->children ?? 0) + ($booking->infants ?? 0);
+            if ($booking->isDirty(['adults', 'children', 'infants', 'infant_in_lap'])) {
+                $booking->total_passengers = ($booking->adults ?? 0) + ($booking->children ?? 0) + ($booking->infants ?? 0) + ($booking->infant_in_lap ?? 0);
             }
         });
     }
