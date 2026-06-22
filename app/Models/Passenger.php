@@ -14,6 +14,7 @@ class Passenger extends Model
         'first_name',
         'middle_name',
         'last_name',
+        'ticket_number',
         'gender',           // male, female, other
         'dob',
         'passport_number',

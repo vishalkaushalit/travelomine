@@ -164,6 +164,13 @@
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endif
+                                                <a
+                                                    href="{{ route('admin.bookings.ticket',$booking->id) }}"
+                                                    target="_blank"
+                                                    class="btn btn-primary"
+                                                >
+                                                    View E-Ticket
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>

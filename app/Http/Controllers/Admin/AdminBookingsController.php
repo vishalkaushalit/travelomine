@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Mail\MisManagerBookingChangeMail;
 use App\Models\Booking;
@@ -404,8 +405,19 @@ class AdminBookingsController extends Controller
             || ! is_null($booking->ticketed_at);
     }
 
-    public function ticketShow()
+    public function generateTicket($id)
     {
-        return view('ticket.show');
-    } 
+        $booking = Booking::with([
+            'passengers',
+            'segments',
+            'user'
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView('admin.bookings.ticket-pdf', compact('booking'))
+            ->setPaper('A4', 'portrait');
+
+        return $pdf->stream(
+            'ticket-'.$booking->booking_reference.'.pdf'
+        );
+    }
 }

@@ -410,6 +410,12 @@ Route::get('/changes/notifications', function () {
     return view('changes.notifications');
 })->middleware(['auth', 'role:changes'])->name('changes.notifications');
 
+// Ticket Generation
+Route::get(
+    '/admin/bookings/{booking}/ticket',
+    [App\Http\Controllers\Admin\AdminBookingsController::class, 'generateTicket']
+)->name('admin.bookings.ticket');
+
 // clear all cache
 Route::get('/clear-all-cache', function () {
     // Clear config cache
