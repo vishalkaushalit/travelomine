@@ -403,4 +403,9 @@ class AdminBookingsController extends Controller
             || ! is_null($booking->payment_confirmed_at)
             || ! is_null($booking->ticketed_at);
     }
+
+    public function ticketShow()
+    {
+        return view('ticket.show');
+    } 
 }

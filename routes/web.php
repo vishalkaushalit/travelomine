@@ -265,6 +265,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
+    Route::get('/ticket/show', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'ticketShow'])->name('ticket.show');
+    
 });
 Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardController::class, 'index'])->name('dashboard');
