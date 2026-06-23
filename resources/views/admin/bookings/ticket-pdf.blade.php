@@ -95,6 +95,11 @@
         padding-top: 10px;
         margin-top: 20px;
     }
+
+    .flight_icon {
+        font-size: 20px;
+        color: #003366;
+    }
 </style>
 
 <div class="ticket-card">
@@ -128,9 +133,9 @@
 
                     {{ \Carbon\Carbon::parse($booking->departure_date)->format('d M Y') }}
 
-                    @if($booking->return_date)
-                    -
-                    {{ \Carbon\Carbon::parse($booking->return_date)->format('d M Y') }}
+                    @if ($booking->return_date)
+                        -
+                        {{ \Carbon\Carbon::parse($booking->return_date)->format('d M Y') }}
                     @endif
                 </td>
 
@@ -163,50 +168,48 @@
         </table>
 
         {{-- FLIGHTS --}}
-        @foreach($booking->segments as $segment)
+        @foreach ($booking->segments as $segment)
+            <div class="flight-leg">
 
-        <div class="flight-leg">
+                <table width="100%">
+                    <tr>
+                        <td colspan="3">
+                            <span class="flight-number">
+                                {{ $segment->flight_number }}
+                            </span>
+                        </td>
+                    </tr>
 
-            <table width="100%">
-                <tr>
-                    <td colspan="3">
-                        <span class="flight-number">
-                            {{ $segment->flight_number }}
-                        </span>
-                    </td>
-                </tr>
+                    <tr>
+                        <td width="40%">
+                            <div class="time">
+                                {{ date('h:i A', strtotime($segment->departure_time)) }}
+                            </div>
 
-                <tr>
-                    <td width="40%">
-                        <div class="time">
-                            {{ date('h:i A', strtotime($segment->departure_time)) }}
-                        </div>
+                            <div class="airport">
+                                {{ $segment->from_city }}
+                                ({{ $segment->from_airport }})
+                            </div>
+                        </td>
 
-                        <div class="airport">
-                            {{ $segment->from_city }}
-                            ({{ $segment->from_airport }})
-                        </div>
-                    </td>
+                        <td width="20%" align="center">
+                            <span class="flight_icon">✈</span>
+                        </td>
 
-                    <td width="20%" align="center">
-                        ✈
-                    </td>
+                        <td width="40%" align="right">
+                            <div class="time">
+                                {{ date('h:i A', strtotime($segment->arrival_time)) }}
+                            </div>
 
-                    <td width="40%" align="right">
-                        <div class="time">
-                            {{ date('h:i A', strtotime($segment->arrival_time)) }}
-                        </div>
+                            <div class="airport">
+                                {{ $segment->to_city }}
+                                ({{ $segment->to_airport }})
+                            </div>
+                        </td>
+                    </tr>
+                </table>
 
-                        <div class="airport">
-                            {{ $segment->to_city }}
-                            ({{ $segment->to_airport }})
-                        </div>
-                    </td>
-                </tr>
-            </table>
-
-        </div>
-
+            </div>
         @endforeach
 
         {{-- PASSENGERS --}}
@@ -223,26 +226,26 @@
             </thead>
 
             <tbody>
-                @foreach($booking->passengers as $passenger)
-                <tr>
-                    <td>
-                        {{ $passenger->title }}
-                        {{ $passenger->first_name }}
-                        {{ $passenger->last_name }}
-                    </td>
+                @foreach ($booking->passengers as $passenger)
+                    <tr>
+                        <td>
+                            {{ $passenger->title }}
+                            {{ $passenger->first_name }}
+                            {{ $passenger->last_name }}
+                        </td>
 
-                    <td>
-                        {{ $passenger->passenger_type }}
-                    </td>
+                        <td>
+                            {{ $passenger->passenger_type }}
+                        </td>
 
-                    <td>
-                        {{ $passenger->ticket_number }}
-                    </td>
+                        <td>
+                            {{ $passenger->ticket_number }}
+                        </td>
 
-                    <td>
-                        {{ $passenger->passport_number }}
-                    </td>
-                </tr>
+                        <td>
+                            {{ $passenger->passport_number }}
+                        </td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
