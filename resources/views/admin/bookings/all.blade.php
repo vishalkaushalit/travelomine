@@ -153,9 +153,9 @@
                                         <td>${{ number_format($booking->total_mco, 2) }}</td>
                                         <td>{{ ucfirst($booking->status) }}</td>
                                         <td>
-                                            <div class="d-flex align-items-center">
+                                            <div class="d-flex flex-wrap align-items-center" style="gap: 5px;">
                                                 <a href="{{ route('admin.bookings.show', $booking->id) }}"
-                                                    class="btn btn-sm btn-info mr-2" title="View">
+                                                    class="btn btn-sm btn-info" title="View">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                                 @if (!$isRestricted)
@@ -167,10 +167,21 @@
                                                 <a
                                                     href="{{ route('admin.bookings.ticket',$booking->id) }}"
                                                     target="_blank"
-                                                    class="btn btn-primary"
+                                                    class="btn btn-sm btn-primary"
+                                                    title="View E-Ticket"
                                                 >
-                                                    View E-Ticket
+                                                    <i class="bi bi-file-pdf"></i>
                                                 </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="pdfMenu{{ $booking->id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="bi bi-palette"></i> PDF
+                                                    </button>
+                                                    <div class="dropdown-menu" aria-labelledby="pdfMenu{{ $booking->id }}">
+                                                        <a class="dropdown-item" href="{{ route('admin.pdf-editor.wysiwyg.booking', $booking->id) }}" target="_blank" title="WYSIWYG Builder">
+                                                            <i class="fas fa-cube"></i> WYSIWYG Builder
+                                                        </a>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
