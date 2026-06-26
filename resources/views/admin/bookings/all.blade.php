@@ -98,13 +98,13 @@
                                     <th>ID</th>
                                     <th>Agent</th>
                                     <th>Booking Date</th>
-                                    <th>Detail</th>
+                                    <th>Customer Detail</th>
                                     <th>Service</th>
-                                    <th>Flight Route</th>
+                                    <th>PNR</th>
                                     <th>PAX</th>
-                                    <th>Amount</th>
+                                    <th>Total Amount</th>
                                     <th>MCO</th>
-                                    <th>Status</th>
+                                    <th>Booking status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -123,8 +123,8 @@
                                         </td>
                                         <td>#{{ $booking->id }}</td>
                                         <td>
-                                            {{ $booking->agent_custom_id }} <br>
-                                            {{ $booking->user->name ?? 'N/A' }}
+                                            <b>{{ $booking->user->name ?? 'N/A' }}</b> <br>
+                                            {{ $booking->agent_custom_id }}
                                         </td>
                                         <td>{{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}</td>
                                         <td>
@@ -137,16 +137,7 @@
                                             {{ $booking->service_type }}
                                         </td>
                                         <td>
-                                            @if ($booking->segments->count() > 0)
-                                                @foreach ($booking->segments->take(2) as $segment)
-                                                    {{ $segment->from_city }} → {{ $segment->to_city }}<br>
-                                                @endforeach
-                                                @if ($booking->segments->count() > 2)
-                                                    +{{ $booking->segments->count() - 2 }} more
-                                                @endif
-                                            @else
-                                                N/A
-                                            @endif
+                                            {{ $booking->airline_pnr ?? 'N/A' }}
                                         </td>
                                         <td>{{ $booking->passengers->count() }}</td>
                                         <td>{{ $booking->currency }} {{ number_format($booking->amount_charged, 2) }}</td>
@@ -164,24 +155,23 @@
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endif
-                                                <a
-                                                    href="{{ route('admin.bookings.ticket',$booking->id) }}"
-                                                    target="_blank"
-                                                    class="btn btn-sm btn-primary"
-                                                    title="View E-Ticket"
-                                                >
-                                                    <i class="bi bi-file-pdf"></i>
-                                                </a>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="pdfMenu{{ $booking->id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                        <i class="bi bi-palette"></i> PDF
-                                                    </button>
-                                                    <div class="dropdown-menu" aria-labelledby="pdfMenu{{ $booking->id }}">
-                                                        <a class="dropdown-item" href="{{ route('admin.pdf-editor.wysiwyg.booking', $booking->id) }}" target="_blank" title="WYSIWYG Builder">
-                                                            <i class="fas fa-cube"></i> WYSIWYG Builder
-                                                        </a>
-                                                    </div>
+                                                <div class="btn-group" role="group">
+                                                    <a
+                                                        href="{{ route('admin.bookings.ticket.edit', $booking->id) }}"
+                                                        class="btn btn-sm btn-primary"
+                                                        title="Edit E-Ticket"
+                                                    >
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </a>
+                                                    <a
+                                                        href="{{ route('admin.bookings.ticket.direct', $booking->id) }}"
+                                                        target="_blank"
+                                                        class="btn btn-sm btn-success"
+                                                        title="Direct PDF">
+                                                        <i class="bi bi-file-pdf"></i>
+                                                    </a>
                                                 </div>
+                                               
                                             </div>
                                         </td>
                                     </tr>

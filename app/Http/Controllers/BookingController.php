@@ -249,4 +249,37 @@ class BookingController extends Controller
 
         return back()->with('success', 'Booking sent to '.$charger->name.' for charging.');
     }
+
+    public function agentEdit(Booking $booking)
+    {
+        abort_unless($booking->user_id === auth()->id(), 403);
+
+        $booking->load(['passengers']);
+        
+        return view('agent.bookings.edit', compact('booking'));
+    }
+
+    public function agentUpdate(Request $request, Booking $booking)
+    {
+        abort_unless($booking->user_id === auth()->id(), 403);
+
+        $validated = $request->validate([
+            'passengers' => 'required|array|min:1',
+            'passengers.*.id' => 'required|exists:passengers,id',
+            'passengers.*.ticket_number' => 'nullable|string|min:11',
+            'passengers.*.seat_number' => 'nullable|string|max:50',
+        ]);
+
+        foreach ($validated['passengers'] as $passengerData) {
+            $passenger = $booking->passengers()->find($passengerData['id']);
+            if ($passenger) {
+                $passenger->update([
+                    'ticket_number' => $passengerData['ticket_number'] ?? null,
+                    'seat_number' => $passengerData['seat_number'] ?? null,
+                ]);
+            }
+        }
+
+        return redirect()->route('agent.bookings.show', $booking->id)->with('success', 'Passengers ticket/seat details updated successfully.');
+    }
 }

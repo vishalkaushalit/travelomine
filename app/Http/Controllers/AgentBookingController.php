@@ -215,6 +215,8 @@ class AgentBookingController extends Controller
             'passengers.*.seat_preference' => 'nullable|string|max:100',
             'passengers.*.meal_preference' => 'nullable|string|max:100',
             'passengers.*.special_assistance' => 'nullable|string|max:255',
+            'passengers.*.ticket_number' => 'nullable|string|min:11',
+            'passengers.*.seat_number' => 'nullable|string|max:50',
 
             // Payment Info
             'currency' => 'required|string|max:10',
@@ -374,6 +376,8 @@ class AgentBookingController extends Controller
                 'seat_preference' => $passenger['seat_preference'] ?? null,
                 'meal_preference' => $passenger['meal_preference'] ?? null,
                 'special_assistance' => $passenger['special_assistance'] ?? null,
+                'ticket_number' => $passenger['ticket_number'] ?? null,
+                'seat_number' => $passenger['seat_number'] ?? null,
             ]);
         }
     }

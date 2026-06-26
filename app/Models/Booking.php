@@ -72,6 +72,7 @@ class Booking extends Model
     ];
 
     protected $casts = [
+        'ticket_data' => 'array',
         'booking_date' => 'date',
         'departure_date' => 'date',
         'return_date' => 'date',

@@ -935,6 +935,14 @@
                                 <label>Special Assistance</label>
                                 <input type="text" name="passengers[${index}][special_assistance]" class="form-control" placeholder="Wheelchair/etc">
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Ticket Number</label>
+                                <input type="text" name="passengers[${index}][ticket_number]" class="form-control" placeholder="Optional (>10 digits)">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Seat Number</label>
+                                <input type="text" name="passengers[${index}][seat_number]" class="form-control" placeholder="Optional">
+                            </div>
                         </div>
                     </div>
                 `);

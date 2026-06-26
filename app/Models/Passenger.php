@@ -9,13 +9,12 @@ class Passenger extends Model
 {
     protected $fillable = [
         'booking_id',
-        'passenger_type',   // ADT, CHD, INF, INL
-        'title',            // Mr, Mrs, Ms, Miss, Dr, Master
+        'passenger_type',
+        'title',
         'first_name',
         'middle_name',
         'last_name',
-        'ticket_number',
-        'gender',           // male, female, other
+        'gender',
         'dob',
         'passport_number',
         'passport_expiry',
@@ -23,15 +22,35 @@ class Passenger extends Model
         'seat_preference',
         'meal_preference',
         'special_assistance',
+        'ticket_number',
+        'seat_number',
     ];
 
+    // ✅ FIX: Use only ONE casts definition (remove the duplicate)
     protected function casts(): array
     {
         return [
-            'dob'             => 'date',
+            'dob' => 'date',
             'passport_expiry' => 'date',
+            // ✅ Add these to ensure they are treated as strings
+            'passenger_type' => 'string',
+            'title' => 'string',
+            'first_name' => 'string',
+            'last_name' => 'string',
+            'ticket_number' => 'string',
+            'seat_number' => 'string',
         ];
     }
+
+    // ❌ REMOVE THIS DUPLICATE - it's causing conflicts
+    // protected $casts = [
+    //     'passenger_type' => 'string',
+    //     'title' => 'string',
+    //     'first_name' => 'string',
+    //     'last_name' => 'string',
+    //     'ticket_number' => 'string',
+    //     'seat_number' => 'string',
+    // ];
 
     // ✅ RELATIONSHIP
     public function booking(): BelongsTo

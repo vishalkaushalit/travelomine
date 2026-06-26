@@ -57,7 +57,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 // use App\Mail\TestMail;
-
 Route::get('/', function () {
     return view('welcome');
 })->name('public.home');
@@ -425,11 +424,24 @@ Route::get('/changes/notifications', function () {
 })->middleware(['auth', 'role:changes'])->name('changes.notifications');
 
 // Ticket Generation
-Route::get(
-    '/admin/bookings/{booking}/ticket',
-    [App\Http\Controllers\Admin\AdminBookingsController::class, 'generateTicket']
-)->name('admin.bookings.ticket');
-
+// Route::get(
+//     '/admin/bookings/{booking}/ticket',
+//     [App\Http\Controllers\Admin\AdminBookingsController::class, 'generateTicket']
+// )->name('admin.bookings.ticket');
+// Ticket Routes
+Route::prefix('admin/bookings')->name('admin.bookings.')->group(function () {
+    // Edit ticket form
+    Route::get('/{booking}/ticket/edit', [App\Http\Controllers\Admin\AdminBookingsController::class, 'editTicket'])
+        ->name('ticket.edit');
+    
+    // Generate ticket PDF (POST from edit form)
+    Route::post('/{booking}/ticket/generate', [App\Http\Controllers\Admin\AdminBookingsController::class, 'generateTicket'])
+        ->name('ticket.generate');
+    
+    // Optional: Direct PDF generation (if you still want to keep it)
+    Route::get('/{booking}/ticket', [App\Http\Controllers\Admin\AdminBookingsController::class, 'generateTicket'])
+        ->name('ticket.direct');
+});
 // clear all cache
 Route::get('/clear-all-cache', function () {
     // Clear config cache

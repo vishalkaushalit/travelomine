@@ -20,7 +20,6 @@ class FlightSegmentController extends Controller
     {
         $validated = $request->validate([
             'flight_type' => 'nullable|in:oneway,roundtrip,multicity',
-
             'segments' => 'required_if:service_provided,Flight|array|min:1',
             'segments.*.from_city' => 'required|string|max:100',
             'segments.*.to_city' => 'required|string|max:100',
