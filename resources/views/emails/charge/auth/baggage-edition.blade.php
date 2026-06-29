@@ -1,17 +1,42 @@
-    <h2 style="color: #1f2937; margin-bottom: 8px;">Baggage Charge Authorization</h2>
-    <p style="color: #6b7280; margin: 16px 0;">Confirmation #: {{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}</p>
+<h3>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} Baggage Addition Confirmation.
+    </h3> 
+    <p>Dear {{ $booking->customer_name ?? 'Passeneger' }},</p>
+    <p>Greetings of the day !!</p>
+    <p>As per our conversation and as agreed, we have booked your reservation with
+        {{ $booking->segments->first()?->airline_name ?? 'the airline' }} under
+        Confirmation {{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}. Please see the details
+        below.
+    </p>
+    <p>
+        Total cost for all passengers: {{ $booking->currency ?? 'USD' }}
+        {{ number_format($booking->amount_charged, 2) }} (all incl. taxes and fees).
+    </p>
 
-    <p>Dear {{ $booking->customer_name ?? 'Passenger' }},</p>
-    
-    <p>Thank you for choosing us. We are confirming the baggage charges for your upcoming flights with {{ $booking->segments->first()?->airline_name ?? 'the airline' }}. Your additional baggage fees are detailed below and require your authorization.</p>
-    
-    <p><strong>Total Baggage Charge:</strong> {{ $booking->currency ?? 'USD' }} {{ number_format($booking->amount_charged, 2) }} (inclusive of taxes and fees)</p>
-    
-    <p>By replying to this email with <strong>'I Agree'</strong>, you authorize the baggage charges to be charged to the payment method ending in ******{{ $booking->cards->first()?->card_last_four ?? '****' }}.</p>
+    <p>
+        As per our telephonic conversation I,<b> {{ $booking->customer_name ?? '' }}</b>, authorize
+        <b>
+            {{ $booking->segments->first()?->airline_name ?? 'the airline' }} /
+            {{ $booking->agency_merchant_name ?? '' }}
+        </b>
+        to process the above-mentioned charges under their respective merchants for charging my
+        ******{{ $booking->cards->first()?->card_last_four ?? '****' }} card for the booking the
+        below-mentioned
+        itinerary
+        with {{ $booking->segments->first()?->airline_name ?? 'the airline' }}.
+    </p>
+    <p>
+        This payment authorization is for the amount indicated above and is valid for one-time use only. I certify that
+        I am
+        <b>{{ $booking->customer_name ?? '' }}</b>, an authorized user of this card and
+        that I will not dispute the payment with my credit/debit
+        card company/bank.
+    </p>
+    <p>
+        Kindly confirm your acceptance of the terms and agreement to the declaration by replying to this email with
+        'I Agree' or 'I Authorize'.
+    </p>
 
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-    
-    <h3 style="color: #1f2937; font-size: 16px; margin-top: 24px;">Baggage Charge Breakdown</h3>
+    <h4>Charges Description:</h4>
 
     @foreach ($booking->cards as $index => $card)
         @php
@@ -36,116 +61,92 @@
                                         ($booking->agencymerchantname ?? 'Agency Merchant'))))));
         @endphp
 
-        <p style="color: #374151; margin: 8px 0;">
-            {{ $index + 1 }}. <strong>{{ $merchantName }}</strong> - Baggage Fees<br>
+        <p>
+            {{ $index + 1 }}.
             {{ $booking->currency ?? 'USD' }} {{ number_format((float) $amount, 2) }}
+            ({{ $merchantName }}, incl. the taxes and fees)
         </p>
     @endforeach
 
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-    
-    <h3 style="color: #1f2937; font-size: 16px;">Passenger Information</h3>
+    <h4>Passenger Details:</h4>
 
-    <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-        <thead>
-            <tr style="background-color: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
-                <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 14px;">Passenger</th>
-                <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 14px;">Type</th>
-                <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 14px;">DOB</th>
-                <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 14px;">Gender</th>
+    <table style="width: 100%; border: 1px solid #000; border-collapse: collapse; margin: 16px 0;">
+        <thead style="border: 1px solid #000;">
+            <tr style="background-color: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
+                <th style="padding: 12px 16px; text-align: left; font-weight: 600;">S. No.</th>
+                <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Type</th>
+                <th style="padding: 12px 16px; text-align: left; font-weight: 600;">First Name</th>
+                <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Middle Name</th>
+                <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Last Name</th>
+                <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Gender</th>
+                <th style="padding: 12px 16px; text-align: left; font-weight: 600;">DOB</th>
+                <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Price</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($booking->passengers as $index => $passenger)
                 <tr style="border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 12px;">{{ $passenger->first_name }} {{ $passenger->last_name }}</td>
-                    <td style="padding: 12px;">{{ $passenger->type ?? 'ADT' }}</td>
-                    <td style="padding: 12px;">
-                        {{ $passenger->dob ? \Carbon\Carbon::parse($passenger->dob)->format('M d, Y') : '-' }}
+                    <td style="padding: 12px 16px;">{{ $index + 1 }}</td>
+                    <td style="padding: 12px 16px;">{{ $passenger->type ?? 'ADT' }}</td>
+                    <td style="padding: 12px 16px;">{{ $passenger->first_name }}</td>
+                    <td style="padding: 12px 16px;">{{ $passenger->middle_name ?? '-' }}</td>
+                    <td style="padding: 12px 16px;">{{ $passenger->last_name }}</td>
+                    <td style="padding: 12px 16px;">{{ $passenger->gender ?? '-' }}</td>
+                    <td style="padding: 12px 16px;">
+                        {{ $passenger->dob ? \Carbon\Carbon::parse($passenger->dob)->format('M-d-Y') : '-' }}
                     </td>
-                    <td style="padding: 12px;">{{ $passenger->gender ?? '-' }}</td>
+                    <td style="padding: 12px 16px;">USD
+                        {{ number_format(($booking->amount_charged ?? 0) / max($booking->passengers->count(), 1), 2) }}
+                    </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-    
-    <h3 style="color: #1f2937; font-size: 16px;">Payment Summary</h3>
+
+    <h4>Purchase Summary:</h4>
+
+    <h6>Payment Type - Credit/Debit Card Authorization</h6>
 
     <table style="width: 100%; border-collapse: collapse; margin: 16px 0; background-color: #f9fafb;">
         <tbody>
             <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 12px; font-weight: 600; background-color: #f3f4f6; width: 40%;">Cardholder Name:</td>
-                <td style="padding: 12px;">{{ $booking->cards->first()?->card_holder_name ?? 'N/A' }}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 12px; font-weight: 600; background-color: #f3f4f6;">Card Type:</td>
-                <td style="padding: 12px;">{{ $booking->cards->first()?->card_type ?? 'N/A' }}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 12px; font-weight: 600; background-color: #f3f4f6;">Card (Last 4):</td>
-                <td style="padding: 12px;">{{ $booking->cards->first()?->card_last_four ?? 'N/A' }}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 12px; font-weight: 600; background-color: #f3f4f6;">Email:</td>
-                <td style="padding: 12px;">{{ $booking->customer_email }}</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #e5e7eb; background-color: #fef3c7;">
-                <td style="padding: 12px; font-weight: 600; background-color: #fcd34d;">Baggage Charge:</td>
-                <td style="padding: 12px; font-weight: 600; color: #92400e;">
-                    {{ $booking->currency ?? 'USD' }} {{ number_format($booking->amount_charged, 2) }}
+                <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6; width: 40%;">Card Holder
+                    Name:
                 </td>
+                <td style="padding: 12px 16px;">{{ $booking->cards->first()?->card_holder_name ?? 'N/A' }}</td>
             </tr>
             <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 12px; font-weight: 600; background-color: #f3f4f6;">Authorization Date:</td>
-                <td style="padding: 12px;">{{ \Carbon\Carbon::now()->format('M d, Y') }}</td>
+                <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Card Type:</td>
+                <td style="padding: 12px 16px;">{{ $booking->cards->first()?->card_type ?? 'N/A' }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Card Number:</td>
+                <td style="padding: 12px 16px;">{{ $booking->cards->first()?->card_number ?? 'N/A' }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Expiration:</td>
+                <td style="padding: 12px 16px;">{{ $booking->cards->first()?->expiration ?? 'N/A' }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Billing Address:</td>
+                <td style="padding: 12px 16px;">{{ $booking->cards->first()?->billing_address ?? 'N/A' }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Phone Number:</td>
+                <td style="padding: 12px 16px;">{{ $booking->cards->first()?->billing_phone ?? 'N/A' }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Email:</td>
+                <td style="padding: 12px 16px;">{{ $booking->customer_email }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Total Amount:</td>
+                <td style="padding: 12px 16px; font-weight: 600; color: #059669;">USD
+                    {{ number_format($booking->amount_charged, 2) }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Transaction Date:</td>
+                <td style="padding: 12px 16px;">{{ \Carbon\Carbon::now()->format('M dS, Y') }}</td>
             </tr>
         </tbody>
     </table>
-
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-    
-    <h3 style="color: #1f2937; font-size: 16px;">Baggage Information</h3>
-
-    <p style="margin: 12px 0;">
-        <strong>Baggage Allowance:</strong> Please check your airline confirmation for specific baggage allowances included with your ticket. These charges are for additional baggage beyond your included allowance.
-    </p>
-
-    <p style="margin: 12px 0;">
-        <strong>Processing:</strong> This charge will be added to your booking and displayed on your airline confirmation. The baggage will be registered with the airline at check-in.
-    </p>
-
-    <p style="margin: 12px 0;">
-        <strong>Refund Policy:</strong> Baggage charges are non-refundable once the baggage has been checked in with the airline. Cancellations must be made before your scheduled departure time.
-    </p>
-
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-    
-    <h3 style="color: #1f2937; font-size: 16px;">Important Notes</h3>
-
-    <ul style="margin: 12px 0; padding-left: 20px; color: #374151;">
-        <li>Verify passenger names match your travel documents exactly</li>
-        <li>Each piece of baggage must not exceed airline size and weight restrictions</li>
-        <li>Excess baggage charges may apply at the airport if limits are exceeded</li>
-        <li>For international flights, baggage policies may vary by airline</li>
-    </ul>
-
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-    
-    <h3 style="color: #1f2937; font-size: 16px;">Need Assistance?</h3>
-
-    <p style="margin: 12px 0;">
-        <strong>Contact our support team:</strong>
-    </p>
-    <ul style="margin: 8px 0; padding-left: 20px;">
-        <li><strong>Phone:</strong> {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }} (24/7)</li>
-        <li><strong>Email:</strong> {{ $booking->agencyMerchant->support_mail ?? 'support@travelomine.com' }}</li>
-        <li><strong>Hours:</strong> Available 24/7 for your convenience</li>
-    </ul>
-
-    <p style="margin-top: 16px; color: #6b7280; font-size: 13px;">
-        <em>
-            {{ $booking->agency_merchant_name }} is an independent travel agency. We are not affiliated with any airline. 
-            Baggage charges are set by the airline and may appear separately on your billing statement from {{ $booking->agency_merchant_name }} and the airline as per our payment arrangement.
-        </em>
-    </p>

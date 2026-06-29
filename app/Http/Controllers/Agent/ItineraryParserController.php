@@ -381,6 +381,7 @@ private function buildSegment(
             'CX' => 'Cathay Pacific',
             'AI' => 'Air India',
             'IX' => 'Air India Express',
+            'AM' => 'Aeromexico',
             '6E' => 'IndiGo',
             'SG' => 'SpiceJet',
             'UK' => 'Vistara',

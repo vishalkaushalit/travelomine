@@ -927,8 +927,8 @@
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label>Meal Preference</label>
-                                <input type="text" name="passengers[${index}][meal_preference]" class="form-control" placeholder="Vegetarian/Kosher/etc">
+                                <label>Ticket Number</label>
+                                <input type="text" name="passengers[${index}][ticket_number]" class="form-control" placeholder="13 Digit code">
                             </div>
 
                             <div class="col-md-4 mb-3">

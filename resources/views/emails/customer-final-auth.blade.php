@@ -22,7 +22,6 @@
                             @include('components.flight-terms')
                         </td>
                     </tr>
-
                     <!-- Footer -->
                     <tr>
                         <td style="background:#f8f9fa; padding:15px; text-align:center; font-size:12px; color:#666;">

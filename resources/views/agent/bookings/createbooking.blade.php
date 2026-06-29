@@ -110,14 +110,8 @@
                             <label class="form-label">Airline PNR</label>
                             <input type="text" name="airline_pnr" class="form-control" value="{{ old('airline_pnr') }}">
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Ticket ID</label>
-                                <input type="text" name="ticket_id" class="form-control" value="{{ old('ticket_id') }}">
-                        </div>
                     </div>
-
                     <div id="segments_container"></div>
-
                     <div class="mt-2" id="add_segment_wrapper" style="display:none;">
                         <button type="button" class="btn btn-outline-primary btn-sm" id="add_segment_btn">
                             <i class="bi bi-plus-circle"></i> Add More Segment
@@ -681,6 +675,10 @@
                     <label>Arrival Time</label>
                     <input type="time" name="segments[${index}][arrival_time]" class="form-control" placeholder="e.g., 18:45">
                 </div>
+                <div class="col-md-2 mb-3">
+                    <label>Airline Code <span class="text-danger">*</span></label>
+                    <input type="text" name="segments[${index}][airline_code]" class="form-control" placeholder="e.g., DL" required>
+                </div>
                 <div class="col-md-3 mb-3">
                     <label>Airline Name <span class="text-danger">*</span></label>
                     <input type="text" name="segments[${index}][airline_name]" class="form-control" placeholder="e.g., Delta" required>
@@ -697,20 +695,16 @@
                     </select>
                 </div>
             </div>
-        </div>
-    `;
+        </div>`;
             }
-
             function buildSegments() {
                 const type = elements.flightType.value;
                 elements.segmentsContainer.innerHTML = '';
                 segmentIndex = 0;
-
                 if (!type) {
                     elements.addSegmentWrapper.style.display = 'none';
                     return;
                 }
-
                 if (type === 'oneway') {
                     elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
                     segmentIndex++;
@@ -829,8 +823,8 @@
                                     <input type="text" name="passengers[${index}][seat_preference]" class="form-control" placeholder="Window/Aisle/etc">
                                 </div>
                                 <div class="col-md-4 col-lg-2 mb-3">
-                                    <label>Meal Preference</label>
-                                    <input type="text" name="passengers[${index}][meal_preference]" class="form-control" placeholder="Vegetarian/Kosher/etc">
+                                    <label>Ticket number</label>
+                                    <input type="text" name="passengers[${index}][ticket_number]" class="form-control" placeholder="13 digit code">
                                 </div>
                                 
                             </div>
@@ -1104,7 +1098,6 @@
                 const input = card.querySelector('.segment-date-input');
 
                 if (!label || !input) return;
-
                 if (flightType === 'roundtrip' && index === 1) {
                     // Second segment in a round trip = Return Date
                     label.innerHTML = 'Return Date <span class="text-danger">*</span>';
@@ -1115,5 +1108,12 @@
                     input.name = 'segments[' + index + '][departure_date]';
                 }
             });
+        }
+    </script>
+    <script>
+        // convert airline_code into uppercase directly'
+        document.querySelector('[name="airline_code"]').addEventListener('change', function() {
+            this.value = this.value.toUpperCase();
+        });
     </script>
 @endpush

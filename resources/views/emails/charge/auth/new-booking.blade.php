@@ -1,6 +1,7 @@
-    <h3>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} New Booking Confirmation.
-    </h3>
+<h3>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} New Booking Confirmation.
+    </h3> 
 
+   
     <p>Dear {{ $booking->customer_name ?? 'Passeneger' }},</p>
     <p>Greetings of the day !!</p>
     <p>As per our conversation and as agreed, we have booked your reservation with

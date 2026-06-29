@@ -11,7 +11,7 @@
                     <h4 class="mb-0">
                         <i class="bi bi-calendar-check"></i> 
                         Bookings for Agent: {{ $agent->name ?? 'N/A' }}
-                        <small class="text-muted">({{ $agent->email ?? '' }})</small>
+                        <small class="text-white">({{ $agent->email ?? '' }})</small>
                     </h4>
                 </div>
                 
@@ -69,12 +69,6 @@
                                                class="btn btn-sm btn-info">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                                <!-- <a href="{{ route('admin.bookings.ticket', $booking->id) }}" class="btn btn-primary">
-                                                    <i class="fas fa-ticket-alt"></i> Ticket
-                                                </a> -->
-                                            <!-- <a href="{{ route('admin.bookings.edit', $booking->id) }}" class="btn btn-info">
-                                                <i class="fas fa-edit"></i> Edit Booking
-                                            </a> -->
                                         </td>
                                     </tr>
                                     @endforeach

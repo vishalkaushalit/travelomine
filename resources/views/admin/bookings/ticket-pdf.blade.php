@@ -31,13 +31,13 @@
     .airline-logo-box {
         background: #fff;
         padding: 8px;
-        border-radius: 12px;
         display: inline-block;
     }
 
     .airline-logo-box img {
-        height: 70px;
-        max-width: auto;
+        height: auto;
+        max-width: 120px;
+        width: auto;
         object-fit: contain;
     }
 
@@ -283,13 +283,13 @@
                         </div>
                     @else
                         <div class="brand-fallback">
-                            {{ $booking->airline_name ?? 'Airline' }}
+                            {{ $booking->airline_name ?? 'Airlines' }}
                         </div>
                     @endif
                 </td>
                 <td class="header-info">
                     <h1>E-Ticket </h1>
-                    <div class="pnr-badge" style="background: #e07129 !important">PNR: {{ $booking->airline_pnr }}</div>
+                    <div class="pnr-badge" style="color:#fff">PNR: {{ $booking->airline_pnr }}</div>
                 </td>
             </tr>
         </table>
@@ -325,12 +325,10 @@
                 <table class="flight-header-table">
                     <tr>
                         <td class="flight-number" style="text-align: left;">
-                            Flight: {{ $segment->airline->airline_name ?? $booking->airline_name }} &bull; {{ $segment->flight_number }}
+                            Flight: {{ $segment->airline->airline_code ?? $booking->airline_code }}{{ $segment->flight_number }}
                         </td>
                         <td style="text-align: right;">
                             <div class="flight-date">
-                                <!-- {{ \Carbon\Carbon::parse($segment->departure_time)->format('D, d M Y') }} -->
-                                  <!-- departure date  -->
                                    {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, d M Y') }}
                             </div>
                         </td>

@@ -118,6 +118,7 @@
                                 <th>Last Name</th>
                                 <th>DOB</th>
                                 <th>Sex</th>
+                                <th>Ticket Number</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -128,6 +129,7 @@
                                     <td>{{ $passenger->last_name }}</td>
                                     <td>{{ $passenger->dob->format('d M Y') }}</td>
                                     <td>{{ $passenger->gender }}</td>
+                                    <td>{{ $booking->ticket_number ?? 'N/A' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
