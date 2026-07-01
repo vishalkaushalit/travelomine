@@ -231,6 +231,14 @@
                                 </a>
                             </li>
 
+                            <!-- show mco  -->
+                             <li class="nav-item">
+                                <a href="{{ route('agent.mco.index') }}" class="nav-link">
+                                    <i class="nav-icon fas fa-money-bill"></i>
+                                    <p>Show MCO</p>
+                                </a>
+                             </li>
+
                             <!-- Settings (Placeholder) -->
                             <li class="nav-item">
                                 <a href="#" class="nav-link">

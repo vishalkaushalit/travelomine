@@ -1,5 +1,4 @@
 <body style="margin:0;padding:30px;background:#f3f4f6;">
-
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
             <td align="center">

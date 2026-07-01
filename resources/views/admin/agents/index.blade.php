@@ -3,8 +3,18 @@
 @section('title', 'All Agents')
 
 @section('content')
+
     <div class="container-fluid py-4">
-        <h4 class="mb-3">All Agents</h4>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h4 class="mb-3">All Agents</h4>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ route('admin.users.create') }}" class="btn btn-primary float-right m-auto">
+                    <i class="bi bi-plus-circle"></i> Add Agent
+                </a>
+            </div>
+        </div>
         <div class="card shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">

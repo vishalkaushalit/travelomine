@@ -305,7 +305,7 @@
                 </td>
                 <td>
                     <span class="summary-label">Flight Type</span>
-                    <span class="summary-value">{{ ucfirst($booking->flight_type) }}</span>
+                    <span class="summary-value">{{ ucwords(str_replace('_', ' ', $booking->flight_type ?? 'one_way')) }}</span>
                 </td>
                 <td>
                     <span class="summary-label">Cabin Class</span>

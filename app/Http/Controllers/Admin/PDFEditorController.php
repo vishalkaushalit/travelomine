@@ -9,71 +9,6 @@ use Illuminate\Http\Request;
 
 class PDFEditorController extends Controller
 {
-    /**
-     * Show WYSIWYG builder
-     */
-    public function wysiwygBuilder($bookingId = null)
-    {
-        $booking = null;
-        if ($bookingId) {
-            $booking = Booking::with(['passengers', 'segments'])->findOrFail($bookingId);
-        }
-        return view('admin.bookings.wysiwyg-pdf-builder', compact('booking'));
-    }
-
-    /**
-     * Generate PDF from WYSIWYG builder data
-     */
-    public function generateFromWysiwyg(Request $request)
-    {
-        $components = $request->validate([
-            'components' => 'required|array',
-            'components.*.type' => 'required|string',
-        ]);
-
-        $html = $this->buildHTMLFromComponents($components['components']);
-
-        $pdf = Pdf::loadHTML($html)
-            ->setPaper('A4', 'portrait');
-
-        return $pdf->stream('wysiwyg-design.pdf');
-    }
-
-    /**
-     * Save template
-     */
-    public function saveTemplate(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|string|in:visual,wysiwyg',
-            'data' => 'required|array',
-        ]);
-
-        // You can implement database storage here
-        // For now, this returns the data for client-side storage
-        return response()->json([
-            'success' => true,
-            'message' => 'Template saved successfully',
-            'template' => $validated
-        ]);
-    }
-
-    /**
-     * Load template
-     */
-    public function loadTemplate(Request $request)
-    {
-        $validated = $request->validate([
-            'template_id' => 'required|string',
-        ]);
-
-        // You can implement database retrieval here
-        return response()->json([
-            'success' => true,
-            'message' => 'Template loaded',
-        ]);
-    }
 
     /**
      * Generate booking-specific PDF with template
@@ -110,7 +45,7 @@ class PDFEditorController extends Controller
                 'arrival_city' => $booking->arrival_city,
                 'departure_date' => \Carbon\Carbon::parse($booking->departure_date)->format('d M Y'),
                 'return_date' => $booking->return_date ? \Carbon\Carbon::parse($booking->return_date)->format('d M Y') : null,
-                'flight_type' => ucfirst($booking->flight_type ?? 'Oneway'),
+                'flight_type' => ucwords(str_replace('_', ' ', $booking->flight_type ?? 'one_way')),
                 'total_passengers' => $booking->passengers->count(),
                 'ticket_number' => $booking->passengers->first()?->ticket_number,
                 'airline_pnr' => $booking->airline_pnr,
@@ -286,6 +221,7 @@ class PDFEditorController extends Controller
             '{{airline_pnr}}' => $booking->airline_pnr ?? '',
             '{{gk_pnr}}' => $booking->gk_pnr ?? '',
             '{{status}}' => $booking->status ?? '',
+            '{{flight_type}}' => $booking->flight_type ?? '',
         ];
 
         return str_replace(

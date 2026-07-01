@@ -20,7 +20,7 @@ class User extends Authenticatable
         'alias_name',
         'email',
         'extension_number',
-        'phone',
+        'alternate_number',
         'password',
         'agent_custom_id',
         'role',
@@ -60,13 +60,13 @@ class User extends Authenticatable
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
-            'admin' => in_array($this->role, ['admin', 'manager']), // Managers assist admins
+            'admin' => in_array($this->role, ['admin', 'manager']), 
             'agent' => $this->role === 'agent',
-            'charge' => in_array($this->role, ['charge']), // Multiple charging team members
-            'support' => in_array($this->role, ['support']),   // Multiple support team members
-            'mis' => in_array($this->role, ['mis']),           // Multiple MIS team members
-            'mis-manager' => in_array($this->role, ['mis-manager']),           // Multiple MIS Manager team members
-            'changes' => in_array($this->role, ['changes']),           // Multiple Changes team members
+            'charge' => in_array($this->role, ['charge']), 
+            'support' => in_array($this->role, ['support']),   
+            'mis' => in_array($this->role, ['mis']),           
+            'mis-manager' => in_array($this->role, ['mis-manager']),
+            'changes' => in_array($this->role, ['changes']),        
             default => false,
         };
     }

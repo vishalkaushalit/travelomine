@@ -22,53 +22,99 @@ class AdminBookingsController extends Controller
 {
 
     /**
-     * Display ALL bookings (not filtered by agent)
+     * Display ALL bookings with advanced filtering, sorting, and search
      */
     public function all(Request $request)
     {
         $query = Booking::with(['user', 'passengers', 'segments']);
 
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
+        // ============ SEARCH ============
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('customer_email', 'like', "%{$search}%")
+                $q->where('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_email', 'like', "%{$search}%")
                   ->orWhere('customer_phone', 'like', "%{$search}%")
                   ->orWhere('agent_custom_id', 'like', "%{$search}%")
+                  ->orWhere('booking_reference', 'like', "%{$search}%")
+                  ->orWhere('airline_pnr', 'like', "%{$search}%")
+                  ->orWhere('gk_pnr', 'like', "%{$search}%")
                   ->orWhere('id', 'like', "%{$search}%");
             });
         }
 
-        // Filter by status
-        if ($request->has('status') && $request->status != '') {
+        // ============ DATE RANGE FILTER ============
+        if ($request->filled('from_date')) {
+            $query->whereDate('booking_date', '>=', $request->from_date);
+        }
+        
+        if ($request->filled('to_date')) {
+            $query->whereDate('booking_date', '<=', $request->to_date);
+        }
+
+        // ============ STATUS FILTER ============
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by service
-        if ($request->has('service') && $request->service != '') {
+        // ============ SERVICE FILTER ============
+        if ($request->filled('service')) {
             $query->where('service_provided', $request->service);
         }
 
-        // Filter by agent
-        if ($request->has('agent_id') && $request->agent_id != '') {
+        // ============ AGENT FILTER ============
+        if ($request->filled('agent_id')) {
             $query->where('user_id', $request->agent_id);
         }
 
-        // Filter by date range
-        if ($request->has('date_from') && $request->date_from != '') {
-            $query->whereDate('booking_date', '>=', $request->date_from);
-        }
-        if ($request->has('date_to') && $request->date_to != '') {
-            $query->whereDate('booking_date', '<=', $request->date_to);
-        }
-
-        $bookings = $query->orderBy('created_at', 'desc')->paginate(25);
+        // ============ SORTING ============
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
         
-        $agents = User::where('email', 'like', '%@callinggenie.com')
-            ->orWhere('email', 'like', '%@trafficpirates.com')
-            ->get();
+        // Allowed sort fields to prevent SQL injection
+        $allowedSortFields = [
+            'id', 'booking_reference', 'customer_name', 'customer_email', 
+            'booking_date', 'created_at', 'status', 'amount_charged',
+            'airline_pnr', 'service_provided', 'total_passengers'
+        ];
+        
+        if (in_array($sortField, $allowedSortFields)) {
+            $query->orderBy($sortField, $sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
 
-        return view('admin.bookings.all', compact('bookings', 'agents'));
+        // ============ PER PAGE ============
+        $perPage = $request->get('per_page', 25);
+        $allowedPerPage = [5, 10, 25, 50, 100, 250, 500, 1000, 5000];
+        
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 25;
+        }
+
+        // ============ EXECUTE QUERY ============
+        $bookings = $query->paginate($perPage);
+        
+        // Preserve query parameters in pagination links
+        $bookings->appends($request->except('page'));
+
+        // ============ GET AGENTS FOR FILTER DROPDOWN ============
+        $agents = User::where(function($q) {
+            $q->where('email', 'like', '%@callinggenie.com')
+              ->orWhere('email', 'like', '%@trafficpirates.com');
+        })->orderBy('name')->get();
+
+        // ============ STATS CARDS ============
+        $stats = [
+            'total' => Booking::count(),
+            'pending' => Booking::where('status', 'pending')->count(),
+            'charged' => Booking::where('status', 'charged')->count(),
+            'ticketed' => Booking::where('status', 'ticketed')->count(),
+            'confirmed' => Booking::where('status', 'confirmed')->count(),
+            'total_mco' => Booking::sum('total_mco'),
+        ];
+
+        return view('admin.bookings.all', compact('bookings', 'agents', 'stats'));
     }
 
     /**
@@ -315,10 +361,8 @@ class AdminBookingsController extends Controller
             'user'
         ])->findOrFail($id);
 
-        // Get additional ticket data if exists
         $ticketData = $booking->ticket_data ?? [];
         
-        // Get optional fields selection
         $optionalFields = [
             'passport_number' => false,
             'baggage' => false,
@@ -337,209 +381,194 @@ class AdminBookingsController extends Controller
     */
     public function generateTicket(Request $request, $id)
     {
-    $booking = Booking::with([
-        'passengers',
-        'segments.airline',
-        'user'
-    ])->findOrFail($id);
+        $booking = Booking::with([
+            'passengers',
+            'segments.airline',
+            'user'
+        ])->findOrFail($id);
 
-    // If it's a GET request and no POST data, generate PDF from existing data
-    if ($request->isMethod('get') && !$request->has('_token')) {
+        if ($request->isMethod('get') && !$request->has('_token')) {
+            $pdf = Pdf::loadView('admin.bookings.ticket-pdf', compact('booking'))
+                ->setPaper('A4', 'portrait');
+            
+            return $pdf->stream(
+                'ticket-'.($booking->booking_reference ?? $booking->id).'.pdf'
+            );
+        }
+
+        $validated = $request->validate([
+            'booking_reference' => 'nullable|string|max:50',
+            'airline_pnr' => 'nullable|string|max:50',
+            'departure_city' => 'nullable|string|max:100',
+            'arrival_city' => 'nullable|string|max:100',
+            'departure_date' => 'nullable|date',
+            'return_date' => 'nullable|date',
+            'flight_type' => 'nullable|string',
+            'total_passengers' => 'nullable|integer',
+            'cabin_class' => 'nullable|string',
+            'airline_name' => 'nullable|string',
+            
+            'passengers' => 'nullable|array',
+            'passengers.*.title' => 'nullable|string|max:10',
+            'passengers.*.first_name' => 'nullable|string|max:255',
+            'passengers.*.last_name' => 'nullable|string|max:255',
+            'passengers.*.passenger_type' => 'nullable|string|max:50',
+            'passengers.*.ticket_number' => 'nullable|string|max:50',
+            'passengers.*.seat_number' => 'nullable|string|max:10',
+            
+            'segments' => 'nullable|array',
+            'segments.*.flight_number' => 'nullable|string|max:50',
+            'segments.*.airline_name' => 'nullable|string|max:255',
+            'segments.*.from_city' => 'nullable|string|max:100',
+            'segments.*.from_airport' => 'nullable|string|max:10',
+            'segments.*.to_city' => 'nullable|string|max:100',
+            'segments.*.to_airport' => 'nullable|string|max:10',
+            'segments.*.departure_time' => 'nullable|date',
+            'segments.*.arrival_time' => 'nullable|date',
+            
+            'optional_fields' => 'nullable|array',
+            'optional_fields.passport_number' => 'nullable|boolean',
+            'optional_fields.baggage' => 'nullable|boolean',
+            'optional_fields.pet' => 'nullable|boolean',
+            
+            'passport_numbers' => 'nullable|array',
+            'passport_numbers.*' => 'nullable|string|max:50',
+            'baggage_info' => 'nullable|string|max:500',
+            'pet_info' => 'nullable|string|max:500',
+        ]);
+
+        $ticketData = [
+            'booking_reference' => $validated['booking_reference'] ?? $booking->booking_reference,
+            'airline_pnr' => $validated['airline_pnr'] ?? $booking->airline_pnr,
+            'departure_city' => $validated['departure_city'] ?? $booking->departure_city,
+            'arrival_city' => $validated['arrival_city'] ?? $booking->arrival_city,
+            'departure_date' => $validated['departure_date'] ?? $booking->departure_date,
+            'return_date' => $validated['return_date'] ?? $booking->return_date,
+            'flight_type' => $validated['flight_type'] ?? $booking->flight_type,
+            'total_passengers' => $validated['total_passengers'] ?? $booking->total_passengers,
+            'cabin_class' => $validated['cabin_class'] ?? $booking->cabin_class,
+            'airline_name' => $validated['airline_name'] ?? $booking->airline_name,
+            'optional_fields' => $validated['optional_fields'] ?? [],
+            'passport_numbers' => $validated['passport_numbers'] ?? [],
+            'baggage_info' => $validated['baggage_info'] ?? null,
+            'pet_info' => $validated['pet_info'] ?? null,
+        ];
+
+        if (isset($validated['passengers'])) {
+            foreach ($validated['passengers'] as $index => $passengerData) {
+                if (isset($booking->passengers[$index])) {
+                    $passenger = $booking->passengers[$index];
+                    
+                    $fillData = [];
+                    
+                    if (isset($passengerData['title']) && $passengerData['title'] !== '') {
+                        $fillData['title'] = (string) trim($passengerData['title']);
+                    }
+                    
+                    if (isset($passengerData['first_name']) && $passengerData['first_name'] !== '') {
+                        $fillData['first_name'] = (string) trim($passengerData['first_name']);
+                    }
+                    
+                    if (isset($passengerData['last_name']) && $passengerData['last_name'] !== '') {
+                        $fillData['last_name'] = (string) trim($passengerData['last_name']);
+                    }
+                    
+                    if (isset($passengerData['passenger_type']) && $passengerData['passenger_type'] !== '') {
+                        $fillData['passenger_type'] = (string) trim($passengerData['passenger_type']);
+                    }
+                    
+                    if (isset($passengerData['ticket_number']) && $passengerData['ticket_number'] !== '') {
+                        $fillData['ticket_number'] = (string) trim($passengerData['ticket_number']);
+                    }
+                    
+                    if (isset($passengerData['seat_number']) && $passengerData['seat_number'] !== '') {
+                        $fillData['seat_number'] = (string) trim($passengerData['seat_number']);
+                    }
+                    
+                    if (!empty($fillData)) {
+                        $passenger->fill($fillData);
+                        $passenger->save();
+                    }
+                }
+            }
+            $booking->load('passengers');
+        }
+
+        if (isset($validated['segments'])) {
+            foreach ($validated['segments'] as $index => $segmentData) {
+                if (isset($booking->segments[$index])) {
+                    $segment = $booking->segments[$index];
+                    
+                    $fillData = [];
+                    
+                    if (isset($segmentData['flight_number']) && $segmentData['flight_number'] !== '') {
+                        $fillData['flight_number'] = (string) trim($segmentData['flight_number']);
+                    }
+                    
+                    if (isset($segmentData['airline_name']) && $segmentData['airline_name'] !== '') {
+                        $fillData['airline_name'] = (string) trim($segmentData['airline_name']);
+                    }
+                    
+                    if (isset($segmentData['from_city']) && $segmentData['from_city'] !== '') {
+                        $fillData['from_city'] = (string) trim($segmentData['from_city']);
+                    }
+                    
+                    if (isset($segmentData['from_airport']) && $segmentData['from_airport'] !== '') {
+                        $fillData['from_airport'] = (string) trim($segmentData['from_airport']);
+                    }
+                    
+                    if (isset($segmentData['to_city']) && $segmentData['to_city'] !== '') {
+                        $fillData['to_city'] = (string) trim($segmentData['to_city']);
+                    }
+                    
+                    if (isset($segmentData['to_airport']) && $segmentData['to_airport'] !== '') {
+                        $fillData['to_airport'] = (string) trim($segmentData['to_airport']);
+                    }
+                    
+                    if (!empty($segmentData['departure_time'])) {
+                        $fillData['departure_time'] =
+                            \Carbon\Carbon::parse($segmentData['departure_time'])->format('H:i:s');
+                    }
+                    if (!empty($segmentData['arrival_time'])) {
+                        $fillData['arrival_time'] =
+                            \Carbon\Carbon::parse($segmentData['arrival_time'])->format('H:i:s');
+                    }
+                    
+                    if (!empty($fillData)) {
+                        $segment->fill($fillData);
+                        $segment->save();
+                    }
+                }
+            }
+            $booking->load('segments.airline');
+        }
+
+        $booking->update([
+            'booking_reference' => (string) $ticketData['booking_reference'],
+            'airline_pnr' => (string) $ticketData['airline_pnr'],
+            'departure_city' => (string) $ticketData['departure_city'],
+            'arrival_city' => (string) $ticketData['arrival_city'],
+            'departure_date' => $ticketData['departure_date'],
+            'return_date' => $ticketData['return_date'],
+            'flight_type' => (string) $ticketData['flight_type'],
+            'total_passengers' => (int) $ticketData['total_passengers'],
+            'cabin_class' => (string) $ticketData['cabin_class'],
+            'airline_name' => (string) $ticketData['airline_name'],
+            'ticket_data' => $ticketData,
+        ]);
+
+        $booking->refresh();
+        $booking->load([
+            'passengers',
+            'segments.airline',
+            'user'
+        ]);
+
         $pdf = Pdf::loadView('admin.bookings.ticket-pdf', compact('booking'))
             ->setPaper('A4', 'portrait');
         
         return $pdf->stream(
-            'ticket-'.($booking->booking_reference ?? $booking->id).'.pdf'
+            'ticket-'.($ticketData['booking_reference'] ?? $booking->id).'.pdf'
         );
-    }
-
-    // Handle POST request (generate PDF with edited data)
-    $validated = $request->validate([
-        // Booking info
-        'booking_reference' => 'nullable|string|max:50',
-        'airline_pnr' => 'nullable|string|max:50',
-        'departure_city' => 'nullable|string|max:100',
-        'arrival_city' => 'nullable|string|max:100',
-        'departure_date' => 'nullable|date',
-        'return_date' => 'nullable|date',
-        'flight_type' => 'nullable|string',
-        'total_passengers' => 'nullable|integer',
-        'cabin_class' => 'nullable|string',
-        'airline_name' => 'nullable|string',
-        
-        // Passengers
-        'passengers' => 'nullable|array',
-        'passengers.*.title' => 'nullable|string|max:10',
-        'passengers.*.first_name' => 'nullable|string|max:255',
-        'passengers.*.last_name' => 'nullable|string|max:255',
-        'passengers.*.passenger_type' => 'nullable|string|max:50',
-        'passengers.*.ticket_number' => 'nullable|string|max:50',
-        'passengers.*.seat_number' => 'nullable|string|max:10',
-        
-        // Segments
-        'segments' => 'nullable|array',
-        'segments.*.flight_number' => 'nullable|string|max:50',
-        'segments.*.airline_name' => 'nullable|string|max:255',
-        'segments.*.from_city' => 'nullable|string|max:100',
-        'segments.*.from_airport' => 'nullable|string|max:10',
-        'segments.*.to_city' => 'nullable|string|max:100',
-        'segments.*.to_airport' => 'nullable|string|max:10',
-        'segments.*.departure_time' => 'nullable|date',
-        'segments.*.arrival_time' => 'nullable|date',
-        
-        // Optional fields
-        'optional_fields' => 'nullable|array',
-        'optional_fields.passport_number' => 'nullable|boolean',
-        'optional_fields.baggage' => 'nullable|boolean',
-        'optional_fields.pet' => 'nullable|boolean',
-        
-        // Optional field values
-        'passport_numbers' => 'nullable|array',
-        'passport_numbers.*' => 'nullable|string|max:50',
-        'baggage_info' => 'nullable|string|max:500',
-        'pet_info' => 'nullable|string|max:500',
-    ]);
-
-    // Prepare ticket data
-    $ticketData = [
-        'booking_reference' => $validated['booking_reference'] ?? $booking->booking_reference,
-        'airline_pnr' => $validated['airline_pnr'] ?? $booking->airline_pnr,
-        'departure_city' => $validated['departure_city'] ?? $booking->departure_city,
-        'arrival_city' => $validated['arrival_city'] ?? $booking->arrival_city,
-        'departure_date' => $validated['departure_date'] ?? $booking->departure_date,
-        'return_date' => $validated['return_date'] ?? $booking->return_date,
-        'flight_type' => $validated['flight_type'] ?? $booking->flight_type,
-        'total_passengers' => $validated['total_passengers'] ?? $booking->total_passengers,
-        'cabin_class' => $validated['cabin_class'] ?? $booking->cabin_class,
-        'airline_name' => $validated['airline_name'] ?? $booking->airline_name,
-        'optional_fields' => $validated['optional_fields'] ?? [],
-        'passport_numbers' => $validated['passport_numbers'] ?? [],
-        'baggage_info' => $validated['baggage_info'] ?? null,
-        'pet_info' => $validated['pet_info'] ?? null,
-    ];
-
-    // ✅ FIX: Update passengers using fill() method
-    if (isset($validated['passengers'])) {
-        foreach ($validated['passengers'] as $index => $passengerData) {
-            if (isset($booking->passengers[$index])) {
-                $passenger = $booking->passengers[$index];
-                
-                // ✅ Use fill() which properly handles casting
-                $fillData = [];
-                
-                if (isset($passengerData['title']) && $passengerData['title'] !== '') {
-                    $fillData['title'] = (string) trim($passengerData['title']);
-                }
-                
-                if (isset($passengerData['first_name']) && $passengerData['first_name'] !== '') {
-                    $fillData['first_name'] = (string) trim($passengerData['first_name']);
-                }
-                
-                if (isset($passengerData['last_name']) && $passengerData['last_name'] !== '') {
-                    $fillData['last_name'] = (string) trim($passengerData['last_name']);
-                }
-                
-                if (isset($passengerData['passenger_type']) && $passengerData['passenger_type'] !== '') {
-                    $fillData['passenger_type'] = (string) trim($passengerData['passenger_type']);
-                }
-                
-                if (isset($passengerData['ticket_number']) && $passengerData['ticket_number'] !== '') {
-                    $fillData['ticket_number'] = (string) trim($passengerData['ticket_number']);
-                }
-                
-                if (isset($passengerData['seat_number']) && $passengerData['seat_number'] !== '') {
-                    $fillData['seat_number'] = (string) trim($passengerData['seat_number']);
-                }
-                
-                // ✅ Only update if there's data
-                if (!empty($fillData)) {
-                    $passenger->fill($fillData);
-                    $passenger->save();
-                }
-            }
-        }
-        $booking->load('passengers');
-    }
-
-    // Update segments with same fix
-    if (isset($validated['segments'])) {
-        foreach ($validated['segments'] as $index => $segmentData) {
-            if (isset($booking->segments[$index])) {
-                $segment = $booking->segments[$index];
-                
-                $fillData = [];
-                
-                if (isset($segmentData['flight_number']) && $segmentData['flight_number'] !== '') {
-                    $fillData['flight_number'] = (string) trim($segmentData['flight_number']);
-                }
-                
-                if (isset($segmentData['airline_name']) && $segmentData['airline_name'] !== '') {
-                    $fillData['airline_name'] = (string) trim($segmentData['airline_name']);
-                }
-                
-                if (isset($segmentData['from_city']) && $segmentData['from_city'] !== '') {
-                    $fillData['from_city'] = (string) trim($segmentData['from_city']);
-                }
-                
-                if (isset($segmentData['from_airport']) && $segmentData['from_airport'] !== '') {
-                    $fillData['from_airport'] = (string) trim($segmentData['from_airport']);
-                }
-                
-                if (isset($segmentData['to_city']) && $segmentData['to_city'] !== '') {
-                    $fillData['to_city'] = (string) trim($segmentData['to_city']);
-                }
-                
-                if (isset($segmentData['to_airport']) && $segmentData['to_airport'] !== '') {
-                    $fillData['to_airport'] = (string) trim($segmentData['to_airport']);
-                }
-                
-                if (!empty($segmentData['departure_time'])) {
-                    $fillData['departure_time'] =
-                        \Carbon\Carbon::parse($segmentData['departure_time'])->format('H:i:s');
-                }
-                if (!empty($segmentData['arrival_time'])) {
-                    $fillData['arrival_time'] =
-                        \Carbon\Carbon::parse($segmentData['arrival_time'])->format('H:i:s');
-                }
-                
-                if (!empty($fillData)) {
-                    $segment->fill($fillData);
-                    $segment->save();
-                }
-            }
-        }
-        $booking->load('segments.airline');
-    }
-
-    // Update booking with new data
-    $booking->update([
-        'booking_reference' => (string) $ticketData['booking_reference'],
-        'airline_pnr' => (string) $ticketData['airline_pnr'],
-        'departure_city' => (string) $ticketData['departure_city'],
-        'arrival_city' => (string) $ticketData['arrival_city'],
-        'departure_date' => $ticketData['departure_date'],
-        'return_date' => $ticketData['return_date'],
-        'flight_type' => (string) $ticketData['flight_type'],
-        'total_passengers' => (int) $ticketData['total_passengers'],
-        'cabin_class' => (string) $ticketData['cabin_class'],
-        'airline_name' => (string) $ticketData['airline_name'],
-        'ticket_data' => $ticketData,
-    ]);
-
-    // Reload booking with updated data
-    $booking->refresh();
-    $booking->load([
-        'passengers',
-        'segments.airline',
-        'user'
-    ]);
-
-    // Generate PDF with ticket data
-    $pdf = Pdf::loadView('admin.bookings.ticket-pdf', compact('booking'))
-        ->setPaper('A4', 'portrait');
-    
-    return $pdf->stream(
-        'ticket-'.($ticketData['booking_reference'] ?? $booking->id).'.pdf'
-    );
     }
 }

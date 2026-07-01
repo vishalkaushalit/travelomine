@@ -41,6 +41,8 @@ use App\Http\Controllers\Changes\ChangesLoginController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AirlineController;
+use App\Http\Controllers\Agent\AgentMcoController;
+
 // payment contollers
 use App\Http\Controllers\PublicPaymentController;
 use App\Http\Controllers\ReportController;
@@ -217,7 +219,14 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
         Route::post('/', [CallLogController::class, 'store'])->name('store');
         Route::get('/{callLog}', [CallLogController::class, 'show'])->name('show');
     });
+    
+    // MCO Routes - Agent can only see their own data
+    Route::prefix('mco')->name('mco.')->group(function () {
+        Route::get('/', [AgentMcoController::class, 'index'])->name('index');
+        Route::get('/export', [AgentMcoController::class, 'export'])->name('export');
+    });
 });
+
 
 // ADMIN ROUTES
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -265,21 +274,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
     Route::get('/ticket/show', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'ticketShow'])->name('ticket.show');
-    
-    // PDF Editors
-    Route::get('/pdf-editor/wysiwyg', [\App\Http\Controllers\Admin\PDFEditorController::class, 'wysiwygBuilder'])->name('pdf-editor.wysiwyg');
-    Route::get('/pdf-editor/wysiwyg/{bookingId}', [\App\Http\Controllers\Admin\PDFEditorController::class, 'wysiwygBuilder'])->name('pdf-editor.wysiwyg.booking');
 
-    // PDF Editor API Routes
-    Route::post('/pdf/generate-wysiwyg', [\App\Http\Controllers\Admin\PDFEditorController::class, 'generateFromWysiwyg'])->name('pdf.generate.wysiwyg');
-    Route::post('/pdf/save-template', [\App\Http\Controllers\Admin\PDFEditorController::class, 'saveTemplate'])->name('pdf.save-template');
-    Route::get('/pdf/load-template', [\App\Http\Controllers\Admin\PDFEditorController::class, 'loadTemplate'])->name('pdf.load-template');
-    Route::post('/bookings/{id}/pdf-from-template', [\App\Http\Controllers\Admin\PDFEditorController::class, 'generateBookingPDF'])->name('bookings.pdf-from-template');
-    
-    // Template endpoints
-    Route::get('/bookings/{bookingId}/template-data', [\App\Http\Controllers\Admin\PDFEditorController::class, 'getTicketTemplate'])->name('bookings.template-data');
-    Route::post('/bookings/{bookingId}/template-save', [\App\Http\Controllers\Admin\PDFEditorController::class, 'saveTemplateChanges'])->name('bookings.template-save');
-    
 });
 Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardController::class, 'index'])->name('dashboard');
@@ -423,11 +418,6 @@ Route::get('/changes/notifications', function () {
     return view('changes.notifications');
 })->middleware(['auth', 'role:changes'])->name('changes.notifications');
 
-// Ticket Generation
-// Route::get(
-//     '/admin/bookings/{booking}/ticket',
-//     [App\Http\Controllers\Admin\AdminBookingsController::class, 'generateTicket']
-// )->name('admin.bookings.ticket');
 // Ticket Routes
 Route::prefix('admin/bookings')->name('admin.bookings.')->group(function () {
     // Edit ticket form

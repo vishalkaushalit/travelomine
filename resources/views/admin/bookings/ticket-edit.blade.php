@@ -17,6 +17,15 @@
                         @csrf
                          {{-- Passengers --}}
                         <div class="section-box">
+                            <div class="form-group">
+                                <label for="flight_type">Flight Type</label>
+                                <p>current flight type is : <span class="summary-value" style="color: red; font-size: 1.2em; font-weight: bold;">{{ ucwords(str_replace('_', ' ', $booking->flight_type ?? 'not defined')) }}</span></p>
+                                <select name="flight_type" id="flight_type" class="form-control">
+                                    <option value="multi_city" {{ $booking->flight_type == 'multi_city' ? 'selected' : '' }}>Multi City</option>
+                                    <option value="round_trip" {{ $booking->flight_type == 'round_trip' ? 'selected' : '' }}>Round Trip</option>
+                                    <option value="one_way" {{ $booking->flight_type == 'one_way' ? 'selected' : '' }}>One Way</option>
+                                </select>
+                            </div>
                             <h5 class="section-title">Passenger Details</h5>
                             @foreach($booking->passengers as $index => $passenger)
                             <div class="passenger-card">
@@ -220,6 +229,10 @@
                         <h6>Additional Fields</h6>
                         <p class="text-muted small">Select fields to include in ticket</p>
                         
+                    
+                            
+
+
                         <div class="form-group">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="showPassport" 
