@@ -59,7 +59,7 @@ class ChangesBookingsController extends Controller
 
         // Per page limit, match available UI options
         $perPage = (int) $request->get('per_page', 25);
-        $allowedPerPage = [5, 25, 50, 100, 250, 500, 1000, 5000];
+        $allowedPerPage = [5, 25, 50, 100, 250, 500];
 
         if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 25;
@@ -91,7 +91,7 @@ class ChangesBookingsController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        return view('changes.bookings.index', compact('bookings', 'agent'));
+        return view('changes.bookings.show', compact('bookings', 'agent'));
     }
 
     /**

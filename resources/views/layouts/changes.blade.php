@@ -104,12 +104,6 @@
 
         <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <!-- Brand Logo -->
-            <a href="{{ auth()->check() ? route('changes.dashboard') : route('changes.login') }}" class="brand-link">
-                <i class="fas fa-plane-departure brand-image ml-3"></i>
-                <span class="brand-text font-weight-light">Changes Panel</span>
-            </a>
-
             <!-- Sidebar -->
             <div class="sidebar">
 

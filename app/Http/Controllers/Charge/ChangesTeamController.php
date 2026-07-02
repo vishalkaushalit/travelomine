@@ -33,6 +33,11 @@ class ChangesTeamController extends Controller
             ->orderBy('updated_at', 'desc')
             ->paginate(15);
             
+        $processingAssignments = BookingAssignment::where('status', 'Processing')
+            ->where('assigned_to', Auth::id())
+            ->with(['booking', 'assignedBy'])
+            ->orderBy('completed_at', 'desc')
+            ->paginate(15);
         $completedAssignments = BookingAssignment::where('status', 'completed')
             ->where('assigned_to', Auth::id())
             ->with(['booking', 'assignedBy'])
@@ -43,10 +48,11 @@ class ChangesTeamController extends Controller
             'pending' => BookingAssignment::where('status', 'pending')->count(),
             'accepted' => BookingAssignment::where('status', 'accepted')->where('assigned_to', Auth::id())->count(),
             'rejected' => BookingAssignment::where('status', 'rejected')->where('assigned_to', Auth::id())->count(),
+            'processing' => BookingAssignment::where('status', 'Processing')->where('assigned_to', Auth::id())->count(),
             'completed' => BookingAssignment::where('status', 'completed')->where('assigned_to', Auth::id())->count(),
         ];
         
-        return view('charge.assignments.dashboard', compact('pendingAssignments', 'acceptedAssignments', 'rejectedAssignments', 'completedAssignments', 'stats'));
+        return view('charge.assignments.dashboard', compact('pendingAssignments', 'acceptedAssignments', 'rejectedAssignments', 'processingAssignments', 'completedAssignments', 'stats'));
     }
     
     /**

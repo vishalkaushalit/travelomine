@@ -42,6 +42,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AirlineController;
 use App\Http\Controllers\Agent\AgentMcoController;
+use App\Http\Controllers\Admin\AdminMcoController;
 
 // payment contollers
 use App\Http\Controllers\PublicPaymentController;
@@ -231,6 +232,15 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 // ADMIN ROUTES
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
+    // make routes to show mco of all agents to admin
+    Route::prefix('mco')->name('mco.')->group(function () {
+        Route::get('/', [AdminMcoController::class, 'index'])->name('index');
+        Route::get('/show', [AdminMcoController::class, 'show'])->name('show');
+        Route::get('/{agentId}', [AdminMcoController::class, 'showAgentMco'])->name('show.agent');
+        Route::get('/{agentId}/export', [AdminMcoController::class, 'exportAgentMco'])->name('export.agent');
+        Route::get('/export', [AdminMcoController::class, 'export'])->name('export');
+    });
+
     Route::resource('airlines', AirlineController::class);
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
