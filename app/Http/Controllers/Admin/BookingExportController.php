@@ -119,6 +119,5 @@ class BookingExportController extends Controller
             fclose($handle);
         }, 200, $headers);
     }
-    // export selected bookings by admin
     
 }

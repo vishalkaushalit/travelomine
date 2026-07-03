@@ -13,51 +13,94 @@ class MisBookingsController extends Controller
     /**
      * Display ALL bookings (not filtered by agent)
      */
-    public function all(Request $request)
+     public function all(Request $request)
     {
         $query = Booking::with(['user', 'passengers', 'segments']);
 
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
+        // ============ SEARCH ============
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('customer_email', 'like', "%{$search}%")
+                $q->where('customer_name', 'like', "%{$search}%")
+                  ->orWhere('customer_email', 'like', "%{$search}%")
                   ->orWhere('customer_phone', 'like', "%{$search}%")
                   ->orWhere('agent_custom_id', 'like', "%{$search}%")
+                  ->orWhere('booking_reference', 'like', "%{$search}%")
+                  ->orWhere('airline_pnr', 'like', "%{$search}%")
+                  ->orWhere('gk_pnr', 'like', "%{$search}%")
                   ->orWhere('id', 'like', "%{$search}%");
             });
         }
 
-        // Filter by status
-        if ($request->has('status') && $request->status != '') {
+        // ============ DATE RANGE FILTER ============
+        if ($request->filled('from_date')) {
+            $query->whereDate('booking_date', '>=', $request->from_date);
+        }
+        
+        if ($request->filled('to_date')) {
+            $query->whereDate('booking_date', '<=', $request->to_date);
+        }
+
+        // ============ STATUS FILTER ============
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by service
-        if ($request->has('service') && $request->service != '') {
+        // ============ SERVICE FILTER ============
+        if ($request->filled('service')) {
             $query->where('service_provided', $request->service);
         }
 
-        // Filter by agent
-        if ($request->has('agent_id') && $request->agent_id != '') {
+        // ============ AGENT FILTER ============
+        if ($request->filled('agent_id')) {
             $query->where('user_id', $request->agent_id);
         }
 
-        // Filter by date range
-        if ($request->has('date_from') && $request->date_from != '') {
-            $query->whereDate('booking_date', '>=', $request->date_from);
-        }
-        if ($request->has('date_to') && $request->date_to != '') {
-            $query->whereDate('booking_date', '<=', $request->date_to);
-        }
-
-        $bookings = $query->orderBy('created_at', 'desc')->paginate(25);
+        // ============ SORTING ============
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
         
-        $agents = User::where('email', 'like', '%@callinggenie.com')
-            ->orWhere('email', 'like', '%@trafficpirates.com')
-            ->get();
+        $allowedSortFields = [
+            'id', 'booking_reference', 'customer_name', 'customer_email', 
+            'booking_date', 'created_at', 'status', 'amount_charged',
+            'airline_pnr', 'service_provided'
+        ];
+        
+        if (in_array($sortField, $allowedSortFields)) {
+            $query->orderBy($sortField, $sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
 
-        return view('mis.bookings.all', compact('bookings', 'agents'));
+        // ============ PER PAGE ============
+        $perPage = $request->get('per_page', 25);
+        $allowedPerPage = [5, 10, 25, 50, 100, 250, 500, 1000, 5000];
+        
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 25;
+        }
+
+        // ============ EXECUTE QUERY ============
+        $bookings = $query->paginate($perPage);
+        $bookings->appends($request->except('page'));
+
+        // ============ GET AGENTS FOR FILTER DROPDOWN ============
+        $agents = User::where(function($q) {
+            $q->where('email', 'like', '%@callinggenie.com')
+              ->orWhere('email', 'like', '%@trafficpirates.com');
+        })->orderBy('name')->get();
+
+        // ============ STATS CARDS ============
+        $stats = [
+            'total' => Booking::count(),
+            'pending' => Booking::where('status', 'pending')->count(),
+            'charged' => Booking::where('status', 'charged')->count(),
+            'ticketed' => Booking::where('status', 'ticketed')->count(),
+            'confirmed' => Booking::where('status', 'confirmed')->count(),
+            'total_mco' => Booking::sum('total_mco'),
+        ];
+
+        return view('mis.bookings.all', compact('bookings', 'agents', 'stats'));
     }
 
     /**

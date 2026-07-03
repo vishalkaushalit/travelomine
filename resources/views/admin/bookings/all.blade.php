@@ -88,7 +88,7 @@
         <!-- Filters -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <form method="GET" action="{{ url('/admin/bookings/all') }}" class="row g-3">
+                <form method="GET" action="{{ url('/admin/bookings/all') }}" class="row g-3" id="filterForm">
                     <!-- Search -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Search</label>
@@ -165,17 +165,13 @@
 
                     <!-- Action Buttons -->
                     <div class="col-md-12">
-                        <div class="d-flex gap-2 mt-3">
-                            <button type="submit" class="btn btn-primary mr-2">
+                        <div class="d-flex gap-2 mt-3 flex-wrap">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-search"></i> Apply Filters
                             </button>
                             <a href="{{ url('/admin/bookings/all') }}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-counterclockwise"></i> Reset
                             </a>
-                            <button type="submit" formaction="{{ route('admin.bookings.export.selected') }}" 
-                                    class="btn btn-success ml-2">
-                                <i class="bi bi-download"></i> Export Selected / Filtered
-                            </button>
                         </div>
                     </div>
                 </form>
@@ -185,21 +181,32 @@
         <!-- Results -->
         <div class="card shadow-sm">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <!-- Results header with export buttons -->
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                     <div>
                         <strong>Total Results:</strong> {{ $bookings->total() }}
                     </div>
-                    <div>
-                        <form method="POST" action="{{ route('admin.bookings.export.selected') }}" class="d-inline">
-                            @csrf
-                            <input type="hidden" name="search" value="{{ request('search') }}">
-                            <input type="hidden" name="from_date" value="{{ request('from_date') }}">
-                            <input type="hidden" name="to_date" value="{{ request('to_date') }}">
-                            <input type="hidden" name="status" value="{{ request('status') }}">
-                            <input type="hidden" name="agent_id" value="{{ request('agent_id') }}">
-                            <input type="hidden" name="service" value="{{ request('service') }}">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-success" onclick="exportSelected()">
+                            <i class="bi bi-download"></i> Export Selected
+                        </button>
+                        <button type="button" class="btn btn-sm btn-info" onclick="exportAll()">
+                            <i class="bi bi-download"></i> Export All (Filtered)
+                        </button>
                     </div>
                 </div>
+
+                <!-- Hidden form for export -->
+                <form id="exportForm" method="POST" action="{{ route('admin.bookings.export.selected') }}">
+                    @csrf
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                    <input type="hidden" name="from_date" value="{{ request('from_date') }}">
+                    <input type="hidden" name="to_date" value="{{ request('to_date') }}">
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                    <input type="hidden" name="agent_id" value="{{ request('agent_id') }}">
+                    <input type="hidden" name="service" value="{{ request('service') }}">
+                    <input type="hidden" name="selected_bookings" id="selectedBookingsInput" value="">
+                </form>
 
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle">
@@ -299,7 +306,7 @@
                                             <small class="text-muted">GK: {{ $booking->gk_pnr }}</small>
                                         @endif
                                     </td>
-                                    <td>{{ $booking->passengers->count() }}</td>
+                                    <td>{{ is_countable($booking->passengers) ? count($booking->passengers) : 0 }}</td>
                                     <td>
                                         <strong>{{ $booking->currency }} {{ number_format($booking->amount_charged, 2) }}</strong>
                                     </td>
@@ -356,7 +363,6 @@
                         </tbody>
                     </table>
                 </div>
-                </form>
 
                 <!-- Pagination -->
                 <div class="d-flex justify-content-between align-items-center mt-3">
@@ -403,6 +409,7 @@
     </style>
 
     <script>
+        // Select All functionality
         document.getElementById('select-all')?.addEventListener('change', function() {
             document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
                 checkbox.checked = this.checked;
@@ -414,12 +421,43 @@
             this.closest('form').submit();
         });
 
-        // Auto-submit on filter changes (optional - uncomment if desired)
+        // Auto-submit on filter changes
         document.querySelectorAll('select[name="status"], select[name="agent_id"], select[name="service"]')
             .forEach(el => {
                 el.addEventListener('change', function() {
                     this.closest('form').submit();
                 });
             });
+
+        // Export Selected Function
+        function exportSelected() {
+            // Get all selected booking IDs
+            const selectedIds = [];
+            document.querySelectorAll('.booking-checkbox:checked').forEach(cb => {
+                selectedIds.push(cb.value);
+            });
+            
+            if (selectedIds.length === 0) {
+                alert('Please select at least one booking to export.');
+                return;
+            }
+            
+            // Set the selected IDs in the hidden input
+            document.getElementById('selectedBookingsInput').value = JSON.stringify(selectedIds);
+            
+            // Make sure the form action is set to export selected
+            document.getElementById('exportForm').action = '{{ route('admin.bookings.export.selected') }}';
+            document.getElementById('exportForm').submit();
+        }
+        
+        // Export All (Filtered) Function
+        function exportAll() {
+            // Submit the export form with all filter parameters
+            const form = document.getElementById('exportForm');
+            form.action = '{{ route('admin.bookings.export.all') }}';
+            // Clear any selected bookings
+            document.getElementById('selectedBookingsInput').value = '';
+            form.submit();
+        }
     </script>
 @endsection

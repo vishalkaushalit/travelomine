@@ -259,14 +259,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('merchants', MerchantController::class)->except(['show']);
 
-    // export csv of single booking
-    Route::get('/bookings/{booking}/export-csv', [App\Http\Controllers\Admin\BookingExportController::class, 'exportSingle'])
-        ->name('bookings.export.csv');
-    Route::post('/bookings/export/all', [AllBookingImportController::class, 'export'])
-        ->name('bookings.export.all');
-    Route::post('/bookings/export-selected', [AllBookingImportController::class, 'exportSelected'])
-        ->name('bookings.export.selected');
-
     // upload old bookings feature
     Route::get('/bookings/upload-old', [OldBookingUploadController::class, 'index'])
         ->name('bookings.upload-old');
@@ -292,6 +284,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
     Route::get('/ticket/show', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'ticketShow'])->name('ticket.show');
+    Route::get('/bookings/{booking}/export-csv', [App\Http\Controllers\Admin\BookingExportController::class, 'exportSingle'])
+        ->name('bookings.export.csv');
+    // Main export routes
+    Route::post('/bookings/export/all', [AllBookingImportController::class, 'export'])
+        ->name('bookings.export.all');
+    Route::post('/bookings/export-selected', [AllBookingImportController::class, 'exportSelected'])
+        ->name('bookings.export.selected');
 
 });
 Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
@@ -398,7 +397,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/bookings/{booking}', [AdminBookingsController::class, 'show'])->name('bookings.show');
     Route::get('/bookings/{id}/edit', [AdminBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [AdminBookingsController::class, 'update'])->name('bookings.update');
-    Route::delete('/bookings/{id}', [AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -474,6 +472,12 @@ Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(func
     Route::put('/bookings/{id}', [MisBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [MisBookingsController::class, 'destroy'])->name('bookings.destroy');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+
+    // MIS Export Routes - Using the same controller
+    Route::post('/bookings/export/all', [AllBookingImportController::class, 'export'])
+        ->name('bookings.export.all');
+    Route::post('/bookings/export-selected', [AllBookingImportController::class, 'exportSelected'])
+        ->name('bookings.export.selected');
 });
 
 Route::middleware(['auth', 'role:mis-manager'])->prefix('mis-manager')->name('mis-manager.')->group(function () {
