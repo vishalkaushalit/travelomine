@@ -27,11 +27,29 @@ class BookingCard extends Model
         'is_charged',           // ✅ Correct - matches database
         'charged_at',           // ✅ Correct - matches database
         'transaction_id',       // ✅ Correct - matches database
-        'payment_status',       // ✅ Correct - matches database
         'card_order',           // ✅ Correct - matches database
         'merchantname',         // Extra field from your table
         'merchanttype',         // Extra field from your table
+        'payment_status',
+        'payment_processed_at',
+        'payment_transaction_id',
     ];
+
+     // Helper methods
+    public function isCharged()
+    {
+        return $this->payment_status === 'captured';
+    }
+
+    public function isPending()
+    {
+        return $this->payment_status === 'pending' || $this->payment_status === null;
+    }
+
+    public function isFailed()
+    {
+        return $this->payment_status === 'failed';
+    }
 
     protected $casts = [
         'is_charged' => 'boolean',

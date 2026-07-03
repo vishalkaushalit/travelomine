@@ -65,8 +65,7 @@ return [
     |
     */
 
-    'timezone' => 'Asia/Kolkata',
-
+    'timezone' => env('APP_TIMEZONE', 'America/Los_Angeles'),
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

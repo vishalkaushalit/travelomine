@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingCard;
 use App\Models\BookingRemark;
 use App\Models\CallType;
+use App\Models\PaymentStatus;
 use App\Models\Merchant;
 use App\Models\ServiceType;
 use Illuminate\Http\Request;
@@ -283,6 +284,7 @@ class AgentBookingController extends Controller
         $segments = $validated['segments'] ?? [];
         $firstSegment = $segments[0] ?? null;
         $lastSegment = ! empty($segments) ? $segments[count($segments) - 1] : null;
+        $defaultPaymentStatus = PaymentStatus::getDefaultStatus();
 
         $primaryCardLastFour = $this->getPrimaryCardLastFour($validated);
         $agencyMerchantId = $this->getAgencyMerchantId($validated);
@@ -328,6 +330,8 @@ class AgentBookingController extends Controller
             'hotel_required' => filter_var($validated['hotel_required'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'cab_required' => filter_var($validated['cab_required'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'insurance_required' => filter_var($validated['insurance_required'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'payment_status_id' => $defaultPaymentStatus ? $defaultPaymentStatus->id : null, // 
+
         ];
 
         return Booking::create($bookingData);

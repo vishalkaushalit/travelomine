@@ -43,7 +43,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AirlineController;
 use App\Http\Controllers\Agent\AgentMcoController;
 use App\Http\Controllers\Admin\AdminMcoController;
-
+use App\Http\Controllers\Admin\BookingPaymentStatusController;
+use App\Http\Controllers\Admin\PaymentStatusController;
 // payment contollers
 use App\Http\Controllers\PublicPaymentController;
 use App\Http\Controllers\ReportController;
@@ -201,6 +202,13 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
     Route::post('/booking-updates', [AgentBookingUpdatesController::class, 'store'])->name('booking-updates.store');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 
+    Route::get('/booking/{id}/authorize-edit', [AuthConsentController::class, 'edit'])->name('authorize.edit');
+    Route::post('/booking/{id}/authorize-preview', [AuthConsentController::class, 'preview'])->name('authorize.preview');
+    Route::get('/booking/{id}/authorize-preview', [AuthConsentController::class, 'previewPage'])->name('authorize.preview.page');
+    Route::post('/booking/{id}/authorize-send', [AuthConsentController::class, 'send'])->name('authorize.send');
+    Route::post('/booking/{id}/authorize-resend', [AuthConsentController::class, 'resend'])->name('authorize.resend');
+    Route::patch('/booking/{id}/auth-done', [AuthConsentController::class, 'markAuthDone'])->name('auth.done');
+    
     // Add remark route
     Route::post('/bookings/{bookingId}/add-remark', [AgentBookingController::class, 'addRemark'])->name('agent.bookings.add-remark');
 

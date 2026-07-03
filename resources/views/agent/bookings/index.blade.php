@@ -25,11 +25,11 @@
                 <table class="table table-hover text-nowrap">
                     <thead>
                         <tr>
-                            <th>Reference</th>
+                            <th>PNR</th>
                             <th>Customer</th>
                             <th>Route</th>
                             <th>Date</th>
-                            <th>Passengers</th>
+                            <th>Pax</th>
                             <th>Amount</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -39,7 +39,7 @@
                         @forelse($bookings as $booking)
                             <tr>
                                 <td>
-                                    <strong>{{ $booking->booking_reference }}</strong><br>
+                                    <strong>{{ $booking->airline_pnr }}</strong><br>
                                     <small class="text-muted">{{ $booking->booking_date->format('d M Y') }}</small>
                                 </td>
                                 <td>
@@ -89,24 +89,42 @@
                                         {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
                                     </span>
                                 </td>
+                                
                                 <td>
                                     <a href="{{ route('agent.bookings.show', $booking->id) }}" class="btn btn-sm btn-info"
                                         title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if ($booking->status === 'pending')
+                                    <!-- @if ($booking->status === 'pending')
                                         <a href="{{ route('agent.bookings.charge', $booking->id) }}"
                                             class="btn btn-sm btn-info" title="Charge Booking">
                                             <i class="fas fa-bolt"></i> Charge
                                         </a>
                                     @else
                                         <span class="badge badge-secondary"> Assigned</span>
-                                    @endif
-                                <td>
+                                    @endif -->
+                                    
                                     <a href="{{ route('agent.bookings.update-pnr', $booking->id) }}"
                                         class="btn btn-xs btn-warning">
                                         <i class="fas fa-edit"></i> Update PNR
                                     </a>
+<!-- 3. Get Auth & Resend Auth (Only visible if Auth is NOT done yet) -->
+@php
+    $emailAuthTaken = $booking->email_auth_taken ?? false;
+    $authSent = $booking->status === 'auth_email_sent' || $booking->status === 'payment_processing';
+@endphp
+
+@if (!$emailAuthTaken)
+    @if (!$authSent && in_array($booking->status, ['pending', 'assigned_to_charging']))
+        <a href="{{ route('agent.authorize.edit', $booking->id) }}"
+            class="btn btn-sm btn-success">Get Auth</a>
+    @endif
+
+    @if ($authSent && in_array($booking->status, ['auth_email_sent', 'payment_processing']))
+        <a href="{{ route('agent.authorize.edit', $booking->id) }}"
+            class="btn btn-sm btn-warning">Resend Auth Mail</a>
+    @endif
+@endif
 
                                     @if (!$booking->activeAssignment)
                                         <a href="{{ route('agent.bookings.assign.create', $booking) }}"

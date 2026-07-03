@@ -147,7 +147,84 @@ class Booking extends Model
         return $remarks->sortByDesc('created_at');
     }
 
-    // Relationships
+
+    // payment relationship with booking 
+     public function paymentStatus(): BelongsTo
+    {
+        return $this->belongsTo(PaymentStatus::class);
+    }
+     public function paymentStatusHistories(): HasMany
+    {
+        return $this->hasMany(PaymentStatusHistory::class)->orderBy('created_at', 'desc');
+    }
+     public function getPaymentStatusNameAttribute()
+    {
+        return $this->paymentStatus ? $this->paymentStatus->name : 'Pending';
+    }
+
+    public function getPaymentStatusColorAttribute()
+    {
+        return $this->paymentStatus ? $this->paymentStatus->color : '#FFA500';
+    }
+
+    public function isPaymentCaptured(): bool
+    {
+        return $this->paymentStatus && $this->paymentStatus->slug === 'captured';
+    }
+
+    public function isPaymentPending(): bool
+    {
+        return $this->paymentStatus && $this->paymentStatus->slug === 'pending';
+    }
+
+    public function isPaymentFailed(): bool
+    {
+        return $this->paymentStatus && $this->paymentStatus->slug === 'failed';
+    }
+
+    public function isPaymentOnHold(): bool
+    {
+        return $this->paymentStatus && $this->paymentStatus->slug === 'hold';
+    }
+     // ✅ Method to update payment status with history
+    public function updatePaymentStatus($statusId, $userId, $role, $remarks = null, $metadata = [])
+    {
+        $oldStatusId = $this->payment_status_id;
+        
+        // Update booking payment status
+        $this->update([
+            'payment_status_id' => $statusId
+        ]);
+
+        // Create history entry
+        PaymentStatusHistory::create([
+            'booking_id' => $this->id,
+            'payment_status_id' => $statusId,
+            'changed_by' => $userId,
+            'changed_by_role' => $role,
+            'remarks' => $remarks,
+            'metadata' => array_merge($metadata, [
+                'old_status_id' => $oldStatusId,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent()
+            ])
+        ]);
+
+        // Optional: Add booking remark for payment status change
+        if ($remarks) {
+            $this->remarks()->create([
+                'agent_id' => $userId,
+                'remark_text' => "Payment status changed to: {$this->paymentStatusName}. " . $remarks,
+                'remark_type' => 'payment',
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent()
+            ]);
+        }
+
+        return $this;
+    }
+
+     // relationship with booking remraks
     public function remarks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(BookingRemark::class)->orderBy('created_at', 'desc');

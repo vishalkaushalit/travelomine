@@ -71,7 +71,7 @@
                             <table class="table table-hover text-nowrap mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Booking Ref</th>
+                                        <th>Booking PNR </th>
                                         <th>Customer</th>
                                         <th>Amount <br>
                                             <p class="small text-muted"> MCO Amount </p>
@@ -94,7 +94,7 @@
                                             $emailAuthTaken = (bool) $booking->email_auth_taken;
                                         @endphp
                                         <tr>
-                                            <td>{{ $booking->booking_reference }}</td>
+                                            <td><span class="badge badge-info small"> {{$booking->airline_pnr}} </span> </td>
                                             <td>{{ $booking->customer_name }}</td>
                                             <td>${{ number_format($booking->amount_charged, 2) }}</td>
                                             <td>{{ optional($assign->merchant)->name ?? '-' }}</td>

@@ -17,6 +17,29 @@ class AuthConsentController extends Controller
     }
 
     /**
+     * Get the view path and route prefix based on user role
+     */
+    private function getRoleBasedConfig()
+    {
+        $user = auth()->user();
+        
+        if ($user->hasRole('agent')) {
+            return [
+                'view_prefix' => 'agent.auth',
+                'route_prefix' => 'agent',
+                'redirect_route' => 'agent.bookings.index'
+            ];
+        }
+        
+        // Default for charge team and admin
+        return [
+            'view_prefix' => 'charge.auth',
+            'route_prefix' => 'charge',
+            'redirect_route' => 'charge.dashboard'
+        ];
+    }
+
+    /**
      * Step 1: Open editor with default content based on service_type.
      */
     public function edit($id)
@@ -61,8 +84,11 @@ class AuthConsentController extends Controller
             $purchaseSummary = '<h4>Purchase Summary:</h4>'.$parts[1];
         }
 
+        // Get role-based configuration
+        $config = $this->getRoleBasedConfig();
+
         return view(
-            'charge.auth.edit',
+            $config['view_prefix'] . '.edit', 
             compact(
                 'booking',
                 'mainContent',
@@ -88,7 +114,10 @@ class AuthConsentController extends Controller
             'purchase_summary_'.$id => $request->purchase_summary,
         ]);
 
-        return redirect()->route('charge.authorize.preview.page', $id);
+        // Get role-based configuration
+        $config = $this->getRoleBasedConfig();
+
+        return redirect()->route($config['route_prefix'] . '.authorize.preview.page', $id);
     }
 
     /**
@@ -110,7 +139,10 @@ class AuthConsentController extends Controller
         $mainContent = $this->formatEmailContent($mainContent);
         $purchaseSummary = $this->formatEmailContent($purchaseSummary);
 
-        return view('charge.auth.preview', [
+        // Get role-based configuration
+        $config = $this->getRoleBasedConfig();
+
+        return view($config['view_prefix'] . '.preview', [
             'booking' => $booking,
             'mainContent' => $mainContent,
             'purchaseSummary' => $purchaseSummary,
@@ -130,9 +162,12 @@ class AuthConsentController extends Controller
             'user',
         ])->findOrFail($id);
 
+        // Get role-based configuration
+        $config = $this->getRoleBasedConfig();
+
         if ($booking->auth_email_sent_at || $booking->status === 'auth_email_sent') {
             return redirect()
-                ->route('charge.dashboard')
+                ->route($config['redirect_route'])
                 ->with('error', 'Auth mail has already been sent for this booking.');
         }
 
@@ -141,7 +176,7 @@ class AuthConsentController extends Controller
 
         if (! $mainContent) {
             return redirect()
-                ->route('charge.authorize.edit', $id)
+                ->route($config['route_prefix'] . '.authorize.edit', $id)
                 ->with('error', 'Email content missing. Please preview again.');
         }
 
@@ -166,7 +201,7 @@ class AuthConsentController extends Controller
             session()->forget(['main_content_'.$id, 'purchase_summary_'.$id]);
 
             return redirect()
-                ->route('charge.dashboard')
+                ->route($config['redirect_route'])
                 ->with('success', 'Acknowledgement mail sent successfully.');
 
         } catch (TransportExceptionInterface $e) {
@@ -178,7 +213,7 @@ class AuthConsentController extends Controller
             ]);
 
             return redirect()
-                ->route('charge.authorize.preview.page', $id)
+                ->route($config['route_prefix'] . '.authorize.preview.page', $id)
                 ->with('error', 'Mail sending failed: '.$e->getMessage());
 
         } catch (\Exception $e) {
@@ -190,7 +225,7 @@ class AuthConsentController extends Controller
             ]);
 
             return redirect()
-                ->route('charge.authorize.preview.page', $id)
+                ->route($config['route_prefix'] . '.authorize.preview.page', $id)
                 ->with('error', 'Unexpected error while sending mail: '.$e->getMessage());
         }
     }
