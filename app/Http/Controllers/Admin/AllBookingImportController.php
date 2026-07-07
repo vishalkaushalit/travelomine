@@ -293,4 +293,5 @@ class AllBookingImportController extends Controller
             fclose($handle);
         }, 200, $headers);
     }
+
 }

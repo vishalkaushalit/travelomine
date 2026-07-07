@@ -164,7 +164,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-search"></i> Apply Filters
                             </button>
-                            <a href="{{ route('mis.bookings.all') }}" class="btn btn-secondary">
+                            <a href="{{ route('mis.bookings.all') }}" class="btn btn-secondary" style="margin-left:8px;"> 
                                 <i class="bi bi-arrow-counterclockwise"></i> Reset
                             </a>
                         </div>

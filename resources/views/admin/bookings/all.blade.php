@@ -169,7 +169,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-search"></i> Apply Filters
                             </button>
-                            <a href="{{ url('/admin/bookings/all') }}" class="btn btn-secondary">
+                            <a href="{{ url('/admin/bookings/all') }}" class="btn btn-secondary mt-auto" style="margin-left:8px;">
                                 <i class="bi bi-arrow-counterclockwise"></i> Reset
                             </a>
                         </div>
@@ -186,7 +186,7 @@
                     <div>
                         <strong>Total Results:</strong> {{ $bookings->total() }}
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2" style="gap:0.5rem">
                         <button type="button" class="btn btn-sm btn-success" onclick="exportSelected()">
                             <i class="bi bi-download"></i> Export Selected
                         </button>
