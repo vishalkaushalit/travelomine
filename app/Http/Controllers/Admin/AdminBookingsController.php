@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 class AdminBookingsController extends Controller
 {
 
-    /**
+    /*
      * Display ALL bookings with advanced filtering, sorting, and search
      */
 public function all(Request $request)
@@ -86,7 +86,7 @@ public function all(Request $request)
 
     // ============ PER PAGE ============
     $perPage = $request->get('per_page', 25);
-    $allowedPerPage = [5, 10, 25, 50, 100, 250, 500, 1000, 5000];
+    $allowedPerPage = [5, 10, 25, 50, 250];
     
     if (!in_array($perPage, $allowedPerPage)) {
         $perPage = 25;
@@ -153,6 +153,77 @@ public function all(Request $request)
             'flightTypes',
             'cabinClasses'
         ));
+    }
+
+    /**
+     * Show bookings created by agents
+     */
+    public function index(Request $request)
+    {
+    $perPage = $request->get('per_page', 25);
+    $allowedPerPage = [5, 10, 25, 50, 250];
+    
+    if (!in_array($perPage, $allowedPerPage)) {
+        $perPage = 25;
+    }
+    
+    // Build query with filters
+    $query = Booking::query();
+
+    // Search filter
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('customer_name', 'like', "%{$search}%")
+              ->orWhere('customer_email', 'like', "%{$search}%")
+              ->orWhere('customer_phone', 'like', "%{$search}%")
+              ->orWhere('agent_custom_id', 'like', "%{$search}%")
+              ->orWhere('booking_reference', 'like', "%{$search}%")
+              ->orWhere('airline_pnr', 'like', "%{$search}%")
+              ->orWhere('gk_pnr', 'like', "%{$search}%")
+              ->orWhere('id', 'like', "%{$search}%");
+        });
+    }
+
+    // Status filter
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // Service filter
+    if ($request->filled('service')) {
+        $query->where('service_provided', $request->service);
+    }
+
+    // Agent filter
+    if ($request->filled('agent_id')) {
+        $query->where('user_id', $request->agent_id);
+    }
+
+    // Pagination with ALL filters preserved
+    $bookings = $query->with([
+        'user', 
+        'agent',
+        'passengers',
+        'cards'
+    ])
+    ->orderBy('created_at', 'desc')
+    ->paginate($perPage)
+    ->appends($request->all());
+
+    // Get active agents for the sidebar
+    // $agents = User::activeAgents()->get();
+    
+    // Get booking stats for sidebar
+    $stats = [
+        'total' => Booking::count(),
+        'pending' => Booking::where('status', 'pending')->count(),
+        'ticketed' => Booking::where('status', 'ticketed')->count(),
+        'confirmed' => Booking::where('status', 'confirmed')->count(),
+        'total_mco' => Booking::sum('total_mco'),
+    ];
+
+    return view('admin.bookings.all', compact('bookings', 'agents', 'stats'));
     }
 
     /**
@@ -292,6 +363,20 @@ public function all(Request $request)
         return redirect()
             ->route('admin.bookings.all')
             ->with('success', 'Booking deleted successfully!');
+    }
+
+    public function show($id)
+    {
+        $booking = Booking::with([
+            'passengers',
+            'segments.airline',
+            'user'
+        ])->findOrFail($id);
+
+        // $canEdit, admin can edit the bookings 
+        $canEdit = auth()->user()->role === 'admin' || auth()->user()->role === 'mis_manager';
+
+        return view('admin.bookings.show', compact('booking', 'canEdit'));
     }
 
     /**
