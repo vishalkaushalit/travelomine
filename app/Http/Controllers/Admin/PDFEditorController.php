@@ -27,6 +27,88 @@ class PDFEditorController extends Controller
 
         return $pdf->stream('ticket-' . $booking->booking_reference . '.pdf');
     }
+    // update and generate pdf with template 
+    public function updateAndGeneratePDF(Request $request, $bookingId)
+{
+    $booking = Booking::findOrFail($bookingId);
+
+    // 1. Validate the request
+    $validated = $request->validate([
+        'flight_type' => 'required|in:one_way,round_trip,multi_city',
+        'passengers' => 'required|array',
+        'passengers.*.title' => 'required|string',
+        'passengers.*.first_name' => 'required|string',
+        'passengers.*.last_name' => 'required|string',
+        'passengers.*.passenger_type' => 'required|string',
+        'passengers.*.ticket_number' => 'nullable|string',
+        'passengers.*.seat_number' => 'nullable|string',
+        'segments' => 'required|array',
+        'segments.*.flight_number' => 'required|string',
+        'segments.*.airline_name' => 'nullable|string',
+        'segments.*.airline_code' => 'nullable|string',
+        'segments.*.from_city' => 'required|string',
+        'segments.*.from_airport' => 'required|string',
+        'segments.*.to_city' => 'required|string',
+        'segments.*.to_airport' => 'required|string',
+        'segments.*.departure_time' => 'required|date',
+        'segments.*.arrival_time' => 'required|date|after:segments.*.departure_time',
+        'optional_fields' => 'nullable|array',
+        'optional_fields.passport_number' => 'nullable|boolean',
+        'optional_fields.baggage' => 'nullable|boolean',
+        'optional_fields.pet' => 'nullable|boolean',
+        'passport_numbers' => 'nullable|array',
+        'baggage_info' => 'nullable|string',
+        'pet_info' => 'nullable|string',
+    ]);
+
+    // 2. Update flight_type on booking
+    $booking->flight_type = $validated['flight_type'];
+    $booking->save();
+
+    // 3. Update passengers
+    foreach ($validated['passengers'] as $index => $data) {
+        $passenger = $booking->passengers()->where('id', $data['id'] ?? null)->first();
+        if ($passenger) {
+            $passenger->update($data);
+        } else {
+            // If new passenger, create (shouldn't happen in this edit flow)
+            $booking->passengers()->create($data);
+        }
+    }
+
+    // 4. Update segments
+    foreach ($validated['segments'] as $index => $data) {
+        $segment = $booking->segments()->where('id', $data['id'] ?? null)->first();
+        if ($segment) {
+            $segment->update($data);
+        } else {
+            $booking->segments()->create($data);
+        }
+    }
+
+    // 5. Build ticket_data array
+    $ticketData = $booking->ticket_data ?? [];
+    $ticketData['optional_fields'] = [
+        'passport_number' => $request->has('optional_fields.passport_number'),
+        'baggage' => $request->has('optional_fields.baggage'),
+        'pet' => $request->has('optional_fields.pet'),
+    ];
+    $ticketData['passport_numbers'] = $request->input('passport_numbers', []);
+    $ticketData['baggage_info'] = $request->input('baggage_info', '');
+    $ticketData['pet_info'] = $request->input('pet_info', '');
+
+    $booking->ticket_data = $ticketData;
+    $booking->save();
+
+    // 6. Refresh the booking to get all relations with updated data
+    $booking->refresh();
+
+    // 7. Generate PDF using the blade template
+    $pdf = Pdf::loadView('admin.bookings.ticket-pdf', compact('booking'))
+              ->setPaper('A4', 'portrait');
+
+    return $pdf->stream('ticket-' . $booking->booking_reference . '.pdf');
+}
 
     /**
      * Get ticket template data with booking values

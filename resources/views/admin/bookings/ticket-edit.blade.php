@@ -102,19 +102,21 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="row mt-2">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Ticket Number</label>
                                             <input type="text" name="passengers[{{ $index }}][ticket_number]" class="form-control" 
-                                                   value="{{ old("passengers.{$index}.ticket_number", $passenger->ticket_number) }}">
+                                                   value="{{ old("passengers.{$index}.ticket_number", $passenger->ticket_number) }}" 
+                                                   placeholder="Enter ticket number">
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label>Seat Number</label>
                                             <input type="text" name="passengers[{{ $index }}][seat_number]" class="form-control" 
-                                                   value="{{ old("passengers.{$index}.seat_number", $passenger->seat_number) }}">
+                                                   value="{{ old("passengers.{$index}.seat_number", $passenger->seat_number) }}" 
+                                                   placeholder="Seat">
                                         </div>
                                     </div>
                                 </div>
@@ -234,13 +236,6 @@
 
 
                         <div class="form-group">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="showPassport" 
-                                       name="optional_fields[passport_number]" 
-                                       {{ isset($optionalFields['passport_number']) && $optionalFields['passport_number'] ? 'checked' : '' }}
-                                       onchange="toggleOptionalField('passport')">
-                                <label class="custom-control-label" for="showPassport">Passport Numbers</label>
-                            </div>
                             <div id="passportFields" style="{{ isset($optionalFields['passport_number']) && $optionalFields['passport_number'] ? '' : 'display:none;' }} margin-top:10px;">
                                 @foreach($booking->passengers as $index => $passenger)
                                 <div class="form-group">

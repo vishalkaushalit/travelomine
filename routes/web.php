@@ -279,7 +279,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/agents-list', [\App\Http\Controllers\Admin\AdminAgentsController::class, 'index'])->name('agents.index');
     Route::get('/bookings/all', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'all'])->name('bookings.all');
     Route::get('/bookings', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'index'])->name('bookings.index');
-    Route::get('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}', [AdminBookingsController::class, 'show'])->name('bookings.show');
     Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'destroy'])->name('bookings.destroy');

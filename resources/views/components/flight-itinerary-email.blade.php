@@ -1,130 +1,86 @@
-<table width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="border:1px solid #dcdcdc;margin-top:20px;font-family:Arial,sans-serif;">
-
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6; margin-bottom: 30px;">
     <tr>
-        <td style="padding:12px;background:#f5f5f5;font-weight:bold;">
-            Flight Details
-        </td>
+        <td>
+            <table width="850" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; ">
+                <tr>
+                    <td style="background:#1e3a8a; color:#fff; padding:20px; font-size:24px; font-weight:bold;">
+                        Flight Itinerary
+                    </td>
+                </tr>
+                @foreach ($booking->segments as $index => $segment)
+                    <!-- Flight Segment {{ $index + 1 }} -->
+                    <tr>
+                        <td>
+                            <div style="font-size:18px; font-weight:bold; margin:20px 0; text-align:center;">
+                                ✈ {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, M d') }},
+                                {{ $segment->from_city }} → {{ $segment->to_city }}
+                            </div>
+                        </td>
+                    </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" width="850px"
+                style=" {{ !$loop->last ? 'margin-bottom:25px;' : '' }}; background:#fff;">
+                <tr>
+                    <!-- Airline Code & Logo Section -->
+                    <td width="130" valign="top"
+                        style="border-right:1px solid #dcdcdc; padding:15px; text-align:center;">
+                        @if ($segment->airline && $segment->airline->logo)
+                            <img src="{{ asset('storage/' . $segment->airline->logo) }}"
+                                style="max-width:60px; display:block; margin:0 auto 5px;">
+                        @else
+                            <div style="font-size:28px; font-weight:bold; color:#d71920;">
+                                {{ $segment->airline_code }}
+                            </div>
+                        @endif
+                        <div style="font-weight:bold;">{{ $segment->airline_code }}{{ $segment->flight_number }}</div>
+                        <div style="font-size:13px; color:#666;">
+                            {{ $segment->airline->name ?? $segment->airline_code }}
+                        </div>
+                    </td>
+                    <!-- Flight Details Section -->
+                    <td style="padding:15px;">
+                        <div style="margin-bottom:10px;">
+                            <span style="font-size:18px; font-weight:bold;">
+                                {{ \Carbon\Carbon::parse($segment->departure_time)->format('g:i A') }}
+                            </span>
+                            {{ $segment->from_airport }} {{ $segment->from_city }}
+                        </div>
 
-        <td align="right"
-            style="padding:12px;background:#f5f5f5;">
-            PNR:
-            {{ $booking->airline_pnr ?: $booking->gk_pnr }}
+                        <div style="margin-bottom:15px;">
+                            <span style="font-size:18px; font-weight:bold;">
+                                {{ \Carbon\Carbon::parse($segment->arrival_time)->format('g:i A') }}
+                            </span>
+                            {{ $segment->to_airport }} {{ $segment->to_city }}
+                        </div>
+
+                        <div style="font-size:13px; color:#666;">
+                            Operated by {{ $segment->airline->name ?? $segment->airline_code }}
+                        </div>
+                    </td>
+
+                    <!-- Duration & Class Section -->
+                    <td width="120" valign="top" style="padding:15px; text-align:right;">
+                        <div style="font-size:18px; font-weight:bold;">
+                            {{ $duration ?? '' }}
+                        </div>
+
+                        <div style="margin-top:8px; color:#666;">
+                            {{ $segment->cabin_class }}
+                        </div>
+
+                    </td>
+                </tr>
+            </table>
+            @endforeach
+
+            <!-- Optional: Show status for each segment -->
+            @foreach ($booking->segments as $segment)
+                @if ($loop->first)
+                    <div style="margin:15px 0; text-align:center; font-size:13px; color:#666; max-width:850px">
+                        Status: <span style="color:#047857; font-weight:bold;">Confirmed</span>
+                    </div>
+                @endif
+            @endforeach
         </td>
     </tr>
-
 </table>
-
-@foreach($booking->segments as $index => $segment)
-
-<table width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="border-left:1px solid #dcdcdc;border-right:1px solid #dcdcdc;">
-
-    <tr>
-
-        <td style="padding:15px;font-size:14px;">
-            {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, M d') }}
-        </td>
-
-        <td align="center">
-            <span style="
-                background:#d1fae5;
-                color:#047857;
-                padding:5px 10px;
-                font-weight:bold;
-                ">
-                Confirmed
-            </span>
-        </td>
-
-        <td align="right" style="padding:15px;">
-
-            @if($segment->airline && $segment->airline->logo)
-
-                <img
-                    src="{{ asset('storage/'.$segment->airline->logo) }}"
-                    width="80"
-                    style="display:block;">
-
-            @endif
-
-            <strong>
-                {{ $segment->airline_code }}
-                {{ $segment->flight_number }}
-            </strong>
-
-            {{ $segment->cabin_class }}
-
-        </td>
-
-    </tr>
-
-</table>
-
-<table width="100%" cellpadding="15" cellspacing="0" border="0"
-       style="
-       border-left:1px solid #dcdcdc;
-       border-right:1px solid #dcdcdc;
-       ">
-
-    <tr>
-
-        <td width="40%" valign="top">
-
-            <div style="font-size:42px;font-weight:bold;">
-                {{ $segment->from_airport }}
-            </div>
-
-            <div style="font-size:22px;font-weight:bold;">
-                {{ \Carbon\Carbon::parse($segment->departure_time)->format('g:i A') }}
-            </div>
-
-            <div>
-                {{ $segment->from_city }}
-            </div>
-
-        </td>
-
-        <td width="20%" align="center">
-            ✈
-        </td>
-
-        <td width="40%" align="right" valign="top">
-
-            <div style="font-size:42px;font-weight:bold;">
-                {{ $segment->to_airport }}
-            </div>
-
-            <div style="font-size:22px;font-weight:bold;">
-                {{ \Carbon\Carbon::parse($segment->arrival_time)->format('g:i A') }}
-            </div>
-
-            <div>
-                {{ $segment->to_city }}
-            </div>
-
-        </td>
-
-    </tr>
-
-</table>
-
-<table width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="
-       border-left:1px solid #dcdcdc;
-       border-right:1px solid #dcdcdc;
-       border-bottom:1px solid #dcdcdc;
-       ">
-
-    <tr>
-        <td style="padding:15px;font-weight:bold;">
-
-            Duration:
-            {{ $duration ?? '' }}
-
-        </td>
-    </tr>
-
-</table>
-
-@endforeach

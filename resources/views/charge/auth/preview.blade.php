@@ -468,7 +468,7 @@
                     @include('components.flight-itinerary')
                     {!! $purchaseSummary !!}
                     @include('components.flight-terms')
-                    <div class="auth-box">
+                    {{-- <div class="auth-box">
                         <p class="small text-muted mb-1">
                             By replying to this email or clicking the consent link, you authorize
                         </p>
@@ -478,7 +478,7 @@
                         <p class="sub-label mb-0">
                             Total charge amount · All inclusive
                         </p>
-                    </div>
+                    </div> --}}
                 </div>
 
             </div>

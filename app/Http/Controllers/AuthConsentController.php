@@ -50,7 +50,6 @@ class AuthConsentController extends Controller
             'passengers',
             'agencyMerchant',
         ])->findOrFail($id);
-
         // Map service_type to a specific body template
         $templateMap = [
             'New Booking' => 'emails.charge.auth.new-booking',

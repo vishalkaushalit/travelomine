@@ -16,13 +16,10 @@
                 <div class="segment-status">
                     Confirmed
                 </div>
-
                 <div class="segment-airline">
-
                     @if ($segment->airline && $segment->airline->logo)
                         <img src="{{ asset('storage/' . $segment->airline->logo) }}" alt="" class="airline-logo">
                     @endif
-
                     <strong>
                         {{ $segment->airline_code }}
                         {{ $segment->flight_number }}
