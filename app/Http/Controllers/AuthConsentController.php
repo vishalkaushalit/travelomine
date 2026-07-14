@@ -21,9 +21,11 @@ class AuthConsentController extends Controller
      */
     private function getRoleBasedConfig()
     {
-        $user = auth()->user();
-        
-        if ($user->hasRole('agent')) {
+        // These actions are exposed under both the agent and charge route groups.
+        // Use the route that was actually authorized by middleware instead of
+        // Spatie's role relation. The application stores the login role in the
+        // users.role column, and the two can be out of sync for individual users.
+        if (request()->routeIs('agent.*')) {
             return [
                 'view_prefix' => 'agent.auth',
                 'route_prefix' => 'agent',
