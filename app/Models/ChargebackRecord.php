@@ -9,6 +9,61 @@ class ChargebackRecord extends Model
 {
     use HasFactory;
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($record) {
+            // Requirement 6: Agent, Admin, MIS - when support team change the status of booking
+            try {
+                $booking = $record->booking;
+                if (!$booking) return;
+
+                $creator = $record->user; // The user who made the change
+
+                // Define recipients
+                $recipients = collect();
+
+                // 1. Agent always gets notified
+                if ($booking->user && $booking->user->role === 'agent' && $booking->user->is_active && !$booking->user->is_blocked) {
+                    $recipients->put($booking->user->id, $booking->user);
+                }
+
+                // 2. If the creator is support (or if this is a chargeback/dispute status update), notify Admin and MIS
+                if ($creator && $creator->role === 'support') {
+                    $additionalUsers = \App\Models\User::whereIn('role', ['admin', 'mis'])
+                        ->where('is_active', true)
+                        ->where('is_blocked', false)
+                        ->get();
+                    foreach ($additionalUsers as $u) {
+                        $recipients->put($u->id, $u);
+                    }
+                }
+
+                foreach ($recipients as $recipient) {
+                    $title = 'Booking Dispute Status Changed';
+                    $message = "Booking #{$booking->booking_reference} dispute status updated to \"{$record->status}\"";
+                    if ($creator && $creator->role === 'support') {
+                        $message .= " by Support Team (" . ($creator->name ?? 'Support') . ")";
+                    }
+                    $message .= ".";
+
+                    $actionUrl = \App\Models\Booking::getBookingShowRouteForUser($booking, $recipient);
+
+                    $recipient->notify(new \App\Notifications\CrmNotification(
+                        $title,
+                        $message,
+                        'fa-exclamation-triangle',
+                        'warning',
+                        $actionUrl
+                    ));
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Dispute status notification error: ' . $e->getMessage());
+            }
+        });
+    }
+
     /**
      * The attributes that are mass assignable.
      *

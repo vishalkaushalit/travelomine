@@ -9,6 +9,22 @@ use Illuminate\Support\Facades\DB;
 class NotificationController extends Controller
 {
     /**
+     * Display a listing of all notifications for the authenticated user.
+     */
+    public function index()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('public.home');
+        }
+
+        $notifications = auth()->user()->notifications()
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('notifications.index', compact('notifications'));
+    }
+
+    /**
      * Mark a single notification as read
      */
     public function markAsRead(Request $request, $id)
@@ -21,17 +37,26 @@ class NotificationController extends Controller
             $userId = auth()->id();
             $now = now();
 
-            DB::table('user_notification_reads')->updateOrInsert(
-                [
-                    'notification_id' => $id,
-                    'user_id' => $userId,
-                ],
-                [
-                    'read_at' => $now,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]
-            );
+            if (!is_numeric($id)) {
+                // It is a standard Laravel UUID notification
+                $notification = auth()->user()->notifications()->find($id);
+                if ($notification) {
+                    $notification->markAsRead();
+                }
+            } else {
+                // It is an announcement integer ID
+                DB::table('user_notification_reads')->updateOrInsert(
+                    [
+                        'notification_id' => $id,
+                        'user_id' => $userId,
+                    ],
+                    [
+                        'read_at' => $now,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]
+                );
+            }
 
             return response()->json(['success' => true]);
         } catch (\Throwable $e) {
@@ -40,6 +65,19 @@ class NotificationController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Get the count of unread database notifications
+     */
+    public function getUnreadCount()
+    {
+        if (!auth()->check()) {
+            return response()->json(['count' => 0]);
+        }
+
+        $count = auth()->user()->unreadNotifications()->count();
+        return response()->json(['count' => $count]);
     }
 
     /**
@@ -85,13 +123,20 @@ class NotificationController extends Controller
     public function markAllAsRead()
     {
         if (!auth()->check()) {
-            return response()->json(['error' => 'Unauthenticated'], 401);
+            if (request()->ajax()) {
+                return response()->json(['error' => 'Unauthenticated'], 401);
+            }
+            return redirect()->back()->with('error', 'Unauthenticated');
         }
 
         try {
             $user = auth()->user();
             $now = now();
 
+            // 1. Mark standard database notifications as read
+            $user->unreadNotifications->markAsRead();
+
+            // 2. Mark announcements as read
             $notificationIds = AdminNotification::query()
                 ->where('is_active', true)
                 ->where(function ($query) use ($user) {
@@ -122,12 +167,18 @@ class NotificationController extends Controller
                 );
             }
 
-            return response()->json(['success' => true]);
+            if (request()->ajax()) {
+                return response()->json(['success' => true]);
+            }
+            return redirect()->back()->with('success', 'All notifications marked as read.');
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => 'Failed to mark all notifications as read',
-                'message' => $e->getMessage(),
-            ], 500);
+            if (request()->ajax()) {
+                return response()->json([
+                    'error' => 'Failed to mark all notifications as read',
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to mark all notifications as read: ' . $e->getMessage());
         }
     }
 }

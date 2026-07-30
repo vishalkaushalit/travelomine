@@ -88,6 +88,37 @@ class AdminNotifyController extends Controller
             'created_by' => auth()->id()
         ]);
 
+        if ($notification->is_active) {
+            try {
+                $targetRoles = [];
+                if ($notification->target_type === 'all') {
+                    $targetRoles = ['admin', 'manager', 'agent', 'charge', 'support', 'mis', 'mis-manager', 'changes'];
+                } else {
+                    $targetRoles = $notification->target_roles ?? [];
+                }
+
+                $users = \App\Models\User::where('is_active', true)
+                    ->where('is_blocked', false)
+                    ->whereIn('role', $targetRoles)
+                    ->get();
+
+                foreach ($users as $user) {
+                    if ($user->id === auth()->id()) {
+                        continue;
+                    }
+                    $user->notify(new \App\Notifications\CrmNotification(
+                        'Announcement: ' . $notification->title,
+                        \Illuminate\Support\Str::limit($notification->message, 120),
+                        'fa-bullhorn',
+                        $notification->priority ?? 'info',
+                        $user->getNotificationRoute()
+                    ));
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Announcement dispatch error: ' . $e->getMessage());
+            }
+        }
+
         return redirect()->route('admin.notifications.index')
             ->with('success', 'Notification created successfully.');
     }

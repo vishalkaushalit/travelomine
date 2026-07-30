@@ -21,5 +21,19 @@ class AppServiceProvider extends ServiceProvider
     {
         // Ensure PHP uses the application timezone so date/time helpers use it
         date_default_timezone_set(config('app.timezone'));
+
+        // View composer for notifications bell
+        \Illuminate\Support\Facades\View::composer('components.notifications-bell', function ($view) {
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                $user = \Illuminate\Support\Facades\Auth::user();
+                $unreadCount = $user->unreadNotifications()->count();
+                $notifications = $user->unreadNotifications()->take(5)->get();
+            } else {
+                $unreadCount = 0;
+                $notifications = collect();
+            }
+
+            $view->with(compact('unreadCount', 'notifications'));
+        });
     }
 }

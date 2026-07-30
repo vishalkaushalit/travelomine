@@ -366,7 +366,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     // Notification Management Routes (Only Admin)
     Route::prefix('notifications')->name('notifications.')->middleware(['role:admin'])->group(function () {
         Route::get('/', [AdminNotifyController::class, 'index'])->name('index');
-        Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
         Route::get('/create', [AdminNotifyController::class, 'create'])->name('create');
         Route::post('/', [AdminNotifyController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [AdminNotifyController::class, 'edit'])->name('edit');
@@ -407,6 +406,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 Route::middleware(['auth'])->group(function () {
     // Notification routes for all authenticated users
     Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/count', [NotificationController::class, 'getUnreadCount'])->name('count');
         Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
         Route::get('/unread', [NotificationController::class, 'getUnreadNotifications'])->name('unread');
         Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');

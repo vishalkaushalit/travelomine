@@ -65,9 +65,7 @@
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 @auth
-                    <a href="{{ route('admin.notifications.index') }}" class="nav-link">
-                        <i class="nav-icon fas fa-bell"></i>
-                    </a>
+                    @include('components.notifications-bell')
                     <!-- User Account Menu -->
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
@@ -245,13 +243,13 @@
                                 </a>
                             </li>
 
-                            <li class="nav-item">
+                            {{-- <li class="nav-item">
                                 <a href="{{ route('admin.e-ticket.editor') }}"
                                     class="nav-link {{ request()->routeIs('admin.e-ticket.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-ticket-alt"></i>
                                     <p>E-Ticket Editor</p>
                                 </a>
-                            </li>
+                            </li> --}}
                         </ul>
                     </nav>
                 @endauth

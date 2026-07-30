@@ -193,7 +193,7 @@ class SupportBookingsController extends Controller
 
             // Send notifications to all parties
             try {
-                $this->notificationService->sendStatusUpdateNotification($booking, $chargebackRecord);
+                app(\App\Services\ChargebackNotificationService::class)->sendStatusUpdateNotification($booking, $chargebackRecord);
 
                 Log::info('Chargeback notifications sent for booking #'.$booking->id, [
                     'status' => $chargebackRecord->status,

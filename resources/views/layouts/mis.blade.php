@@ -68,9 +68,7 @@
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 @auth
-                    <a href="{{ route('mis.notifications') }}" class="nav-link">
-                        <i class="nav-icon fas fa-bell"></i>
-                    </a>
+                    @include('components.notifications-bell')
                     <!-- User Account Menu -->
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">

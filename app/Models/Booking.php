@@ -114,6 +114,84 @@ class Booking extends Model
                 $booking->total_passengers = ($booking->adults ?? 0) + ($booking->children ?? 0) + ($booking->infants ?? 0) + ($booking->infant_in_lap ?? 0);
             }
         });
+
+        static::created(function ($booking) {
+            // Requirement 3: MIS, Admin, Manager, MIS manager - everytime when new booking created
+            try {
+                $recipients = \App\Models\User::whereIn('role', ['mis', 'admin', 'manager', 'mis-manager'])
+                    ->where('is_active', true)
+                    ->where('is_blocked', false)
+                    ->get();
+
+                foreach ($recipients as $recipient) {
+                    $actionUrl = self::getBookingShowRouteForUser($booking, $recipient);
+                    $agentName = $booking->user ? $booking->user->name : 'System';
+
+                    $recipient->notify(new \App\Notifications\CrmNotification(
+                        'New Booking Created',
+                        "New booking #{$booking->booking_reference} created by Agent {$agentName}.",
+                        'fa-plus-circle',
+                        'success',
+                        $actionUrl
+                    ));
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Booking created notification error: ' . $e->getMessage());
+            }
+        });
+
+        static::updated(function ($booking) {
+            // Requirement 2: Agent - everytime there booking status change
+            // Requirement 6: Agent, Admin, MIS - when support team change the status of booking
+            try {
+                if ($booking->wasChanged('status')) {
+                    $oldStatus = $booking->getOriginal('status');
+                    $newStatus = $booking->status;
+
+                    $currentUser = auth()->user();
+                    $isSupportChange = $currentUser && $currentUser->role === 'support';
+
+                    $recipients = collect();
+
+                    // 1. Agent always gets notified (Rule 2)
+                    if ($booking->user && $booking->user->role === 'agent' && $booking->user->is_active && !$booking->user->is_blocked) {
+                        $recipients->put($booking->user->id, $booking->user);
+                    }
+
+                    // 2. If support team changed the status, notify Admin and MIS as well (Rule 6)
+                    if ($isSupportChange) {
+                        $additionalUsers = \App\Models\User::whereIn('role', ['admin', 'mis'])
+                            ->where('is_active', true)
+                            ->where('is_blocked', false)
+                            ->get();
+                        foreach ($additionalUsers as $u) {
+                            $recipients->put($u->id, $u);
+                        }
+                    }
+
+                    foreach ($recipients as $recipient) {
+                        $title = 'Booking Status Updated';
+                        $message = "Booking #{$booking->booking_reference} status changed from \"{$oldStatus}\" to \"{$newStatus}\"";
+                        if ($isSupportChange) {
+                            $message .= " by Support Team (" . ($currentUser->name ?? 'Support') . ")";
+                        }
+                        $message .= ".";
+
+                        $actionUrl = self::getBookingShowRouteForUser($booking, $recipient);
+
+                        $recipient->notify(new \App\Notifications\CrmNotification(
+                            $title,
+                            $message,
+                            'fa-exchange-alt',
+                            'info',
+                            $actionUrl
+                        ));
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Booking updated notification error: ' . $e->getMessage());
+            }
+        });
     }
 
     public function syncCitiesFromSegments(): void
@@ -358,5 +436,38 @@ class Booking extends Model
         $latest = $this->chargebackRecords()->latest()->first();
 
         return $latest ? $latest->status : null;
+    }
+
+    /**
+     * Get booking show route dynamically depending on the user role.
+     */
+    public static function getBookingShowRouteForUser($booking, $user): string
+    {
+        if ($user->role === 'admin' || $user->role === 'manager') {
+            return route('admin.bookings.show', $booking->id);
+        }
+
+        $roleRoutes = [
+            'agent' => 'agent.bookings.show',
+            'mis' => 'mis.bookings.show',
+            'mis-manager' => 'mis-manager.bookings.show',
+            'changes' => 'changes.bookings.show',
+            'charge' => 'charge.bookings.show',
+            'support' => 'support.bookings.show',
+        ];
+
+        if (isset($roleRoutes[$user->role]) && \Route::has($roleRoutes[$user->role])) {
+            try {
+                return route($roleRoutes[$user->role], $booking->id);
+            } catch (\Throwable $e) {
+                try {
+                    return route($roleRoutes[$user->role], ['booking' => $booking->id]);
+                } catch (\Throwable $e2) {
+                    return '#';
+                }
+            }
+        }
+
+        return '#';
     }
 }

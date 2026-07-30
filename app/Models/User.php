@@ -56,6 +56,55 @@ class User extends Authenticatable
                 $user->agent_custom_id = 'AG' . rand(1000, 9999);
             }
         });
+
+        static::created(function ($user) {
+            // Requirement 5: Admin - when new user created
+            try {
+                $admins = \App\Models\User::where('role', 'admin')
+                    ->where('is_active', true)
+                    ->where('is_blocked', false)
+                    ->get();
+
+                foreach ($admins as $admin) {
+                    $admin->notify(new \App\Notifications\CrmNotification(
+                        'New User Created',
+                        "A new user {$user->name} ({$user->role}) has been created.",
+                        'fa-user-plus',
+                        'success',
+                        route('admin.users.index')
+                    ));
+                }
+            } catch (\Throwable $e) {
+                \Log::error('User created notification error: ' . $e->getMessage());
+            }
+        });
+
+        static::updated(function ($user) {
+            // Requirement 5: Admin - change anything in their name
+            try {
+                if ($user->wasChanged('name')) {
+                    $originalName = $user->getOriginal('name');
+                    $newName = $user->name;
+
+                    $admins = \App\Models\User::where('role', 'admin')
+                        ->where('is_active', true)
+                        ->where('is_blocked', false)
+                        ->get();
+
+                    foreach ($admins as $admin) {
+                        $admin->notify(new \App\Notifications\CrmNotification(
+                            'User Name Changed',
+                            "User name has been changed from \"{$originalName}\" to \"{$newName}\".",
+                            'fa-user-edit',
+                            'warning',
+                            route('admin.users.index')
+                        ));
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Log::error('User name update notification error: ' . $e->getMessage());
+            }
+        });
     }
     // Helper Methods for Role Checking
     public function canAccessPanel(Panel $panel): bool
@@ -140,5 +189,26 @@ class User extends Authenticatable
     public function hasAnyRole(array $roles): bool
     {
         return in_array($this->role, $roles);
+    }
+
+    public function getNotificationRoute(): string
+    {
+        if ($this->role === 'admin' || $this->role === 'manager') {
+            return route('admin.notifications.index');
+        }
+
+        $roleRoutes = [
+            'agent' => 'agent.notifications',
+            'charge' => 'charge.notifications',
+            'mis' => 'mis.notifications',
+            'mis-manager' => 'mis-manager.notifications',
+            'changes' => 'changes.notifications'
+        ];
+
+        if (isset($roleRoutes[$this->role]) && \Route::has($roleRoutes[$this->role])) {
+            return route($roleRoutes[$this->role]);
+        }
+
+        return '#';
     }
 }
