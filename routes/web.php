@@ -234,6 +234,11 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
         Route::get('/', [AgentMcoController::class, 'index'])->name('index');
         Route::get('/export', [AgentMcoController::class, 'export'])->name('export');
     });
+
+    // E-Ticket Generator Routes
+    Route::get('/e-ticket/editor', [App\Http\Controllers\Agent\AgentETicketController::class, 'index'])->name('e-ticket.editor');
+    Route::post('/e-ticket/preview', [App\Http\Controllers\Agent\AgentETicketController::class, 'preview'])->name('e-ticket.preview');
+    Route::post('/e-ticket/pdf', [App\Http\Controllers\Agent\AgentETicketController::class, 'generatePdf'])->name('e-ticket.pdf');
 });
 
 

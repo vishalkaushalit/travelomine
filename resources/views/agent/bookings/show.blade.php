@@ -27,11 +27,14 @@
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card shadow">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <h4 class="card-title mb-0">
                                 <i class="fas fa-receipt mr-2"></i>
                                 Booking #{{ $booking->booking_reference ?? $booking->id }}
                             </h4>
+                            <a href="{{ route('agent.authorize.edit', $booking->id) }}" class="btn btn-sm btn-dark text-primary font-weight-bold">
+                                <i class="fas fa-paper-plane mr-1"></i> Send / Resend Auth Mail
+                            </a>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -249,116 +252,131 @@
 
                         {{-- Tab 3: Flights --}}
                         <div class="tab-pane fade" id="flights" role="tabpanel">
-                            <div class="boarding-passes">
-                                @forelse($booking->segments as $index => $segment)
-                                    <div class="boarding-pass mb-4">
-                                        <div class="boarding-pass-inner">
-                                            <!-- Tear-off effect -->
-                                            <div class="tear-line"></div>
+                            @if ($booking->itinerary_image)
+                                <div class="card shadow-sm border rounded">
+                                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0"><i class="fas fa-plane mr-2"></i>Flight Itinerary Screenshot</h5>
+                                        <span>PNR: <code>{{ $booking->airline_pnr ?? ($booking->gk_pnr ?? 'N/A') }}</code></span>
+                                    </div>
+                                    <div class="card-body text-center bg-light">
+                                        <div class="mb-3 text-left">
+                                            <strong>Airline:</strong> {{ $booking->airline_name ?? 'N/A' }} 
+                                            @if($booking->airline_code) <code>({{ $booking->airline_code }})</code> @endif
+                                        </div>
+                                        <img src="{{ asset('storage/' . $booking->itinerary_image) }}" alt="Itinerary Screenshot" class="img-fluid rounded border shadow" style="max-height: 650px;">
+                                    </div>
+                                </div>
+                            @else
+                                <div class="boarding-passes">
+                                    @forelse($booking->segments as $index => $segment)
+                                        <div class="boarding-pass mb-4">
+                                            <div class="boarding-pass-inner">
+                                                <!-- Tear-off effect -->
+                                                <div class="tear-line"></div>
 
-                                            <!-- Top Section -->
-                                            <div class="bp-header">
-                                                <div class="row">
-                                                    <div class="col-8">
-                                                        <div class="airline-info">
-                                                            <i class="bi bi-airplane-fill"></i>
-                                                            <strong>{{ $segment->airline_name ?? 'Airline' }}</strong>
-                                                            <span class="flight-no">| Flight
-                                                                {{ $segment->flight_number ?? 'N/A' }}</span>
+                                                <!-- Top Section -->
+                                                <div class="bp-header">
+                                                    <div class="row">
+                                                        <div class="col-8">
+                                                            <div class="airline-info">
+                                                                <i class="bi bi-airplane-fill"></i>
+                                                                <strong>{{ $segment->airline_name ?? 'Airline' }}</strong>
+                                                                <span class="flight-no">| Flight
+                                                                    {{ $segment->flight_number ?? 'N/A' }}</span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="col-4 text-right">
-                                                        <div class="class-badge">{{ $segment->cabin_class ?? 'Economy' }}
+                                                        <div class="col-4 text-right">
+                                                            <div class="class-badge">{{ $segment->cabin_class ?? 'Economy' }}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <!-- Main Boarding Info -->
-                                            <div class="bp-body">
-                                                <div class="row">
-                                                    <div class="col-5 text-left">
-                                                        <div class="boarding-point">
-                                                            <div class="city-code">
-                                                                {{ substr($segment->from_city ?? 'DEP', 0, 3) }}</div>
-                                                            <div class="city-name">
-                                                                {{ $segment->from_city ?? 'Departure' }}</div>
-                                                            <div class="time">
-                                                                {{-- {{ \Carbon\Carbon::parse($segment->departure_date)->format('h:i A') ?? 'N/A' }} --}}
-                                                                {{ \Carbon\Carbon::parse($segment->departure_time ?? $segment->departure_time)->format('h:i A') ?? 'N/A' }}
+                                                <!-- Main Boarding Info -->
+                                                <div class="bp-body">
+                                                    <div class="row">
+                                                        <div class="col-5 text-left">
+                                                            <div class="boarding-point">
+                                                                <div class="city-code">
+                                                                    {{ substr($segment->from_city ?? 'DEP', 0, 3) }}</div>
+                                                                <div class="city-name">
+                                                                    {{ $segment->from_city ?? 'Departure' }}</div>
+                                                                <div class="time">
+                                                                    {{ \Carbon\Carbon::parse($segment->departure_time ?? $segment->departure_time)->format('h:i A') ?? 'N/A' }}
 
-                                                            </div>
-                                                            <div class="date">
-                                                                {{ \Carbon\Carbon::parse($segment->departure_date)->format('d M Y') ?? 'N/A' }}
+                                                                </div>
+                                                                <div class="date">
+                                                                    {{ \Carbon\Carbon::parse($segment->departure_date)->format('d M Y') ?? 'N/A' }}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div class="col-2 text-center">
-                                                        <div class="flight-direction">
-                                                            <i class="bi bi-airplane-fill"></i>
-                                                            <div class="duration">
-                                                                @php
-                                                                    $dep = \Carbon\Carbon::parse(
-                                                                        $segment->departure_date,
-                                                                    );
-                                                                    $arr = \Carbon\Carbon::parse(
-                                                                        $segment->arrival_date ??
+                                                        <div class="col-2 text-center">
+                                                            <div class="flight-direction">
+                                                                <i class="bi bi-airplane-fill"></i>
+                                                                <div class="duration">
+                                                                    @php
+                                                                        $dep = \Carbon\Carbon::parse(
                                                                             $segment->departure_date,
-                                                                    );
-                                                                    $duration = $dep->diff($arr);
-                                                                @endphp
-                                                                {{ $duration->format('%h') }}h
-                                                                {{ $duration->format('%i') }}m
+                                                                        );
+                                                                        $arr = \Carbon\Carbon::parse(
+                                                                            $segment->arrival_date ??
+                                                                                $segment->departure_date,
+                                                                        );
+                                                                        $duration = $dep->diff($arr);
+                                                                    @endphp
+                                                                    {{ $duration->format('%h') }}h
+                                                                    {{ $duration->format('%i') }}m
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div class="col-5 text-right">
-                                                        <div class="boarding-point">
-                                                            <div class="city-code">
-                                                                {{ substr($segment->to_city ?? 'ARR', 0, 3) }}</div>
-                                                            <div class="city-name">{{ $segment->to_city ?? 'Arrival' }}
-                                                            </div>
-                                                            <div class="time">
-                                                                {{ \Carbon\Carbon::parse($segment->arrival_time ?? $segment->departure_time)->format('h:i A') ?? 'N/A' }}
-                                                            </div>
-                                                            <div class="date">
-                                                                {{ \Carbon\Carbon::parse($segment->arrival_date ?? $segment->departure_date)->format('d M Y') }}
+                                                        <div class="col-5 text-right">
+                                                            <div class="boarding-point">
+                                                                <div class="city-code">
+                                                                    {{ substr($segment->to_city ?? 'ARR', 0, 3) }}</div>
+                                                                <div class="city-name">{{ $segment->to_city ?? 'Arrival' }}
+                                                                </div>
+                                                                <div class="time">
+                                                                    {{ \Carbon\Carbon::parse($segment->arrival_time ?? $segment->departure_time)->format('h:i A') ?? 'N/A' }}
+                                                                </div>
+                                                                <div class="date">
+                                                                    {{ \Carbon\Carbon::parse($segment->arrival_date ?? $segment->departure_date)->format('d M Y') }}
 
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Bottom Section with Barcode -->
-                                            <div class="bp-footer">
-                                                <div class="row">
-                                                    <div class="col-7">
-                                                        <div class="passenger-info">
-                                                            <small>PASSENGER</small>
-                                                            <div><strong>{{ $booking->user->name ?? 'N/A' }}</strong></div>
-                                                        </div>
-                                                        <div class="pnr-info mt-2">
-                                                            <small>PNR CODE</small>
-                                                            <div>
-                                                                <code>{{ $booking->airline_pnr ?? ($booking->gk_pnr ?? 'N/A') }}</code>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
 
+                                                <!-- Bottom Section with Barcode -->
+                                                <div class="bp-footer">
+                                                    <div class="row">
+                                                        <div class="col-7">
+                                                            <div class="passenger-info">
+                                                                <small>PASSENGER</small>
+                                                                <div><strong>{{ $booking->user->name ?? 'N/A' }}</strong></div>
+                                                            </div>
+                                                            <div class="pnr-info mt-2">
+                                                                <small>PNR CODE</small>
+                                                                <div>
+                                                                    <code>{{ $booking->airline_pnr ?? ($booking->gk_pnr ?? 'N/A') }}</code>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                @empty
-                                    <div class="text-center py-5">
-                                        <i class="bi bi-airplane-engines display-1 text-muted"></i>
-                                        <h5 class="mt-3">No Flight Information</h5>
-                                    </div>
-                                @endforelse
-                            </div>
+                                    @empty
+                                        <div class="text-center py-5">
+                                            <i class="bi bi-airplane-engines display-1 text-muted"></i>
+                                            <h5 class="mt-3">No Flight Information</h5>
+                                        </div>
+                                    @endforelse
+                                </div>
+                            @endif
                         </div>
                         {{-- Tab 4: Payments --}}
                         <div class="tab-pane fade" id="payments" role="tabpanel">

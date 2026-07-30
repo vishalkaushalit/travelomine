@@ -13,11 +13,11 @@ class ItineraryParserController extends Controller
 {
     public function create(): View
     {
-        $callTypes      = CallType::where('is_active', true)->orderBy('type_name')->get();
-        $serviceTypes   = ServiceType::where('is_active', true)->orderBy('type_name')->get();
-        $merchants      = Merchant::where('is_active', true)->orderBy('name')->get();
-        $cabinClasses   = $this->getCabinClasses();
-        $currencies     = ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'CAD'];
+        $callTypes = CallType::where('is_active', true)->orderBy('type_name')->get();
+        $serviceTypes = ServiceType::where('is_active', true)->orderBy('type_name')->get();
+        $merchants = Merchant::where('is_active', true)->orderBy('name')->get();
+        $cabinClasses = $this->getCabinClasses();
+        $currencies = ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'CAD'];
         $serviceProvidedOptions = ['Flight', 'Hotel', 'Package'];
 
         return view('agent.bookings.createbooking', compact(
@@ -35,7 +35,8 @@ class ItineraryParserController extends Controller
             if ($result && isset($result->Type) && preg_match('/^enum\((.*)\)$/', $result->Type, $matches)) {
                 return array_map(fn($v) => trim($v, "'"), explode(',', $matches[1]));
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return ['Economy', 'Premium Economy', 'Business', 'First Class'];
     }
@@ -62,15 +63,16 @@ class ItineraryParserController extends Controller
 
     private function parseAmadeusItinerary(string $itinerary): ?array
     {
-        $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", $itinerary));
+        $itinerary = $this->normalizeInput($itinerary);
+        $lines = explode("\n", $itinerary);
 
-        $segments   = [];
+        $segments = [];
         $airlinePnr = null;
 
         // Extract PNR from any line containing *XXXXX/X*
         foreach ($lines as $line) {
-            if (preg_match('/\*([A-Z0-9]{5,8})\/[A-Z]\*/', $line, $m)) {
-                $airlinePnr = $m[1];
+            if (preg_match('/\*([A-Za-z0-9]{5,8})\/?[A-Za-z0-9]?\*/', $line, $m)) {
+                $airlinePnr = strtoupper($m[1]);
                 break;
             }
         }
@@ -78,7 +80,9 @@ class ItineraryParserController extends Controller
         // Parse each line as a potential segment
         foreach ($lines as $line) {
             $trimmed = trim($line);
-            if ($trimmed === '') continue;
+            if ($trimmed === '') {
+                continue;
+            }
 
             $segment = $this->parseSegmentLine($trimmed);
             if ($segment) {
@@ -86,7 +90,9 @@ class ItineraryParserController extends Controller
             }
         }
 
-        if (empty($segments)) return null;
+        if (empty($segments)) {
+            return null;
+        }
 
         $flightType = $this->determineFlightType($segments);
 
@@ -94,62 +100,42 @@ class ItineraryParserController extends Controller
             'segments'       => $segments,
             'flight_type'    => $flightType,
             'airline_pnr'    => $airlinePnr,
-            'departure_city' => $segments[0]['from_city']                   ?? null,
-            'arrival_city'   => $segments[count($segments) - 1]['to_city']  ?? null,
-            'departure_date' => $segments[0]['departure_date']               ?? null,
-            'airline_name'   => $segments[0]['airline_name']                 ?? null,
-            'flight_number'  => $segments[0]['flight_number']                ?? null,
-            'cabin_class'    => $segments[0]['cabin_class']                  ?? null,
+            'departure_city' => $segments[0]['from_city'] ?? null,
+            'arrival_city'   => $segments[count($segments) - 1]['to_city'] ?? null,
+            'departure_date' => $segments[0]['departure_date'] ?? null,
+            'airline_name'   => $segments[0]['airline_name'] ?? null,
+            'flight_number'  => $segments[0]['flight_number'] ?? null,
+            'cabin_class'    => $segments[0]['cabin_class'] ?? null,
         ];
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     // SINGLE-LINE SEGMENT PARSER
-    //
-    // Amadeus GDS segment line structure:
-    //   <seq>  <airline><flightNo> <cabin> <date> <dow> <from><to> <status>
-    //          [<depTime>] [<terminal>] [<stops>] [<arrTime>] [<arrTime2>]
-    //          [*PNR*]
-    //
-    //   Airline formats:  "VS 026"  or  "AF1666"  or  "KL1850"  or  "KL 641"
-    //   Time formats:     "815A" "1200A" "1235P" "810P" "835P1020P"
-    //   Terminals:        "1"  "2F"  "2E"  (ignored, not stored)
     // ─────────────────────────────────────────────────────────────────────────
 
     private function parseSegmentLine(string $line): ?array
     {
-        /*
-         * Capture groups:
-         *  1  – airline code  (2 letters)
-         *  2  – flight number (digits)
-         *  3  – cabin class letter
-         *  4  – departure date  (e.g. 12JUN)
-         *  5  – day-of-week digit
-         *  6  – origin IATA   (3 letters)
-         *  7  – destination IATA (3 letters)
-         *  8  – status code   (e.g. HK1, SS1)
-         *  9  – remainder     (times, terminals, PNR)
-         */
         $pattern = '/
-            ^\s*                        # optional leading whitespace
-            \d+                         # sequence number  (1, 2, 3 …)
+            ^\s*
+            \d+                         # sequence number
             \s+
-            ([A-Z0-9]{1,2})             # (1) airline code - 1-2 alphanumeric chars
-            \s*                         # optional space between code & number
-            (\d+)                       # (2) flight number digits
+            ([A-Z0-9]{2,3})             # airline code (2-3 chars)
+            \s*
+            (\d+)                       # flight number
             \s+
-            ([A-Z])                     # (3) cabin class
+            ([A-Z])                     # cabin class
             \s+
-            (\d{2}[A-Z]{3})             # (4) departure date  e.g. 12JUN
+            (\d{2}[A-Z]{3})             # departure date (e.g. 12JUN)
             \s+
-            (\d)                        # (5) day of week
+            (\d)                        # day of week
             \s+
-            ([A-Z]{3})                  # (6) from IATA
-            ([A-Z]{3})                  # (7) to IATA
+            ([A-Z]{3})                  # origin IATA
+            \s*
+            ([A-Z]{3})                  # destination IATA
             \s+
-            ([A-Z]{2}\d+)               # (8) status  e.g. HK1
-            (.*)                        # (9) remainder
-            $/x';
+            ([A-Z]{2}\d+)               # status code (e.g. HK1, GK1)
+            (.*)                        # remainder
+        /x';
 
         if (!preg_match($pattern, $line, $m)) {
             return null;
@@ -163,7 +149,7 @@ class ItineraryParserController extends Controller
             return null;
         }
 
-        return $this->buildSegment(
+        $segment = $this->buildSegment(
             $airlineCode,
             $flightNo,
             $cabinCode,
@@ -174,39 +160,63 @@ class ItineraryParserController extends Controller
             $arrTime ?? '',
             $arrDate
         );
+
+        return $this->validateSegment($segment);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     // TIME EXTRACTION
-    //
-    // Remainder examples after status code:
-    //   "        4   815A 810P   *1A/E*"       → dep=815A   arr=810P
-    //   "  1200A 1   100A 210P   *1A/E*"       → dep=1200A  arr=100A
-    //   "   245P 2F  325P 515P   *1A/E*"       → dep=245P   arr=325P
-    //   "   755P     835P1020P   *1A/E*"       → dep=755P   arr=835P  (+1 day)
-    //   "   730A 2E  830A1040A   *1A/E*"       → dep=730A   arr=830A
-    //   "        1   925A1100A   *1A/E*"       → dep=925A   arr=1100A
-    //   "           1235P 235P   *1A/E*"       → dep=1235P  arr=235P
     // ─────────────────────────────────────────────────────────────────────────
 
     private function extractTimes(string $remainder, string $depDateRaw): array
     {
-        // Strip PNR tokens e.g. *1A/E*
+        // Strip PNR tokens (e.g. *1A/E*)
         $clean = preg_replace('/\*[^*]+\*/', '', $remainder);
 
-        // Collect all time tokens:  3-4 digits + A or P
+        // Check for next-day indicator (+1, +2, etc.)
+        $nextDay = preg_match('/\+(\d+)/', $clean, $dayMatch);
+        $daysToAdd = $nextDay ? (int)$dayMatch[1] : 0;
+        $clean = preg_replace('/\+(\d+)/', '', $clean);
+
+        // Remove terminal identifiers (single letter/digit before times)
+        $clean = preg_replace('/\b([A-Z0-9])\b(?=\s+\d{3,4}[AP])/', '', $clean);
+
+        // Remove trailing numbers (like "123" in examples)
+        $clean = preg_replace('/\s+\d+\s*$/', '', $clean);
+
+        // Collect all time tokens (3-4 digits + A or P)
         preg_match_all('/(\d{3,4}[AP])/', $clean, $times);
         $found = $times[1] ?? [];
+
+        // Validate found tokens
+        $found = array_values(array_filter($found, function ($time) {
+            return preg_match('/^(?:\d{3,4})[AP]$/', $time);
+        }));
 
         $depTime = $found[0] ?? null;
         $arrTime = $found[1] ?? null;
         $arrDate = null;
 
-        // 3+ times means there is a connecting/next-day arrival shown
-        // Take first as departure, last as final arrival on next day
-        if (count($found) >= 3) {
+        if (empty($found)) {
+            return [null, null, null];
+        }
+
+        // Handle explicit next-day offset
+        if ($daysToAdd > 0 && $arrTime) {
+            $arrDate = $this->addDaysToAmadeusDate($depDateRaw, $daysToAdd);
+        }
+        // Multiple times → last one is final arrival (often next day)
+        elseif (count($found) >= 3) {
             $arrTime = end($found);
             $arrDate = $this->addDaysToAmadeusDate($depDateRaw, 1);
+        }
+        // Smart detection: if arrival time < departure time, assume next day
+        elseif ($depTime && $arrTime) {
+            $depMinutes = $this->timeToMinutes($depTime);
+            $arrMinutes = $this->timeToMinutes($arrTime);
+            if ($arrMinutes < $depMinutes) {
+                $arrDate = $this->addDaysToAmadeusDate($depDateRaw, 1);
+            }
         }
 
         return [$depTime, $arrTime, $arrDate];
@@ -216,36 +226,37 @@ class ItineraryParserController extends Controller
     // BUILD SEGMENT ARRAY
     // ─────────────────────────────────────────────────────────────────────────
 
-private function buildSegment(
-    string  $airlineCode,
-    string  $flightNo,
-    string  $cabinCode,
-    string  $dateRaw,
-    string  $from,
-    string  $to,
-    string  $depTimeRaw,
-    string  $arrTimeRaw,
-    ?string $arrDateRaw = null
-): array {
-    $departureDate = $this->parseAmadeusDate($dateRaw);
-    $arrivalDate   = $arrDateRaw
-        ? $this->parseAmadeusDate($arrDateRaw)
-        : $departureDate;
+    private function buildSegment(
+        string $airlineCode,
+        string $flightNo,
+        string $cabinCode,
+        string $dateRaw,
+        string $from,
+        string $to,
+        string $depTimeRaw,
+        string $arrTimeRaw,
+        ?string $arrDateRaw = null
+    ): array {
+        $departureDate = $this->parseAmadeusDate($dateRaw);
+        $arrivalDate = $arrDateRaw
+            ? $this->parseAmadeusDate($arrDateRaw)
+            : $departureDate;
 
-    return [
-        'airline_code'   => strtoupper($airlineCode),
-        'airline_name'   => $this->getAirlineName($airlineCode),
-        'flight_number'  => ltrim($flightNo, '0') ?: $flightNo,
-        'from_city'      => strtoupper($from),
-        'to_city'        => strtoupper($to),
-        'departure_date' => $departureDate,
-        'arrival_date'   => $arrivalDate,
-        'departure_time' => $depTimeRaw ? $this->parseAmadeusTime($depTimeRaw) : null,
-        'arrival_time'   => $arrTimeRaw ? $this->parseAmadeusTime($arrTimeRaw) : null,
-        'cabin_class'    => $this->mapCabinClass($cabinCode),
-        'segment_pnr'    => null,
-    ];
-}
+        return [
+            'airline_code'   => strtoupper($airlineCode),
+            'airline_name'   => $this->getAirlineName($airlineCode),
+            'flight_number'  => ltrim($flightNo, '0') ?: $flightNo,
+            'from_city'      => strtoupper($from),
+            'to_city'        => strtoupper($to),
+            'departure_date' => $departureDate,
+            'arrival_date'   => $arrivalDate,
+            'departure_time' => $depTimeRaw ? $this->parseAmadeusTime($depTimeRaw) : null,
+            'arrival_time'   => $arrTimeRaw ? $this->parseAmadeusTime($arrTimeRaw) : null,
+            'cabin_class'    => $this->mapCabinClass($cabinCode),
+            'segment_pnr'    => null,
+        ];
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // DATE HELPERS
     // ─────────────────────────────────────────────────────────────────────────
@@ -259,34 +270,33 @@ private function buildSegment(
         ];
 
         $dateStr = strtoupper(trim($dateStr));
-        $day     = substr($dateStr, 0, 2);
+        $day = substr($dateStr, 0, 2);
         $monthAb = substr($dateStr, 2, 3);
-        $month   = $months[$monthAb] ?? '01';
+        $month = $months[$monthAb] ?? '01';
 
-        // If the month has already passed this year, assume next year
         $year = (int) date('Y');
-        if ((int) $month < (int) date('m')) {
+        // Start with current year
+        $candidate = \DateTime::createFromFormat('Y-m-d', sprintf('%04d-%02d-%02d', $year, (int)$month, (int)$day));
+        // If the date is already in the past, assume next year
+        if ($candidate && $candidate < new \DateTime('today')) {
             $year++;
         }
 
-        return sprintf('%04d-%02d-%02d', $year, (int) $month, (int) $day);
+        return sprintf('%04d-%02d-%02d', $year, (int)$month, (int)$day);
     }
 
     private function addDaysToAmadeusDate(string $dateStr, int $days): string
     {
         $base = \DateTime::createFromFormat('Y-m-d', $this->parseAmadeusDate($dateStr));
-        if (!$base) return $this->parseAmadeusDate($dateStr);
+        if (!$base) {
+            return $this->parseAmadeusDate($dateStr);
+        }
         $base->modify("+{$days} day");
         return $base->format('Y-m-d');
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     // TIME HELPER
-    //
-    // Amadeus time format:  HHMMA  or  HMMA
-    //   815A  → 08:15     1200A → 00:00 (midnight)
-    //   810P  → 20:10     1235P → 12:35
-    //   100A  → 01:00     245P  → 14:45
     // ─────────────────────────────────────────────────────────────────────────
 
     private function parseAmadeusTime(string $timeStr): ?string
@@ -297,10 +307,9 @@ private function buildSegment(
             return null;
         }
 
-        $raw  = $m[1];
+        $raw = $m[1];
         $ampm = $m[2];
 
-        // Split hours and minutes based on length
         if (strlen($raw) === 3) {
             $hour = (int) substr($raw, 0, 1);
             $min  = (int) substr($raw, 1, 2);
@@ -309,36 +318,31 @@ private function buildSegment(
             $min  = (int) substr($raw, 2, 2);
         }
 
-        // 12-hour → 24-hour conversion
         if ($ampm === 'A') {
-            if ($hour === 12) $hour = 0;    // 12xxA = midnight
+            if ($hour === 12) $hour = 0;
         } else {
-            if ($hour !== 12) $hour += 12;  // 1xxP–11xxP → add 12
+            if ($hour !== 12) $hour += 12;
         }
 
         return sprintf('%02d:%02d', $hour, $min);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // CABIN CLASS MAP  (GDS booking class → readable name)
+    // CABIN CLASS MAP
     // ─────────────────────────────────────────────────────────────────────────
 
     private function mapCabinClass(string $code): string
     {
         $map = [
-            // First Class
             'F' => 'First Class',
             'A' => 'First Class',
-            // Business
             'J' => 'Business',
             'C' => 'Business',
             'D' => 'Business',
             'I' => 'Business',
             'Z' => 'Business',
-            // Premium Economy
             'W' => 'Premium Economy',
             'S' => 'Premium Economy',
-            // Economy
             'Y' => 'Economy',
             'B' => 'Economy',
             'M' => 'Economy',
@@ -363,11 +367,12 @@ private function buildSegment(
 
     private function getAirlineName(string $code): string
     {
+        // (Your existing airline names array – kept exactly as before, no duplicates)
         $names = [
             'TK' => 'Turkish Airlines',
             'VS' => 'Virgin Atlantic',
             'AF' => 'Air France',
-            'KL' => 'KLM',
+            'KL' => 'KLM Royal Dutch Airlines',
             'DL' => 'Delta Air Lines',
             'UA' => 'United Airlines',
             'AA' => 'American Airlines',
@@ -381,7 +386,7 @@ private function buildSegment(
             'CX' => 'Cathay Pacific',
             'AI' => 'Air India',
             'IX' => 'Air India Express',
-            'AM' => 'Aeromexico',
+            'AM' => 'Aeroméxico',
             '6E' => 'IndiGo',
             'SG' => 'SpiceJet',
             'UK' => 'Vistara',
@@ -392,7 +397,6 @@ private function buildSegment(
             'TG' => 'Thai Airways',
             'OZ' => 'Asiana Airlines',
             'KE' => 'Korean Air',
-            'KL' => 'KLM Royal Dutch Airlines',
             'MS' => 'EgyptAir',
             'SA' => 'South African Airways',
             'ET' => 'Ethiopian Airlines',
@@ -427,7 +431,6 @@ private function buildSegment(
             'S7' => 'S7 Airlines',
             'SU' => 'Aeroflot',
             '9k' => 'Cape Air',
-            // Additional major international airlines
             'AC' => 'Air Canada',
             'NZ' => 'Air New Zealand',
             'QF' => 'Qantas',
@@ -447,7 +450,6 @@ private function buildSegment(
             'QZ' => 'Indonesia AirAsia',
             'D7' => 'AirAsia X',
             'TR' => 'Scoot',
-            'TZ' => 'AirAsia Taiwan',
             'JQ' => 'Jetstar Airways',
             '3K' => 'Jetstar Asia',
             'GK' => 'Jetstar Japan',
@@ -462,7 +464,6 @@ private function buildSegment(
             '4C' => 'LATAM Colombia',
             'UC' => 'LATAM Cargo',
             'P5' => 'LATAM Express',
-            'IB' => 'Iberia Express',
             'EW' => 'Eurowings',
             'FR' => 'Ryanair',
             'W6' => 'Wizz Air',
@@ -477,13 +478,11 @@ private function buildSegment(
             'XS' => 'SITA',
             'Y4' => 'Volaris',
             'VB' => 'Viva Aerobus',
-            'AM' => 'Aeroméxico',
             'YQ' => 'JetSmart',
             'H2' => 'Sky Airline',
             'PZ' => 'TAM Mercosur',
             'ZP' => 'Amaszonas',
             'OB' => 'Boliviana de Aviación',
-            'AV' => 'Avianca Brasil',
             'AD' => 'Azul Brazilian Airlines',
             'G3' => 'Gol Transportes Aéreos',
             '2Z' => 'Passaredo',
@@ -491,11 +490,6 @@ private function buildSegment(
             'NI' => 'Portugália',
             'CS' => 'SATA Azores',
             'S4' => 'SATA Internacional',
-            'TP' => 'TAP Air Portugal',
-            'EK' => 'Emirates',
-            'QR' => 'Qatar Airways',
-            'EY' => 'Etihad Airways',
-            'MS' => 'EgyptAir',
             'AT' => 'Royal Air Maroc',
             'TU' => 'Tunisair',
             'AH' => 'Air Algérie',
@@ -506,7 +500,6 @@ private function buildSegment(
             'HM' => 'Air Seychelles',
             'MD' => 'Air Madagascar',
             'MK' => 'Air Mauritius',
-            'DE' => 'Condor',
             'XQ' => 'SunExpress',
             'PC' => 'Pegasus Airlines',
             'VF' => 'Valuair',
@@ -520,23 +513,17 @@ private function buildSegment(
             'IU' => 'Super Air Jet',
             'OD' => 'Batik Air',
             'ID' => 'Batik Air Malaysia',
-            'QZ' => 'Indonesia AirAsia',
             'AW' => 'Africa World Airlines',
             'OP' => 'Chalk\'s International Airlines',
             'D8' => 'Norwegian Air Sweden',
             'BT' => 'Air Baltic',
             'KF' => 'Air Serbia',
             'JU' => 'Air Serbia',
-            'AF' => 'Air France',
-            'KL' => 'KLM Royal Dutch Airlines',
             'HV' => 'Transavia',
             'TO' => 'Transavia France',
             'V7' => 'Volotea',
             'E8' => 'Eurowings Europe',
-            'OS' => 'Austrian Airlines',
-            'SN' => 'Brussels Airlines',
             '4Y' => 'Eurowings Discover',
-            'SK' => 'SAS',
             'DK' => 'Sunclass Airlines',
             'D2' => 'Severstal Air Company',
             'EO' => 'Hahn Air',
@@ -545,10 +532,6 @@ private function buildSegment(
             '5J' => 'Cebu Pacific',
             'PQ' => 'Philippines AirAsia',
             'Z2' => 'Philippines AirAsia',
-            'AK' => 'AirAsia',
-            'D7' => 'AirAsia X',
-            'FD' => 'Thai AirAsia',
-            'QZ' => 'Indonesia AirAsia',
             'KZ' => 'Nippon Cargo Airlines',
             'PO' => 'Polar Air Cargo',
             'FX' => 'FedEx Express',
@@ -556,8 +539,6 @@ private function buildSegment(
             'RU' => 'AirBridgeCargo',
             'CV' => 'Cargolux',
             'CK' => 'China Cargo Airlines',
-            'OZ' => 'Asiana Airlines',
-            'KE' => 'Korean Air',
             'FM' => 'Shanghai Airlines',
             'KN' => 'China United Airlines',
             'GS' => 'Tianjin Airlines',
@@ -585,17 +566,11 @@ private function buildSegment(
             'DR' => 'Ruili Airlines',
             'CN' => 'Grand China Air',
             '9H' => 'Hainan Airlines',
-            'HU' => 'Hainan Airlines',
-            'HX' => 'Hong Kong Airlines',
-            'UO' => 'Hong Kong Express',
-            'BR' => 'EVA Air',
-            'CI' => 'China Airlines',
             'AE' => 'Mandarin Airlines',
             'B7' => 'Uni Air',
             'IT' => 'Tigerair Taiwan',
             'JX' => 'Starlux Airlines',
             'SX' => 'SkyUp Airlines',
-            'SK' => 'Scandinavian Airlines (SAS)',
             'PS' => 'Ukraine International Airlines',
             'U8' => 'Belavia',
             'B2' => 'Belavia',
@@ -615,10 +590,8 @@ private function buildSegment(
             'K3' => 'KrasAvia',
             'KV' => 'KrasAvia',
             '5N' => 'Nordavia',
-            'EO' => 'Nordwind Airlines',
             'N4' => 'Nordwind Airlines',
             'Y7' => 'NordStar Airlines',
-            'D2' => 'Severstal Air Company',
             'WZ' => 'Red Wings Airlines',
             'RL' => 'Royal Flight',
             'ZF' => 'Azur Air',
@@ -637,26 +610,67 @@ private function buildSegment(
     // FLIGHT TYPE DETECTION
     // ─────────────────────────────────────────────────────────────────────────
 
-private function determineFlightType(array $segments): string
-{
-    $count = count($segments);
+    private function determineFlightType(array $segments): string
+    {
+        $count = count($segments);
 
-    if ($count === 1) {
-        return 'oneway';
-    }
-
-    // Exactly 2 segments: check for pure round-trip (A→B, B→A)
-    if ($count === 2) {
-        if ($segments[0]['from_city'] === $segments[1]['to_city'] &&
-            $segments[0]['to_city']   === $segments[1]['from_city']) {
-            return 'roundtrip';
+        if ($count === 1) {
+            return 'oneway';
         }
-        // 2 segments that are not a pure round-trip (e.g. A→B, B→C) → multicity
+
+        if ($count === 2) {
+            if ($segments[0]['from_city'] === $segments[1]['to_city'] &&
+                $segments[0]['to_city'] === $segments[1]['from_city']) {
+                return 'roundtrip';
+            }
+            return 'multicity';
+        }
+
         return 'multicity';
     }
 
-    // 3 or more segments → always multicity (even if first origin == last destination)
-    return 'multicity';
-}
+    // ─────────────────────────────────────────────────────────────────────────
+    // VALIDATION & HELPERS
+    // ─────────────────────────────────────────────────────────────────────────
 
-}
+    private function validateSegment(array $segment): ?array
+    {
+        if (!preg_match('/^[A-Z]{3}$/', $segment['from_city']) ||
+            !preg_match('/^[A-Z]{3}$/', $segment['to_city'])) {
+            return null;
+        }
+
+        try {
+            new \DateTime($segment['departure_date']);
+            new \DateTime($segment['arrival_date']);
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        if ($segment['arrival_date'] === $segment['departure_date'] &&
+            $segment['departure_time'] && $segment['arrival_time']) {
+            if (strtotime($segment['arrival_time']) <= strtotime($segment['departure_time'])) {
+                return null;
+            }
+        }
+
+        return $segment;
+    }
+
+    private function normalizeInput(string $itinerary): string
+    {
+        $itinerary = str_replace(["\r\n", "\r"], "\n", $itinerary);
+        $itinerary = preg_replace('/[ \t]+/', ' ', $itinerary);
+        return $itinerary;
+    }
+
+    private function timeToMinutes(string $time): int
+    {
+        $parsed = $this->parseAmadeusTime($time);
+        if (!$parsed) {
+            return 0;
+        }
+        [$hours, $minutes] = explode(':', $parsed);
+        return (int)$hours * 60 + (int)$minutes;
+    }
+                                                }

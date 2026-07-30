@@ -108,23 +108,16 @@
                                         class="btn btn-xs btn-warning">
                                         <i class="fas fa-edit"></i> Update PNR
                                     </a>
-<!-- 3. Get Auth & Resend Auth (Only visible if Auth is NOT done yet) -->
+<!-- 3. Get Auth & Resend Auth -->
 @php
-    $emailAuthTaken = $booking->email_auth_taken ?? false;
-    $authSent = $booking->status === 'auth_email_sent' || $booking->status === 'payment_processing';
+    $authSent = $booking->status === 'auth_email_sent' || !empty($booking->auth_email_sent_at);
 @endphp
 
-@if (!$emailAuthTaken)
-    @if (!$authSent && in_array($booking->status, ['pending', 'assigned_to_charging']))
-        <a href="{{ route('agent.authorize.edit', $booking->id) }}"
-            class="btn btn-sm btn-success">Get Auth</a>
-    @endif
-
-    @if ($authSent && in_array($booking->status, ['auth_email_sent', 'payment_processing']))
-        <a href="{{ route('agent.authorize.edit', $booking->id) }}"
-            class="btn btn-sm btn-warning">Resend Auth Mail</a>
-    @endif
-@endif
+<a href="{{ route('agent.authorize.edit', $booking->id) }}"
+    class="btn btn-sm {{ $authSent ? 'btn-warning' : 'btn-success' }}">
+    <i class="fas {{ $authSent ? 'fa-sync-alt' : 'fa-paper-plane' }}"></i>
+    {{ $authSent ? 'Resend Auth Mail' : 'Get Auth' }}
+</a>
 
                                     @if (!$booking->activeAssignment)
                                         <a href="{{ route('agent.bookings.assign.create', $booking) }}"

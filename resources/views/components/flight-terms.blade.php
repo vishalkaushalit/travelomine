@@ -1,135 +1,33 @@
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;">
-    <tr>
-        <td>
-            <table width="850" cellpadding="0" cellspacing="0" border="0" style="padding:30px; background:#ffffff;">
-                <tr>
-                    <td>
-                        <h3>Important Information:</h3>
-                        <p>
-                            Please review the following information carefully. If you have any questions or concerns,
-                            please contact
-                            us
-                            immediately at {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }} or email
-                            us at
-                            {{ $booking->agencyMerchant->support_mail ?? '' }}.
-                        </p>
-                        <h3>Please Note:</h3>
-                        <p>
-                            Please review the following information carefully. If you have any questions or concerns,
-                            please contact
-                            us
-                            immediately at {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }} or email
-                            us at
-                            {{ $booking->agencyMerchant->support_mail ?? '' }}.
-                        </p>
-                        <p>
-                            Review the names, dates, cities, and departure/arrival times carefully.<br>
-                            Baggage fees may apply. Please check with the airline for the most up-to-date baggage
-                            policies.
-                        </p>
-                        <p>
-                            Please note that the airline may change the flight schedule, including departure and arrival
-                            times, and
-                            sometimes even the flight number. We recommend checking your flight status with the airline
-                            before your
-                            departure.
-                        </p>
-                        <h4>Important:</h4> <br>
-                        <p>
-                            Your e-tickets cancellation confirmation will be sent to you via email within 24 hours.
-                            Please note that
-                            refunds
-                            are
-                            not guaranteed until the airline processes the cancellation. If there are any restrictions,
-                            updates, or
-                            concerns
-                            from the airline, we will contact you via email or phone. If you wish to make any changes to
-                            this
-                            cancellation
-                            request, you must contact us immediately at +1 888-476-0932.
-                        </p>
-                        <h4>Note:</h4> <br>
-                        <p>
-                            As agreed, your refund will be processed back to the original form of payment. All service
-                            fees and
-                            convenience
-                            fees
-                            are non-refundable. Airline tickets are non-refundable in most cases; however, depending on
-                            the
-                            airline's
-                            cancellation policy, you may be eligible for a partial or full refund.
-                        </p>
-                        <h4>Disclaimer:</h4> <br>
-                        <p>
-                            {{ $booking->agency_merchant_name }} is an independent travel Agency with no third-party
-                            association. We
-                            shall
-                            not
-                            be associated or
-                            considered as an airline or an ally of any of the airlines or brands.
-                            {{ $booking->agency_merchant_name }} is
-                            shown
-                            on your bank account
-                            details in most cases. However, sometimes we have to split the payment with the airline.
-                            {{ $booking->agency_merchant_name }} and the airline
-                            or another company of that organization both will appear as recipients on your account. All
-                            the service
-                            fee and
-                            convenience fee are non-refundable.
-                        </p>
-                        <h4>For Assistance:</h4> <br>
-                        <p>
-                            In case of any discrepancies or if an amendment is required, please contact us within 24
-                            hours at
-                            {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}
-                            or email us at {{ $booking->agencyMerchant->support_mail ?? '' }}.
-                            We will be happy to assist you.
-                        </p>
+<div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #e2e8f0; font-size: 13px; color: #475569; line-height: 1.6;">
+    <h4 style="margin: 0 0 10px 0; color: #0f172a; font-size: 15px; font-weight: 700;">Important Information & Terms:</h4>
+    <p style="margin-bottom: 12px; color: #475569;">
+        Please review the following information carefully. If you have any questions or concerns, please contact us immediately at <strong>{{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}</strong> or email us at <strong>{{ $booking->agencyMerchant->support_mail ?? '' }}</strong>.
+    </p>
 
-                        <h4>For Cancellations and Refunds:</h4> <br>
-                        <p>
-                            Call us at {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}. Bookings
-                            must be
-                            canceled at least 24 hours before the scheduled
-                            departure time. Cancellations can only be processed over the phone. Please note that some
-                            reservations
-                            are
-                            non-refundable and non-changeable. Refunds depend on the fare rules, cancellation penalties,
-                            and
-                            supplier fees.
-                        </p>
-                        <p>
-                            Refunds processed after 24 hours of cancellation request may take up to two billing cycles
-                            to appear on
-                            your
-                            statement. Refunds are always issued to the original form of payment and usually appear
-                            within one or
-                            two
-                            billing
-                            statements, depending on your bank and credit card company.
-                        </p>
-                        <p>
-                            Still have questions? Call us at
-                            {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}. Our agents are
-                            available 24
-                            hours a day, 7 days a
-                            week to assist you. You can also email us at
-                            {{ $booking->agencyMerchant->support_mail ?? '' }}.
-                        </p>
-                        <p>
-                            We value your business and look forward to serving your travel needs soon.
-                        </p>
-                        <p>
-                            Best Regards<br>
-                            Reservation Desk<br>
-                            {{ $booking->user->alias_name ?? '' }}<br>
-                            {{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }} ||
-                            {{ $booking->user->extension_number ?? '' }}
-                        </p>
-                    </td>
-                <tr>
-            </table>
+    <h5 style="margin: 14px 0 6px 0; color: #1e293b; font-size: 13px; font-weight: 700;">Please Note:</h5>
+    <ul style="margin: 0 0 14px 0; padding-left: 20px; color: #475569;">
+        <li style="margin-bottom: 4px;">Review the names, dates, cities, and departure/arrival times carefully.</li>
+        <li style="margin-bottom: 4px;">Baggage fees may apply. Please check with the airline for the most up-to-date baggage policies.</li>
+        <li style="margin-bottom: 4px;">Flight schedules, times, and numbers are subject to change by the airline. We recommend checking flight status prior to departure.</li>
+    </ul>
 
-        </td>
-    </tr>
-</table>
+    <h5 style="margin: 14px 0 6px 0; color: #1e293b; font-size: 13px; font-weight: 700;">Cancellations & Refunds:</h5>
+    <p style="margin-bottom: 12px; color: #475569;">
+        All service and convenience fees are non-refundable. Airline tickets are non-refundable in most cases; depending on fare rules, you may be eligible for credit or partial refund. Bookings must be canceled over the phone at least 24 hours prior to scheduled departure.
+    </p>
+
+    <h5 style="margin: 14px 0 6px 0; color: #1e293b; font-size: 13px; font-weight: 700;">Disclaimer:</h5>
+    <p style="margin-bottom: 16px; color: #475569;">
+        {{ $booking->agency_merchant_name ?? 'Our Agency' }} is an independent travel agency. We are not an airline or direct ally of any airline brand. Charges may appear under {{ $booking->agency_merchant_name ?? 'Our Agency' }} or the airline on your payment statement.
+    </p>
+
+    <div style="margin-top: 18px; padding: 14px 18px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; color: #334155; font-size: 13px; line-height: 1.5;">
+        <strong style="color: #0f172a;">Best Regards,</strong><br>
+        Reservation Desk<br>
+        <span style="color: #64748b;">{{ $booking->user->alias_name ?? 'Travel Desk' }}</span><br>
+        Phone: <strong>{{ $booking->agencyMerchant->contact_number ?? '+1 888-476-0932' }}</strong>
+        @if (!empty($booking->user->extension_number))
+            || Ext: <strong>{{ $booking->user->extension_number }}</strong>
+        @endif
+    </div>
+</div>

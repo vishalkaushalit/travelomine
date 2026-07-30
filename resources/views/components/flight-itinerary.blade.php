@@ -1,136 +1,150 @@
-<div class="itinerary-card">
-    <div class="itinerary-header">
-        <span>Flight details</span>
-        <span>PNR: {{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}</span>
+<div class="itinerary-card border rounded mb-4 overflow-hidden">
+    <div class="itinerary-header bg-primary text-white p-3 d-flex justify-content-between align-items-center">
+        <span class="font-weight-bold"><i class="bi bi-airplane-engines mr-1"></i> Flight Details / Itinerary</span>
+        <span>PNR: <strong>{{ $booking->airline_pnr ? $booking->airline_pnr : ($booking->gk_pnr ?: 'N/A') }}</strong></span>
     </div>
 
-    @foreach ($booking->segments as $index => $segment)
-        <div class="flight-segment-card">
+    @if ($booking->itinerary_image)
+        <div class="p-4 text-center bg-light">
+            <h6 class="mb-3 text-secondary text-left font-weight-bold">
+                Airline: {{ $booking->airline_name ?? 'N/A' }} 
+                @if($booking->airline_code) ({{ $booking->airline_code }}) @endif
+            </h6>
+            <img src="{{ asset('storage/' . $booking->itinerary_image) }}" alt="Flight Itinerary Screenshot" class="img-fluid rounded border shadow-sm" style="max-height: 650px;">
+        </div>
+    @elseif (isset($booking->segments) && $booking->segments->count() > 0)
+        @foreach ($booking->segments as $index => $segment)
+            <div class="flight-segment-card">
 
-            <div class="segment-top">
+                <div class="segment-top">
 
-                <div class="segment-date">
-                    {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, M d') }}
+                    <div class="segment-date">
+                        {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, M d') }}
+                    </div>
+
+                    <div class="segment-status">
+                        Confirmed
+                    </div>
+                    <div class="segment-airline">
+                        @if ($segment->airline && $segment->airline->logo)
+                            <img src="{{ asset('storage/' . $segment->airline->logo) }}" alt="" class="airline-logo">
+                        @endif
+                        <strong>
+                            {{ $segment->airline_code }}
+                            {{ $segment->flight_number }}
+                        </strong>
+
+                        <span>
+                            {{ $segment->cabin_class }}
+                        </span>
+
+                    </div>
+
                 </div>
 
-                <div class="segment-status">
-                    Confirmed
-                </div>
-                <div class="segment-airline">
-                    @if ($segment->airline && $segment->airline->logo)
-                        <img src="{{ asset('storage/' . $segment->airline->logo) }}" alt="" class="airline-logo">
-                    @endif
-                    <strong>
-                        {{ $segment->airline_code }}
-                        {{ $segment->flight_number }}
-                    </strong>
+                <div class="segment-middle">
 
-                    <span>
-                        {{ $segment->cabin_class }}
-                    </span>
+                    <div class="airport-left">
+
+                        <div class="airport-code">
+                            {{ $segment->from_airport }}
+                        </div>
+
+                        <div class="airport-time">
+                            {{ \Carbon\Carbon::parse($segment->departure_time)->format('g:i A') }}
+                        </div>
+
+                        <div class="airport-name">
+                            {{ $segment->from_city }}
+                        </div>
+
+                    </div>
+
+                    <div class="segment-line"></div>
+
+                    <div class="airport-right">
+
+                        <div class="airport-code">
+                            {{ $segment->to_airport }}
+                        </div>
+
+                        <div class="airport-time">
+                            {{ \Carbon\Carbon::parse($segment->arrival_time)->format('g:i A') }}
+                        </div>
+
+                        <div class="airport-name">
+                            {{ $segment->to_city }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="segment-duration">
+
+                    Duration:
+
+                    @php
+                        $duration = '';
+
+                        if ($segment->departure_time && $segment->arrival_time) {
+                            $departure = \Carbon\Carbon::parse($segment->departure_time);
+                            $arrival = \Carbon\Carbon::parse($segment->arrival_time);
+
+                            $minutes = $departure->diffInMinutes($arrival);
+
+                            $hours = floor($minutes / 60);
+                            $mins = $minutes % 60;
+
+                            $duration = $hours . 'h ' . $mins . 'm';
+                        }
+                    @endphp
+
+                    {{ $duration }}
 
                 </div>
 
             </div>
 
-            <div class="segment-middle">
-
-                <div class="airport-left">
-
-                    <div class="airport-code">
-                        {{ $segment->from_airport }}
-                    </div>
-
-                    <div class="airport-time">
-                        {{ \Carbon\Carbon::parse($segment->departure_time)->format('g:i A') }}
-                    </div>
-
-                    <div class="airport-name">
-                        {{ $segment->from_city }}
-                    </div>
-
-                </div>
-
-                <div class="segment-line"></div>
-
-                <div class="airport-right">
-
-                    <div class="airport-code">
-                        {{ $segment->to_airport }}
-                    </div>
-
-                    <div class="airport-time">
-                        {{ \Carbon\Carbon::parse($segment->arrival_time)->format('g:i A') }}
-                    </div>
-
-                    <div class="airport-name">
-                        {{ $segment->to_city }}
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="segment-duration">
-
-                Duration:
-
+            @if (isset($booking->segments[$index + 1]))
                 @php
-                    $duration = '';
 
-                    if ($segment->departure_time && $segment->arrival_time) {
-                        $departure = \Carbon\Carbon::parse($segment->departure_time);
-                        $arrival = \Carbon\Carbon::parse($segment->arrival_time);
+                    $currentArrival = \Carbon\Carbon::parse(
+                        $segment->departure_date->format('Y-m-d') .
+                            ' ' .
+                            \Carbon\Carbon::parse($segment->arrival_time)->format('H:i:s'),
+                    );
 
-                        $minutes = $departure->diffInMinutes($arrival);
+                    $nextDeparture = \Carbon\Carbon::parse(
+                        $booking->segments[$index + 1]->departure_date->format('Y-m-d') .
+                            ' ' .
+                            \Carbon\Carbon::parse($booking->segments[$index + 1]->departure_time)->format('H:i:s'),
+                    );
 
-                        $hours = floor($minutes / 60);
-                        $mins = $minutes % 60;
+                    $layoverMinutes = $currentArrival->diffInMinutes($nextDeparture);
 
-                        $duration = $hours . 'h ' . $mins . 'm';
-                    }
+                    $layoverHours = floor($layoverMinutes / 60);
+
+                    $layoverRemain = $layoverMinutes % 60;
+
                 @endphp
 
-                {{ $duration }}
+                <div class="layover-box">
 
-            </div>
+                    {{ $layoverHours }}h {{ $layoverRemain }}m
 
+                    TRANSIT AT
+
+                    {{ $segment->to_city }}
+
+                </div>
+            @endif
+        @endforeach
+    @else
+        <div class="p-4 text-center text-muted">
+            <p class="mb-0">No flight itinerary image or segments available.</p>
         </div>
-
-        @if (isset($booking->segments[$index + 1]))
-            @php
-
-                $currentArrival = \Carbon\Carbon::parse(
-                    $segment->departure_date->format('Y-m-d') .
-                        ' ' .
-                        \Carbon\Carbon::parse($segment->arrival_time)->format('H:i:s'),
-                );
-
-                $nextDeparture = \Carbon\Carbon::parse(
-                    $booking->segments[$index + 1]->departure_date->format('Y-m-d') .
-                        ' ' .
-                        \Carbon\Carbon::parse($booking->segments[$index + 1]->departure_time)->format('H:i:s'),
-                );
-
-                $layoverMinutes = $currentArrival->diffInMinutes($nextDeparture);
-
-                $layoverHours = floor($layoverMinutes / 60);
-
-                $layoverRemain = $layoverMinutes % 60;
-
-            @endphp
-
-            <div class="layover-box">
-
-                {{ $layoverHours }}h {{ $layoverRemain }}m
-
-                TRANSIT AT
-
-                {{ $segment->to_city }}
-
-            </div>
-        @endif
-    @endforeach
+    @endif
 </div>
 <style>
     /* Your CSS styles here */

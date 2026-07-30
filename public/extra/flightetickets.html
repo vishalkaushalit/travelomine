@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Flight Ticket • A6WDZ6</title>
+    <!-- Google Fonts: elegant serif + modern sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome 6 (free) for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0b1a2e 0%, #1a2f44 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* main ticket card – premium, dark-luxury theme */
+        .ticket {
+            max-width: 1020px;
+            width: 100%;
+            background: #f3efe8;
+            /* warm premium paper */
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 245, 235, 0.3) 0%, transparent 40%);
+            border-radius: 40px 40px 32px 32px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), 0 10px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            padding: 1.8rem 2rem 2.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 215, 175, 0.2);
+            backdrop-filter: blur(2px);
+        }
+
+        /* top bar: airline & branding */
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            padding-bottom: 0.9rem;
+            margin-bottom: 1.8rem;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-icon {
+            font-size: 2rem;
+            color: #1d3b5c;
+            background: #e3d9cd;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), 0 6px 12px rgba(0, 20, 30, 0.2);
+        }
+
+        .brand-text {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+            color: #1e3a4d;
+            text-shadow: 0 1px 0 rgba(255, 215, 175, 0.3);
+        }
+
+        .brand-text span {
+            font-weight: 400;
+            font-style: italic;
+            color: #7f6b5c;
+        }
+
+        .pnr-box {
+            background: #1d2f3f;
+            padding: 0.5rem 1.4rem;
+            border-radius: 60px;
+            color: #f0e6da;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            box-shadow: inset 0 -2px 0 #4f6a7e;
+            border: 1px solid #4f6a7e;
+            background: #1f3447;
+        }
+
+        .pnr-box i {
+            margin-right: 8px;
+            color: #c9b6a3;
+        }
+
+        /* passenger row */
+        .passenger-row {
+            display: flex;
+            flex-wrap: wrap;
+            background: rgba(255, 242, 232, 0.5);
+            border-radius: 80px;
+            padding: 0.5rem 1.8rem 0.5rem 2.2rem;
+            margin-bottom: 2rem;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(200, 175, 155, 0.3);
+            backdrop-filter: blur(2px);
+            box-shadow: inset 0 1px 4px rgba(255, 255, 240, 0.6);
+        }
+
+        .passenger-item {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.3rem 0;
+            flex-wrap: wrap;
+        }
+
+        .passenger-item i {
+            color: #825f48;
+            font-size: 1rem;
+            width: 1.4rem;
+            opacity: 0.7;
+        }
+
+        .passenger-name {
+            font-weight: 600;
+            color: #1e2e3b;
+            font-size: 1rem;
+            letter-spacing: -0.2px;
+        }
+
+        .passenger-detail {
+            font-size: 0.8rem;
+            color: #4e3f36;
+            background: rgba(200, 175, 155, 0.2);
+            padding: 0.15rem 0.9rem;
+            border-radius: 30px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .e-ticket-badge {
+            background: #a5876e;
+            color: #fcf6ef;
+            border-radius: 40px;
+            padding: 0.25rem 1.2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid #dac2ae;
+        }
+
+        /* two columns: outbound & return */
+        .flight-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.8rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 700px) {
+            .flight-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .passenger-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.3rem;
+                border-radius: 40px;
+                padding: 0.8rem 1.5rem;
+            }
+
+            .ticket-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.7rem;
+            }
+        }
+
+        .flight-card {
+            background: rgba(255, 248, 240, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 28px;
+            padding: 1.5rem 1.5rem 1.2rem;
+            border: 1px solid rgba(255, 215, 175, 0.4);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+            transition: 0.15s ease;
+        }
+
+        .flight-card:hover {
+            background: rgba(255, 250, 242, 0.8);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+        }
+
+        .flight-tag {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: #4f3e31;
+            text-transform: uppercase;
+            border-bottom: 1px dashed #cfb9a8;
+            padding-bottom: 0.5rem;
+        }
+
+        .flight-tag i {
+            margin-right: 6px;
+            color: #a5856b;
+        }
+
+        .route {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: #1a2d3b;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.2rem;
+        }
+
+        .route i {
+            color: #b19279;
+            font-size: 1.4rem;
+            margin: 0 0.2rem;
+        }
+
+        .flight-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 40px;
+            padding: 0.3rem 0.4rem 0.3rem 0.8rem;
+            margin: 0.5rem 0 0.7rem;
+            font-size: 0.8rem;
+            color: #2f403d;
+            border: 1px solid #e7dbcf;
+        }
+
+        .flight-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .airline-badge {
+            background: #1d3345;
+            color: #f0e2d3;
+            padding: 0.2rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            letter-spacing: 0.4px;
+        }
+
+        .time-detail {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.6rem 0 0.2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1f2e38;
+        }
+
+        .time-detail i {
+            color: #946f57;
+            width: 1.4rem;
+        }
+
+        .duration {
+            background: #e7dbcf;
+            padding: 0.1rem 1rem;
+            border-radius: 60px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #2b3b3b;
+        }
+
+        /* booking summary row */
+        .booking-summary {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            background: #e6d9cc;
+            background: linear-gradient(135deg, #e2d3c4 0%, #dacbbc 100%);
+            padding: 0.9rem 2rem;
+            border-radius: 60px;
+            margin: 1.8rem 0 1.2rem;
+            border: 1px solid #bbaa99;
+            box-shadow: inset 0 1px 3px rgba(255, 245, 230, 0.8);
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #1d2c31;
+        }
+
+        .summary-item i {
+            color: #4f3d30;
+            opacity: 0.7;
+        }
+
+        .expiry {
+            background: #1f2e3a;
+            color: #efe6db;
+            padding: 0.2rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* important info & footer */
+        .info-footer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            border-top: 1px solid rgba(140, 115, 95, 0.25);
+            padding-top: 1.2rem;
+            font-size: 0.75rem;
+            color: #3f3a35;
+        }
+
+        .info-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem 1.8rem;
+        }
+
+        .info-list i {
+            margin-right: 5px;
+            color: #7c6452;
+            width: 1.1rem;
+        }
+
+        .support {
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+            background: #1d2e3b;
+            padding: 0.3rem 1.2rem;
+            border-radius: 60px;
+            color: #efe3d6;
+        }
+
+        .support a {
+            color: #e9d6c4;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.1s;
+        }
+
+        .support a:hover {
+            color: #faeeda;
+            text-decoration: underline;
+        }
+
+        .support i {
+            color: #c6b09d;
+        }
+
+        /* fine details */
+        .fine-print {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+            font-size: 0.65rem;
+            color: #5e5247;
+            margin-top: 0.7rem;
+        }
+
+        /* icons */
+        .fas,
+        .far,
+        .fal {
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+        }
+
+        .badge-date {
+            background: #bcaa99;
+            color: #201e1b;
+            font-weight: 600;
+            padding: 0.1rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.65rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ticket">
+
+        <!-- HEADER -->
+        <div class="ticket-header">
+            <div class="brand">
+                <div class="brand-icon"><i class="fas fa-plane-departure"></i></div>
+                <div class="brand-text">MALAYSIA <span>premium</span></div>
+            </div>
+            <div class="pnr-box"><i class="fas fa-ticket-alt"></i> A6WDZ6 • CONFIRMED</div>
+        </div>
+
+        <!-- PASSENGER -->
+        <div class="passenger-row">
+            <div class="passenger-item">
+                <i class="fas fa-user-circle"></i>
+                <span class="passenger-name">Kevin David Nateman</span>
+                <span class="passenger-detail"><i class="far fa-calendar-alt"></i> Aug 30, 1978</span>
+                <span class="passenger-detail"><i class="fas fa-globe-americas"></i> USA</span>
+            </div>
+            <div class="passenger-item">
+                <i class="fas fa-user-circle"></i>
+                <span class="passenger-name">Sierra Marie Westfall</span>
+                <span class="passenger-detail"><i class="far fa-calendar-alt"></i> Sep 02, 1994</span>
+                <span class="passenger-detail"><i class="fas fa-globe-americas"></i> USA</span>
+            </div>
+            <div class="e-ticket-badge"><i class="fas fa-check-circle"></i> E-Ticket</div>
+        </div>
+
+        <!-- FLIGHT GRID -->
+        <div class="flight-grid">
+            <!-- OUTBOUND -->
+            <div class="flight-card">
+                <div class="flight-tag">
+                    <span><i class="fas fa-arrow-right"></i> Outbound</span>
+                    <span class="airline-badge"><i class="fas fa-plane"></i> MH620</span>
+                </div>
+                <div class="route">
+                    <span>SIN</span> <i class="fas fa-long-arrow-alt-right"></i> <span>KUL</span>
+                </div>
+                <div class="flight-meta">
+                    <span><i class="fas fa-calendar-day"></i> Mon, 14 Sep 2026</span>
+                    <span><i class="fas fa-clock"></i> 4:35 PM → 5:45 PM</span>
+                    <span class="duration"><i class="far fa-hourglass"></i> 1h 10m</span>
+                </div>
+                <div class="time-detail">
+                    <span><i class="fas fa-map-pin"></i> Singapore (SIN)</span>
+                    <span><i class="fas fa-map-pin"></i> Kuala Lumpur (KUL)</span>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; margin-top: 0.4rem; font-size: 0.7rem; color: #4f423b;">
+                    <span><i class="fas fa-chair"></i> Business Class</span>
+                    <span><i class="fas fa-plane"></i> Boeing 737-800</span>
+                </div>
+            </div>
+
+            <!-- RETURN -->
+            <div class="flight-card">
+                <div class="flight-tag">
+                    <span><i class="fas fa-arrow-left"></i> Return</span>
+                    <span class="airline-badge"><i class="fas fa-plane"></i> MH1438</span>
+                </div>
+                <div class="route">
+                    <span>KUL</span> <i class="fas fa-long-arrow-alt-right"></i> <span>LGK</span>
+                </div>
+                <div class="flight-meta">
+                    <span><i class="fas fa-calendar-day"></i> Fri, 18 Sep 2026</span>
+                    <span><i class="fas fa-clock"></i> 11:55 AM → 1:05 PM</span>
+                    <span class="duration"><i class="far fa-hourglass"></i> 1h 10m</span>
+                </div>
+                <div class="time-detail">
+                    <span><i class="fas fa-map-pin"></i> Kuala Lumpur (KUL)</span>
+                    <span><i class="fas fa-map-pin"></i> Langkawi (LGK)</span>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; margin-top: 0.4rem; font-size: 0.7rem; color: #4f423b;">
+                    <span><i class="fas fa-chair"></i> Business Class</span>
+                    <span><i class="fas fa-plane"></i> Boeing 737-800</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOOKING SUMMARY -->
+        <div class="booking-summary">
+            <span class="summary-item"><i class="fas fa-credit-card"></i> Payment: Card</span>
+            <span class="summary-item"><i class="fas fa-calendar-check"></i> Issue: 26 Jul 2026</span>
+            <span class="summary-item expiry"><i class="far fa-clock"></i> Ticket Exp: 26 Jul 2027</span>
+            <span class="summary-item"><i class="fas fa-check-circle" style="color: #1e6b4a;"></i> Status:
+                CONFIRMED</span>
+        </div>
+
+        <!-- IMPORTANT + SUPPORT -->
+        <div class="info-footer">
+            <div class="info-list">
+                <span><i class="fas fa-clock"></i> 3h before</span>
+                <span><i class="fas fa-passport"></i> Passport / Visa</span>
+                <span><i class="fas fa-laptop"></i> Check-in 48h</span>
+                <span><i class="fas fa-door-open"></i> Gates close 30min</span>
+            </div>
+            <div class="support">
+                <i class="fas fa-phone-alt"></i> <a href="#">+1 888-306-4617</a>
+                <i class="fas fa-envelope"></i> <a href="#">support@businessclasstravel.us</a>
+                <i class="fas fa-globe"></i> <a href="#">www.businessclasstravel.us</a>
+            </div>
+        </div>
+
+        <!-- fine print -->
+        <div class="fine-print">
+            <span><i class="fas fa-barcode"></i> 232-7502567924 / 232-7502567925</span>
+            <span><i class="fas fa-ticket-alt"></i> Booking ref: A6WDZ6</span>
+            <span><i class="fas fa-print"></i> Issue: 26 July 2026</span>
+            <span style="margin-left: auto;">✈️ premium cabin</span>
+        </div>
+    </div>
+</body>
+
+</html>

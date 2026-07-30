@@ -38,7 +38,8 @@ class MerchantMailerService
         }
 
         $fromEmail = $merchant->mail_from_address;
-        $fromName = $merchant->mail_from_name;
+        // $fromName = $merchant->mail_from_name;
+        $fromName = 'Reservation Desk';
         $replyToEmail = $merchant->mail_reply_to_address;
         $replyToName = $merchant->mail_reply_to_name;
 
@@ -55,10 +56,35 @@ class MerchantMailerService
             app('events')
         );
 
-        $subject = $merchant->name . ' - Booking Acknowledgement Required: ' . $booking->booking_reference;
+        $airlineName = $booking->airline_name ?? ($booking->segments->first()?->airline_name ?? 'the airline');
+        $pnr = $booking->airline_pnr ?: ($booking->gk_pnr ?: 'N/A');
+        $subject = "Authorization for {$airlineName} New Booking Confirmation #{$pnr}";
 
-        $mailer->html($html, function (Message $message) use (
+        $imagePath = null;
+        if ($booking->itinerary_image) {
+            $rawPath = ltrim($booking->itinerary_image, '/\\');
+            $cleanPath = preg_replace('/^(public\/|storage\/|app\/public\/)+/i', '', $rawPath);
+            $candidatePaths = [
+                storage_path('app/public/' . $cleanPath),
+                storage_path('app/public/' . $rawPath),
+                storage_path('app/' . $cleanPath),
+                storage_path('app/' . $rawPath),
+                public_path('storage/' . $cleanPath),
+                public_path($rawPath),
+                base_path($rawPath),
+            ];
+            foreach ($candidatePaths as $path) {
+                if ($path && file_exists($path) && !is_dir($path)) {
+                    $imagePath = $path;
+                    break;
+                }
+            }
+        }
+
+        $mailer->send([], [], function (Message $message) use (
             $booking,
+            $html,
+            $imagePath,
             $subject,
             $fromEmail,
             $fromName,
@@ -72,6 +98,18 @@ class MerchantMailerService
             if (! blank($replyToEmail)) {
                 $message->replyTo($replyToEmail, $replyToName);
             }
+
+            $bodyHtml = $html;
+            if ($imagePath && file_exists($imagePath)) {
+                try {
+                    $cid = $message->embed($imagePath);
+                    $bodyHtml = preg_replace('/src="data:image\/[^;]+;base64,[^"]+"/', 'src="' . $cid . '"', $html);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to embed itinerary image inline: ' . $e->getMessage());
+                }
+            }
+
+            $message->html($bodyHtml);
         });
 
         Log::info('Merchant auth email sent.', [

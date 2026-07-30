@@ -1,108 +1,161 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.agent')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Authorization Email | {{ $booking->bookingreference }}</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- CKEditor 5 CDN -->
-    <script src="https://cdn.ckeditor.com/ckeditor5/34.0.0/classic/ckeditor.js"></script>
-    <style>
-        .ck-editor__editable {
-            min-height: 500px;
-            background-color: white !important;
-        }
-
-        .card-header {
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        body {
-            background-color: #f8f9fa;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-primary">Authorize & Edit Booking Email</h2>
-            <span class="badge bg-secondary">Ref: {{ $booking->bookingreference }}</span>
-        </div>
-
+@section('content')
+    <div class="container-fluid">
         <div class="row">
-            <!-- Card & Customer Information Sidebar -->
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-header bg-dark text-white">Payment Info</div>
-                    <div class="card-body">
-                        <p class="mb-1 text-muted small">Card Holder</p>
-                        <h5 class="text-capitalize">
-                            {{ $booking->primary_card->card_holder_name ?? 'N/A' }}
-                        </h5>
-                        <hr>
-                        <p class="mb-1 text-muted small">Card Number</p>
-                        <h6>**** **** **** {{ $booking->primary_card->card_last_four ?? 'N/A' }}</h6>
-                        <hr>
-                        <p class="mb-1 text-muted small">Total Amount</p>
-                        <h5 class="text-success font-weight-bold">{{ $booking->currency }}
-                            {{ number_format($booking->amount_charged, 2) }}</h5>
-                    </div>
-                </div>
-
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-info text-white">Customer Info</div>
-                    <div class="card-body">
-                        <p class="mb-1 text-muted small">Name</p>
-                        <h6 class="text-capitalize">{{ $booking->customer_name }}</h6>
-                        <p class="mb-1 text-muted small">Email</p>
-                        <h6 class="text-truncate">{{ $booking->customer_email }}</h6>
-                        <p class="mb-1 text-muted small">Phone</p>
-                        <h6 class="text-truncate">{{ $booking->customer_phone }}</h6>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Email Content Editor Area -->
-            <div class="col-md-9">
-                <!-- CHANGE THIS: Updated form action for agent -->
-                <form action="{{ route('agent.authorize.preview', $booking->id) }}" method="POST">
-                    @csrf
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="mb-3">
-                                Main Authorization Content
-                            </h5>
-
-                            <textarea id="editor1" name="main_content">{!! $mainContent !!}</textarea>
-                            <hr class="my-4">
-                            <h5 class="mb-3">
-                                Purchase Summary
-                            </h5>
-                            <textarea id="editor2" name="purchase_summary">{!! $purchaseSummary !!}</textarea>
-
-                            <div class="mt-3 text-end">
-                                <button type="submit" class="btn btn-success px-4">Preview & Proceed</button>
-                            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            @php
+                                $isSpanish =
+                                    $booking->language && strpos(strtolower($booking->language), 'spanish') !== false;
+                            @endphp
+                            @if ($isSpanish)
+                                Editar Correo de Autorización
+                            @else
+                                Edit Authorization Email
+                            @endif
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge badge-info">
+                                @if ($isSpanish)
+                                    🇪🇸 Español
+                                @else
+                                    🇬🇧 English
+                                @endif
+                            </span>
+                            <span class="badge badge-secondary">
+                                @if ($isSpanish)
+                                    Plantilla: {{ $booking->service_type ?? 'New Booking' }} (ES)
+                                @else
+                                    Template: {{ $booking->service_type ?? 'New Booking' }} (EN)
+                                @endif
+                            </span>
                         </div>
                     </div>
-                </form>
+                    <div class="card-body">
+                        <form action="{{ route('agent.authorize.preview', $booking->id) }}" method="POST" id="emailForm">
+                            @csrf
+
+                            <div class="form-group">
+                                <label for="main_content">
+                                    @if ($isSpanish)
+                                        Contenido Principal <span class="text-danger">*</span>
+                                    @else
+                                        Main Content <span class="text-danger">*</span>
+                                    @endif
+                                </label>
+                                <textarea name="main_content" id="main_content" class="form-control summernote" rows="15">{{ old('main_content', $mainContent ?? '') }}</textarea>
+                                @error('main_content')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="purchase_summary">
+                                    @if ($isSpanish)
+                                        Resumen de Compra
+                                    @else
+                                        Purchase Summary
+                                    @endif
+                                </label>
+                                <textarea name="purchase_summary" id="purchase_summary" class="form-control summernote" rows="10">{{ old('purchase_summary', $purchaseSummary ?? '') }}</textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="alert alert-info">
+                                    @if ($isSpanish)
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Idioma detectado:</strong> Español - Usando plantilla en español
+                                    @else
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Detected Language:</strong> English - Using English template
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">
+                                    @if ($isSpanish)
+                                        <i class="fas fa-eye"></i> Vista Previa
+                                    @else
+                                        <i class="fas fa-eye"></i> Preview
+                                    @endif
+                                </button>
+                                <a href="{{ route('agent.bookings.index') }}" class="btn btn-secondary">
+                                    @if ($isSpanish)
+                                        <i class="fas fa-times"></i> Cancelar
+                                    @else
+                                        <i class="fas fa-times"></i> Cancel
+                                    @endif
+                                </a>
+                                @if ($booking->auth_email_sent_at)
+                                    <button type="button" class="btn btn-warning" onclick="confirmResend(this)">
+                                        @if ($isSpanish)
+                                            <i class="fas fa-redo"></i> Reenviar
+                                        @else
+                                            <i class="fas fa-redo"></i> Resend
+                                        @endif
+                                    </button>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+@endsection
 
-    <script src="https://cdn.ckeditor.com/ckeditor5/34.0.0/classic/ckeditor.js"></script>
-    <script>
-        ClassicEditor.create(document.querySelector('#editor1'))
-            .catch(error => console.error(error));
+    @push('scripts')
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-bs4.min.js"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-bs4.min.css" rel="stylesheet">
 
-        ClassicEditor.create(document.querySelector('#editor2'))
-            .catch(error => console.error(error));
-    </script>
-</body>
+        <script>
+            $(document).ready(function() {
+                $('.summernote').summernote({
+                    height: 300,
+                    toolbar: [
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['strikethrough', 'superscript', 'subscript']],
+                        ['fontsize', ['fontsize']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture', 'video']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ]
+                });
+            });
 
-</html>
+            function confirmResend(btn) {
+                @if ($isSpanish)
+                    if (confirm('¿Está seguro de que desea reenviar este correo de autorización?')) {
+                        if (btn) btn.disabled = true;
+                        document.getElementById('emailForm').action = "{{ route('agent.authorize.resend', $booking->id) }}";
+                        document.getElementById('emailForm').submit();
+                    }
+                @else
+                    if (confirm('Are you sure you want to resend this authorization email?')) {
+                        if (btn) btn.disabled = true;
+                        document.getElementById('emailForm').action = "{{ route('agent.authorize.resend', $booking->id) }}";
+                        document.getElementById('emailForm').submit();
+                    }
+                @endif
+            }
+        </script>
+    @endpush
+
+    @push('styles')
+        <style>
+            .note-editor {
+                border-radius: 4px;
+            }
+
+            .note-editor .note-toolbar {
+                background: #f8f9fa;
+                border-bottom: 1px solid #dee2e6;
+            }
+        </style>
+    @endpush

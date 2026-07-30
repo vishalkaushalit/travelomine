@@ -237,55 +237,71 @@
 
                 {{-- Tab 3: Flights --}}
                 <div class="tab-pane fade" id="flights" role="tabpanel">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Route</th>
-                                    <th>Dates</th>
-                                    <th>Airline</th>
-                                    <th>Flight</th>
-                                    <th>Class</th>
-                                    <th>PNR</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($booking->segments as $index => $segment)
+                    @if ($booking->itinerary_image)
+                        <div class="card shadow-sm border rounded">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-plane mr-2"></i>Flight Itinerary Screenshot</h5>
+                                <span>PNR: <code>{{ $booking->airline_pnr ?? ($booking->gk_pnr ?? 'N/A') }}</code></span>
+                            </div>
+                            <div class="card-body text-center bg-light">
+                                <div class="mb-3 text-left">
+                                    <strong>Airline:</strong> {{ $booking->airline_name ?? 'N/A' }} 
+                                    @if($booking->airline_code) <code>({{ $booking->airline_code }})</code> @endif
+                                </div>
+                                <img src="{{ asset('storage/' . $booking->itinerary_image) }}" alt="Itinerary Screenshot" class="img-fluid rounded border shadow" style="max-height: 650px;">
+                            </div>
+                        </div>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="thead-dark">
                                     <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>
-                                            <strong>{{ $segment->from_city }} → {{ $segment->to_city }}</strong>
-                                            @if ($segment->from_airport || $segment->to_airport)
-                                                <br><small class="text-muted">
-                                                    {{ $segment->from_airport ?? 'N/A' }} →
-                                                    {{ $segment->to_airport ?? 'N/A' }}
-                                                </small>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <strong>{{ $segment->departure_date->format('M d') }}</strong>
-                                            @if ($segment->return_date)
-                                                <br><small>↩ {{ $segment->return_date->format('M d') }}</small>
-                                            @endif
-                                        </td>
-                                        <td>{{ $segment->airline_name }}</td>
-                                        <td>{{ $segment->flight_number ?: 'N/A' }}</td>
-                                        <td>
-                                            <span class="badge badge-light">{{ $segment->cabin_class }}</span>
-                                        </td>
-                                        <td>
-                                            <code>{{ $segment->segment_pnr ?: $segment->pnr ?: 'N/A' }}</code>
-                                        </td>
+                                        <th>#</th>
+                                        <th>Route</th>
+                                        <th>Dates</th>
+                                        <th>Airline</th>
+                                        <th>Flight</th>
+                                        <th>Class</th>
+                                        <th>PNR</th>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="text-center text-muted py-4">No flights</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    @forelse($booking->segments as $index => $segment)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>
+                                                <strong>{{ $segment->from_city }} → {{ $segment->to_city }}</strong>
+                                                @if ($segment->from_airport || $segment->to_airport)
+                                                    <br><small class="text-muted">
+                                                        {{ $segment->from_airport ?? 'N/A' }} →
+                                                        {{ $segment->to_airport ?? 'N/A' }}
+                                                    </small>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <strong>{{ $segment->departure_date->format('M d') }}</strong>
+                                                @if ($segment->return_date)
+                                                    <br><small>↩ {{ $segment->return_date->format('M d') }}</small>
+                                                @endif
+                                            </td>
+                                            <td>{{ $segment->airline_name }}</td>
+                                            <td>{{ $segment->flight_number ?: 'N/A' }}</td>
+                                            <td>
+                                                <span class="badge badge-light">{{ $segment->cabin_class }}</span>
+                                            </td>
+                                            <td>
+                                                <code>{{ $segment->segment_pnr ?: $segment->pnr ?: 'N/A' }}</code>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted py-4">No flights</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Tab 4: Payments --}}

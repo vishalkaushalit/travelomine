@@ -1,86 +1,86 @@
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6; margin-bottom: 30px;">
-    <tr>
-        <td>
-            <table width="850" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; ">
-                <tr>
-                    <td style="background:#1e3a8a; color:#fff; padding:20px; font-size:24px; font-weight:bold;">
-                        Flight Itinerary
-                    </td>
-                </tr>
-                @foreach ($booking->segments as $index => $segment)
-                    <!-- Flight Segment {{ $index + 1 }} -->
-                    <tr>
-                        <td>
-                            <div style="font-size:18px; font-weight:bold; margin:20px 0; text-align:center;">
-                                ✈ {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, M d') }},
-                                {{ $segment->from_city }} → {{ $segment->to_city }}
-                            </div>
-                        </td>
-                    </tr>
-            </table>
-            <table cellpadding="0" cellspacing="0" width="850px"
-                style=" {{ !$loop->last ? 'margin-bottom:25px;' : '' }}; background:#fff;">
-                <tr>
-                    <!-- Airline Code & Logo Section -->
-                    <td width="130" valign="top"
-                        style="border-right:1px solid #dcdcdc; padding:15px; text-align:center;">
-                        @if ($segment->airline && $segment->airline->logo)
-                            <img src="{{ asset('storage/' . $segment->airline->logo) }}"
-                                style="max-width:60px; display:block; margin:0 auto 5px;">
-                        @else
-                            <div style="font-size:28px; font-weight:bold; color:#d71920;">
-                                {{ $segment->airline_code }}
-                            </div>
-                        @endif
-                        <div style="font-weight:bold;">{{ $segment->airline_code }}{{ $segment->flight_number }}</div>
-                        <div style="font-size:13px; color:#666;">
-                            {{ $segment->airline->name ?? $segment->airline_code }}
-                        </div>
-                    </td>
-                    <!-- Flight Details Section -->
-                    <td style="padding:15px;">
-                        <div style="margin-bottom:10px;">
-                            <span style="font-size:18px; font-weight:bold;">
-                                {{ \Carbon\Carbon::parse($segment->departure_time)->format('g:i A') }}
-                            </span>
-                            {{ $segment->from_airport }} {{ $segment->from_city }}
-                        </div>
+@if ($booking->itinerary_image)
+    @php
+        $rawPath = ltrim($booking->itinerary_image, '/\\');
+        $cleanPath = preg_replace('/^(public\/|storage\/|app\/public\/)+/i', '', $rawPath);
+        
+        $candidatePaths = [
+            storage_path('app/public/' . $cleanPath),
+            storage_path('app/public/' . $rawPath),
+            storage_path('app/' . $cleanPath),
+            storage_path('app/' . $rawPath),
+            public_path('storage/' . $cleanPath),
+            public_path($rawPath),
+            base_path($rawPath),
+        ];
 
-                        <div style="margin-bottom:15px;">
-                            <span style="font-size:18px; font-weight:bold;">
-                                {{ \Carbon\Carbon::parse($segment->arrival_time)->format('g:i A') }}
-                            </span>
-                            {{ $segment->to_airport }} {{ $segment->to_city }}
-                        </div>
+        $foundPath = null;
+        foreach ($candidatePaths as $path) {
+            if ($path && file_exists($path) && !is_dir($path)) {
+                $foundPath = $path;
+                break;
+            }
+        }
 
-                        <div style="font-size:13px; color:#666;">
-                            Operated by {{ $segment->airline->name ?? $segment->airline_code }}
-                        </div>
-                    </td>
+        $base64Image = null;
+        if ($foundPath) {
+            $ext = strtolower(pathinfo($foundPath, PATHINFO_EXTENSION));
+            $mime = match($ext) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                default => (function_exists('mime_content_type') ? @mime_content_type($foundPath) : 'image/png')
+            };
+            if (!$mime) $mime = 'image/png';
+            $base64Image = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($foundPath));
+        }
+    @endphp
 
-                    <!-- Duration & Class Section -->
-                    <td width="120" valign="top" style="padding:15px; text-align:right;">
-                        <div style="font-size:18px; font-weight:bold;">
-                            {{ $duration ?? '' }}
-                        </div>
-
-                        <div style="margin-top:8px; color:#666;">
-                            {{ $segment->cabin_class }}
-                        </div>
-
-                    </td>
-                </tr>
-            </table>
-            @endforeach
-
-            <!-- Optional: Show status for each segment -->
-            @foreach ($booking->segments as $segment)
-                @if ($loop->first)
-                    <div style="margin:15px 0; text-align:center; font-size:13px; color:#666; max-width:850px">
-                        Status: <span style="color:#047857; font-weight:bold;">Confirmed</span>
-                    </div>
-                @endif
-            @endforeach
-        </td>
-    </tr>
-</table>
+    <div style="margin: 24px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; padding: 20px; text-align: center;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 14px;">
+            <tr>
+                <td align="left" style="font-weight: 700; font-size: 15px; color: #0f172a;">
+                    ✈ Flight Details
+                </td>
+                <td align="right">
+                    <span style="background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                        {{ $booking->airline_name ?? 'Airline' }} @if($booking->airline_code)({{ $booking->airline_code }})@endif
+                    </span>
+                </td>
+            </tr>
+        </table>
+        
+        @if ($base64Image)
+            <img src="{{ $base64Image }}" alt="Flight Itinerary" style="max-width: 100%; height: auto; border: 1px solid #cbd5e1; border-radius: 8px; display: block; margin: 0 auto; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
+        @else
+            <img src="{{ url('storage/' . $cleanPath) }}" alt="Flight Itinerary" style="max-width: 100%; height: auto; border: 1px solid #cbd5e1; border-radius: 8px; display: block; margin: 0 auto; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
+        @endif
+        
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 14px; font-size: 13px; color: #475569;">
+            <tr>
+                <td align="center">
+                    PNR: <strong style="color: #0f172a; font-family: monospace; font-size: 14px;">{{ $booking->airline_pnr ? $booking->airline_pnr : ($booking->gk_pnr ?: 'N/A') }}</strong> 
+                    &nbsp;|&nbsp; Status: <span style="color: #16a34a; font-weight: 700;">Confirmed</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+@elseif (isset($booking->segments) && $booking->segments->count() > 0)
+    <div style="margin: 24px 0; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+        <div style="background: #0f172a; color: #ffffff; padding: 12px 20px; font-weight: 700; font-size: 15px;">
+            ✈ Flight Details
+        </div>
+        @foreach ($booking->segments as $index => $segment)
+            <div style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9;">
+                <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
+                    {{ \Carbon\Carbon::parse($segment->departure_date)->format('D, M d Y') }}: {{ $segment->from_city }} → {{ $segment->to_city }}
+                </div>
+                <div style="font-size: 13px; color: #475569; line-height: 1.5;">
+                    <strong>Airline:</strong> {{ $segment->airline->name ?? ($segment->airline_name ?? $segment->airline_code) }} ({{ $segment->airline_code }}{{ $segment->flight_number }}) |
+                    <strong>Time:</strong> {{ \Carbon\Carbon::parse($segment->departure_time)->format('g:i A') }} - {{ \Carbon\Carbon::parse($segment->arrival_time)->format('g:i A') }} |
+                    <strong>Class:</strong> {{ $segment->cabin_class }}
+                </div>
+            </div>
+        @endforeach
+    </div>
+@endif

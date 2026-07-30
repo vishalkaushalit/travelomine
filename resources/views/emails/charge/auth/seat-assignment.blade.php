@@ -1,7 +1,4 @@
-    <h3>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} Seat Assignment Confirmation.
-    </h3>
-
-    <p>Dear {{ $booking->customer_name ?? 'Passeneger' }},</p>
+<p>Dear {{ $booking->customer_name ?? 'Passeneger' }},</p>
     <p>Greetings of the day !!</p>
     <p>As per our conversation and as agreed, we have booked your seat assignment with
         {{ $booking->segments->first()?->airline_name ?? 'the airline' }} under

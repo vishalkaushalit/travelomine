@@ -244,6 +244,14 @@
                                     <p>Merchants</p>
                                 </a>
                             </li>
+
+                            <li class="nav-item">
+                                <a href="{{ route('admin.e-ticket.editor') }}"
+                                    class="nav-link {{ request()->routeIs('admin.e-ticket.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-ticket-alt"></i>
+                                    <p>E-Ticket Editor</p>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
                 @endauth

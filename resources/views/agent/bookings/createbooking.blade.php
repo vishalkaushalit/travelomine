@@ -1,15 +1,16 @@
 @extends('layouts.agent')
 
+@push('styles')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@endpush
+
 @section('content')
     <div class="container-fluid py-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h1 class="h3 mb-0">Create Booking</h1>
-            <div>
-
-                <button type="button" class="btn btn-outline-info" id="showItineraryModalBtn">
-                    <i class="bi bi-file-text"></i> Parse Itinerary
-                </button>
-            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="clearDraftBtn" title="Clear saved draft data">
+                <i class="bi bi-trash"></i> Clear Saved Form Draft
+            </button>
         </div>
 
         @if (session('success'))
@@ -20,18 +21,37 @@
         @endif
 
         @if ($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Please fix the following errors:</strong>
-                <ul class="mb-0 mt-2">
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var errorList = [];
                     @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                        errorList.push("{!! addslashes($error) !!}");
                     @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+                    
+                    var errorHtml = '<div style="text-align: left; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 14px; margin-top: 10px;"><ul style="margin: 0; padding-left: 20px; color: #991b1b; font-size: 14px; line-height: 1.6;">';
+                    errorList.forEach(function(err) {
+                        errorHtml += '<li>' + err + '</li>';
+                    });
+                    errorHtml += '</ul></div>';
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Booking Validation Required',
+                        html: errorHtml,
+                        confirmButtonText: '<i class="bi bi-pencil-square"></i> Review & Fix Fields',
+                        confirmButtonColor: '#dc2626'
+                    }).then(function() {
+                        var firstInvalid = document.querySelector('.is-invalid, [required]:invalid');
+                        if (firstInvalid) {
+                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstInvalid.focus();
+                        }
+                    });
+                });
+            </script>
         @endif
 
-        <form action="{{ route('agent.bookings.store') }}" method="POST" id="bookingForm">
+        <form action="{{ route('agent.bookings.store') }}" method="POST" id="bookingForm" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="source_booking_id" id="source_booking_id" value="{{ old('source_booking_id') }}">
             <input type="hidden" id="bookingFlowMode" value="{{ old('source_booking_id') ? 'update' : 'new' }}">
@@ -41,86 +61,54 @@
                 <div class="progress-bar bg-success" role="progressbar" id="formProgress" style="width: 0%">0%</div>
             </div>
 
-            {{-- 0. Itinerary Parser Section --}}
-            <div class="card mb-4 border-info">
-                <div class="card-header bg-info text-white">
-                    <strong><i class="bi bi-file-text"></i> Itinerary Parser (Amadeus)</strong>
+            {{-- 1. Airline & Itinerary Details --}}
+            <div class="card mb-4 form-section" data-section="3">
+                <div class="card-header bg-primary text-white">
+                    <strong>1. Airline & Itinerary Screenshot</strong>
                     <span class="float-end">
                         <i class="bi bi-chevron-up"></i>
                     </span>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-12">
-                            <label class="form-label">Paste Amadeus Itinerary</label>
-                            <textarea id="itineraryText" class="form-control" rows="6"
-                                placeholder="Paste your Amadeus itinerary here...&#10;&#10;Example:&#10;2  TK 008 W 03MAR 2*IADIST HK1   915P 320P 04MAR  E  TK/RRKDMN&#10;3  TK 064 W 04MAR 3*ISTBKK HK1   800P 900A 05MAR  E  TK/RRKDMN"></textarea>
-                            <small class="text-muted">Paste the Amadeus itinerary text and click "Parse & Fill Form" to
-                                auto-fill flight details.</small>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Airline Name <span class="text-danger">*</span></label>
+                            <input type="text" name="airline_name" id="airline_name" class="form-control"
+                                placeholder="e.g. American Airlines" value="{{ old('airline_name') }}" required>
                         </div>
-                        <div class="col-12 mt-3">
-                            <button type="button" class="btn btn-info" id="parseItineraryBtn">
-                                <i class="bi bi-cpu"></i> Parse & Fill Form
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary" id="clearItineraryBtn">
-                                <i class="bi bi-eraser"></i> Clear
-                            </button>
-                        </div>
-                        <div id="parseResult" class="col-12 mt-3" style="display: none;">
-                            <div class="alert" id="parseResultAlert"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            {{-- 3. Flight Details --}}
-            <div class="card mb-4 form-section" data-section="3">
-                <div class="card-header bg-primary text-white">
-                    <strong>1. Flight Details</strong>
-                    <span class="float-end">
-                        <i class="bi bi-chevron-up"></i>
-                    </span>
-                </div>
-                <div class="card-body">
-                        <div class="row">
-                            <p class="text-muted mb-3">Enter flight details for the booking. Add Atleast one pnr from
-                                Airline, Gk PNR to create booking.</p>
-                        </div>
-                    <div class="row flight-row">
-
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Flight Type <span class="text-danger">*</span></label>
-                            <select name="flight_type" id="flight_type" class="form-control">
-                                <option value="">Select Flight Type</option>
-                                <option value="oneway" {{ old('flight_type') == 'oneway' ? 'selected' : '' }}>One Way
-                                </option>
-                                <option value="roundtrip" {{ old('flight_type') == 'roundtrip' ? 'selected' : '' }}>Round
-                                    Trip</option>
-                                <option value="multicity" {{ old('flight_type') == 'multicity' ? 'selected' : '' }}>Multi
-                                    City</option>
-                            </select>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Airline Code</label>
+                            <input type="text" name="airline_code" id="airline_code" class="form-control text-uppercase"
+                                placeholder="e.g. AA" maxlength="10" value="{{ old('airline_code') }}">
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">GK PNR </label>
-                                    <input type="text" name="gk_pnr" class="form-control" value="{{ old('gk_pnr') }}">
+                            <label class="form-label">GK PNR</label>
+                            <input type="text" name="gk_pnr" class="form-control" value="{{ old('gk_pnr') }}">
                         </div>
 
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Airline PNR</label>
                             <input type="text" name="airline_pnr" class="form-control" value="{{ old('airline_pnr') }}">
                         </div>
-                    </div>
-                    <div id="segments_container"></div>
-                    <div class="mt-2" id="add_segment_wrapper" style="display:none;">
-                        <button type="button" class="btn btn-outline-primary btn-sm" id="add_segment_btn">
-                            <i class="bi bi-plus-circle"></i> Add More Segment
-                        </button>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Upload Itinerary Screenshot (.png, .jpg, .jpeg) <span class="text-danger">*</span></label>
+                            <input type="file" name="itinerary_image" id="itinerary_image" class="form-control"
+                                accept=".png,.jpg,.jpeg,image/png,image/jpeg,image/jpg" required>
+                            <small class="text-muted">Please upload flight itinerary screenshot image in PNG, JPG or JPEG format.</small>
+                        </div>
+
+                        <div id="itinerary_preview_container" class="col-12 text-center mt-2" style="display: none;">
+                            <label class="form-label d-block text-start text-success font-weight-bold"><i class="bi bi-image"></i> Itinerary Screenshot Preview:</label>
+                            <img id="itinerary_preview" class="img-fluid rounded border shadow-sm" style="max-height: 350px;">
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {{-- 1. Booking Information --}}
+            {{-- 2. Booking Information --}}
             <div class="card mb-4 form-section" data-section="1">
                 <div class="card-header bg-primary text-white">
                     <strong>2. Booking Information</strong>
@@ -698,6 +686,7 @@
         </div>`;
             }
             function buildSegments() {
+                if (!elements.flightType || !elements.segmentsContainer) return;
                 const type = elements.flightType.value;
                 elements.segmentsContainer.innerHTML = '';
                 segmentIndex = 0;
@@ -900,29 +889,32 @@
             if (elements.flightType) elements.flightType.addEventListener('change', buildSegments);
             if (elements.addSegmentBtn) {
                 elements.addSegmentBtn.addEventListener('click', function() {
-                    const currentCount = elements.segmentsContainer.querySelectorAll('.segment-item').length;
+                    const currentCount = elements.segmentsContainer ? elements.segmentsContainer.querySelectorAll('.segment-item').length : 0;
                     if (currentCount >= 10) {
                         alert('Maximum 10 flight segments are allowed for multi city booking.');
                         return;
                     }
-                    elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false,
-                        true));
-                    segmentIndex++;
+                    if (elements.segmentsContainer) {
+                        elements.segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, true));
+                        segmentIndex++;
+                    }
                 });
             }
 
-            elements.segmentsContainer.addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-segment-btn') || e.target.closest('.remove-segment-btn')) {
-                    const btn = e.target.classList.contains('remove-segment-btn') ? e.target : e.target.closest(
-                        '.remove-segment-btn');
-                    const items = elements.segmentsContainer.querySelectorAll('.segment-item');
-                    if (items.length > 2) {
-                        btn.closest('.segment-item').remove();
-                    } else {
-                        alert('At least 2 flight segments are required for multi city booking.');
+            if (elements.segmentsContainer) {
+                elements.segmentsContainer.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('remove-segment-btn') || e.target.closest('.remove-segment-btn')) {
+                        const btn = e.target.classList.contains('remove-segment-btn') ? e.target : e.target.closest(
+                            '.remove-segment-btn');
+                        const items = elements.segmentsContainer.querySelectorAll('.segment-item');
+                        if (items.length > 2) {
+                            btn.closest('.segment-item').remove();
+                        } else {
+                            alert('At least 2 flight segments are required for multi city booking.');
+                        }
                     }
-                }
-            });
+                });
+            }
 
             const passengerCounters = [elements.adultsCount, elements.childrenCount, elements.infantsCount, elements
                 .infantInLapCount
@@ -936,6 +928,27 @@
                     calculateMco();
                     if (elements.fullPaymentChargeAmount) {
                         elements.fullPaymentChargeAmount.value = this.value;
+                    }
+                });
+            }
+
+            // Image upload preview listener
+            const itineraryInput = document.getElementById('itinerary_image');
+            const itineraryPreview = document.getElementById('itinerary_preview');
+            const itineraryPreviewContainer = document.getElementById('itinerary_preview_container');
+
+            if (itineraryInput) {
+                itineraryInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(evt) {
+                            itineraryPreview.src = evt.target.result;
+                            itineraryPreviewContainer.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        itineraryPreviewContainer.style.display = 'none';
                     }
                 });
             }
@@ -954,166 +967,126 @@
 
             calculateMco();
             togglePaymentBlocks();
-            buildSegments();
+            if (elements.flightType) buildSegments();
             updatePassengerForms();
             updateProgress();
         }
 
-        function initializeItineraryParser() {
-            const parseBtn = document.getElementById('parseItineraryBtn');
-            const clearBtn = document.getElementById('clearItineraryBtn');
-            const itineraryText = document.getElementById('itineraryText');
-            const parseResult = document.getElementById('parseResult');
-            const parseResultAlert = document.getElementById('parseResultAlert');
-
-            parseBtn.addEventListener('click', async function() {
-                const itinerary = itineraryText.value.trim();
-
-                if (!itinerary) {
-                    showParseResult('warning', 'Please paste an itinerary first.');
-                    return;
-                }
-
-                parseBtn.disabled = true;
-                parseBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Parsing...';
-
-                try {
-                    const response = await fetch('{{ route('agent.itinerary.decode') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                ?.content || '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            itinerary: itinerary
-                        })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        fillFormWithDecodedData(result.data);
-                        showParseResult('success',
-                            'Itinerary parsed successfully! Flight details have been auto-filled.');
-                    } else {
-                        showParseResult('danger', result.message || 'Failed to parse itinerary.');
+        // Smart Auto-Save Draft to sessionStorage
+        function saveFormDraft() {
+            try {
+                var formData = {};
+                var inputs = document.querySelectorAll('#bookingForm input:not([type="file"]):not([type="hidden"]), #bookingForm select, #bookingForm textarea');
+                inputs.forEach(function(input) {
+                    if (input.name) {
+                        if (input.type === 'checkbox') {
+                            formData[input.name] = input.checked;
+                        } else if (input.type === 'radio') {
+                            if (input.checked) formData[input.name] = input.value;
+                        } else {
+                            formData[input.name] = input.value;
+                        }
                     }
-                } catch (error) {
-                    console.error('Error:', error);
-                    showParseResult('danger', 'An error occurred while parsing the itinerary.');
-                } finally {
-                    parseBtn.disabled = false;
-                    parseBtn.innerHTML = '<i class="bi bi-cpu"></i> Parse & Fill Form';
-                }
-            });
-
-            clearBtn.addEventListener('click', function() {
-                itineraryText.value = '';
-                parseResult.style.display = 'none';
-            });
-
-            function showParseResult(type, message) {
-                parseResultAlert.className = `alert alert-${type}`;
-                parseResultAlert.innerHTML =
-                    `<i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
-                parseResult.style.display = 'block';
-                setTimeout(() => {
-                    parseResult.style.display = 'none';
-                }, 5000);
-            }
+                });
+                sessionStorage.setItem('booking_form_draft', JSON.stringify(formData));
+            } catch(e) {}
         }
 
-        function fillFormWithDecodedData(data) {
-            const flightTypeSelect = document.getElementById('flight_type');
-            if (flightTypeSelect && data.flight_type) {
-                flightTypeSelect.value = data.flight_type;
-                flightTypeSelect.dispatchEvent(new Event('change'));
-            }
-
-            const airlinePnrInput = document.querySelector('[name="airline_pnr"]');
-            if (airlinePnrInput && data.airline_pnr) {
-                airlinePnrInput.value = data.airline_pnr;
-            }
-
-            // Wait for flight type change to generate segments
-            setTimeout(() => {
-                if (data.segments && data.segments.length > 0) {
-                    fillSegments(data.segments);
-                }
-            }, 300);
+        // Restore Draft Data
+        function restoreFormDraft() {
+            try {
+                var saved = sessionStorage.getItem('booking_form_draft');
+                if (!saved) return;
+                var formData = JSON.parse(saved);
+                Object.keys(formData).forEach(function(key) {
+                    var field = document.querySelector('#bookingForm [name="' + key + '"]');
+                    if (field && !field.value && field.type !== 'file') {
+                        if (field.type === 'checkbox') {
+                            field.checked = formData[key];
+                        } else if (field.type === 'radio') {
+                            var radio = document.querySelector('#bookingForm [name="' + key + '"][value="' + formData[key] + '"]');
+                            if (radio) radio.checked = true;
+                        } else {
+                            field.value = formData[key];
+                        }
+                    }
+                });
+            } catch(e) {}
         }
 
-
-        function fillSegments(segments) {
-            // Get all segment containers after generation
-            let segmentContainers = document.querySelectorAll('.segment-item');
-
-            // If number of segments doesn't match, trigger add more if multi-city
-            const flightType = document.getElementById('flight_type').value;
-            if (flightType === 'multicity' && segments.length > segmentContainers.length) {
-                const addBtn = document.getElementById('add_segment_btn');
-                for (let i = segmentContainers.length; i < segments.length; i++) {
-                    if (addBtn) addBtn.click();
-                }
-                // Re-fetch containers after addition
-                segmentContainers = document.querySelectorAll('.segment-item');
-            }
-
-            for (let i = 0; i < segments.length && i < segmentContainers.length; i++) {
-                const seg = segments[i];
-                const container = segmentContainers[i];
-
-                const fromCity = container.querySelector('[name*="[from_city]"]');
-                const toCity = container.querySelector('[name*="[to_city]"]');
-                const depDate = container.querySelector('[name*="[departure_date]"]');
-                const depTime = container.querySelector('[name*="[departure_time]"]');
-                const arrTime = container.querySelector('[name*="[arrival_time]"]');
-                const airline = container.querySelector('[name*="[airline_name]"]');
-                const flightNo = container.querySelector('[name*="[flight_number]"]');
-                const cabin = container.querySelector('[name*="[cabin_class]"]');
-
-                if (fromCity && seg.from_city) fromCity.value = seg.from_city;
-                if (toCity && seg.to_city) toCity.value = seg.to_city;
-                if (depDate && seg.departure_date) depDate.value = seg.departure_date;
-                if (depTime && seg.departure_time) depTime.value = seg.departure_time;
-                if (arrTime && seg.arrival_time) arrTime.value = seg.arrival_time;
-                if (airline && seg.airline_name) airline.value = seg.airline_name;
-                if (flightNo && seg.flight_number) flightNo.value = seg.flight_number;
-                if (cabin && seg.cabin_class) cabin.value = seg.cabin_class;
-            }
-
-            // Trigger change events to update progress
-            document.querySelectorAll('#segments_container input, #segments_container select').forEach(el => {
-                el.dispatchEvent(new Event('change'));
+        // Clear Draft Button
+        var clearDraftBtn = document.getElementById('clearDraftBtn');
+        if (clearDraftBtn) {
+            clearDraftBtn.addEventListener('click', function() {
+                sessionStorage.removeItem('booking_form_draft');
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Draft Cleared',
+                    text: 'Form draft data has been cleared.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             });
         }
-    </script>
-    <script>
-        function updateSegmentDateLabels() {
-            const flightType = document.querySelector('[name="flight_type"]')?.value || 'oneway';
 
-            document.querySelectorAll('.segment-card').forEach(function(card, index) {
-                const label = card.querySelector('.segment-date-label');
-                const input = card.querySelector('.segment-date-input');
+        // Form Pre-submit Validation Popup & Auto-Save Listener
+        const bookingFormEl = document.getElementById('bookingForm');
+        if (bookingFormEl) {
+            bookingFormEl.addEventListener('input', saveFormDraft);
+            bookingFormEl.addEventListener('change', saveFormDraft);
+            
+            bookingFormEl.addEventListener('submit', function(e) {
+                var invalidInputs = [];
+                var requiredInputs = this.querySelectorAll('[required]');
+                
+                requiredInputs.forEach(function(input) {
+                    if (!input.value || !input.value.trim()) {
+                        input.classList.add('is-invalid');
+                        var label = input.closest('.mb-3')?.querySelector('.form-label')?.innerText || input.name;
+                        invalidInputs.push(label.replace('*', '').trim());
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                });
 
-                if (!label || !input) return;
-                if (flightType === 'roundtrip' && index === 1) {
-                    // Second segment in a round trip = Return Date
-                    label.innerHTML = 'Return Date <span class="text-danger">*</span>';
-                    input.name = 'segments[' + index + '][return_date]';
+                if (invalidInputs.length > 0) {
+                    e.preventDefault();
+                    
+                    var errorHtml = '<div style="text-align: left; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 14px; margin-top: 10px;"><ul style="margin: 0; padding-left: 20px; color: #991b1b; font-size: 14px; line-height: 1.6;">';
+                    invalidInputs.forEach(function(err) {
+                        errorHtml += '<li><strong>' + err + '</strong> is required</li>';
+                    });
+                    errorHtml += '</ul></div>';
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Please Complete Required Fields',
+                        html: errorHtml,
+                        confirmButtonText: '<i class="bi bi-pencil-square"></i> Review & Fix Fields',
+                        confirmButtonColor: '#0284c7'
+                    }).then(function() {
+                        var firstInvalid = document.querySelector('.is-invalid');
+                        if (firstInvalid) {
+                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstInvalid.focus();
+                        }
+                    });
                 } else {
-                    // All other cases = Departure Date
-                    label.innerHTML = 'Departure Date <span class="text-danger">*</span>';
-                    input.name = 'segments[' + index + '][departure_date]';
+                    sessionStorage.removeItem('booking_form_draft');
                 }
             });
         }
-    </script>
-    <script>
-        // convert airline_code into uppercase directly'
-        document.querySelector('[name="airline_code"]').addEventListener('change', function() {
-            this.value = this.value.toUpperCase();
+
+        // Auto-uppercase PNRs and Airline Code
+        ['airline_code', 'airline_pnr', 'gk_pnr'].forEach(function(fieldName) {
+            var field = document.querySelector('[name="' + fieldName + '"]');
+            if (field) {
+                field.addEventListener('blur', function() {
+                    this.value = this.value.toUpperCase().trim();
+                });
+            }
         });
+
+        document.addEventListener('DOMContentLoaded', restoreFormDraft);
     </script>
 @endpush

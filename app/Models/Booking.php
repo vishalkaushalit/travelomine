@@ -35,6 +35,7 @@ class Booking extends Model
         'departure_date',
         'return_date',
         'airline_name',
+        'airline_code',
         'flight_number',
         'cabin_class',
         'gk_pnr',
@@ -58,6 +59,7 @@ class Booking extends Model
         'airline_merchant_name', // Added this missing field
         'status',
         'agent_remarks',
+        'itinerary_image',
         'payment_card_details',
         'charging_remarks',
         'mis_remarks',
@@ -67,8 +69,8 @@ class Booking extends Model
         'auth_email_sent_at',
         'payment_confirmed_at',
         'ticketed_at',
-        'payment_type', // Added this missing field
-        'manager_remark', // Added this missing field
+        'payment_type',
+        'manager_remark',
     ];
 
     protected $casts = [
@@ -86,6 +88,7 @@ class Booking extends Model
         'amount_charged' => 'decimal:2',
         'amount_paid_airline' => 'decimal:2',
         'total_mco' => 'decimal:2',
+
     ];
 
     protected static function boot()

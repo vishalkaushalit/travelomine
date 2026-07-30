@@ -176,22 +176,25 @@ class AgentBookingController extends Controller
             'billing_phone' => 'required|string|max:30',
             'billing_address' => 'required|string',
 
-            // Flight Specific
-            'flight_type' => 'required_if:service_provided,Flight|nullable|in:oneway,roundtrip,multicity',
+            // Flight & Airline Specific
+            'flight_type' => 'nullable|in:oneway,roundtrip,multicity',
             'gk_pnr' => 'nullable|string|max:50|required_without:airline_pnr',
             'airline_pnr' => 'nullable|string|max:50|required_without:gk_pnr',
+            'airline_name' => 'required|string|max:100',
+            'airline_code' => 'nullable|string|max:10',
+            'itinerary_image' => 'nullable|file|mimes:png,jpg,jpeg|max:10240',
 
-            // Flight Segments
-            'segments' => 'required_if:service_provided,Flight|array|min:1',
-            'segments.*.from_city' => 'required|string|max:100',
-            'segments.*.to_city' => 'required|string|max:100',
-            'segments.*.departure_date' => 'required|date',
+            // Flight Segments (Optional)
+            'segments' => 'nullable|array',
+            'segments.*.from_city' => 'nullable|string|max:100',
+            'segments.*.to_city' => 'nullable|string|max:100',
+            'segments.*.departure_date' => 'nullable|date',
             'segments.*.return_date' => 'nullable|date',
-            'segments.*.airline_code' => 'nullable|string|max:3',
-            'segments.*.airline_name' => 'required|string|max:100',
+            'segments.*.airline_code' => 'nullable|string|max:10',
+            'segments.*.airline_name' => 'nullable|string|max:100',
             'segments.*.flight_number' => 'nullable|string|max:10',
             'segments.*.segment_pnr' => 'nullable|string|max:50',
-            'segments.*.cabin_class' => 'required|string|max:50',
+            'segments.*.cabin_class' => 'nullable|string|max:50',
             'segments.*.departure_time' => 'nullable|date_format:H:i',
             'segments.*.arrival_time' => 'nullable|date_format:H:i',
 
@@ -290,6 +293,11 @@ class AgentBookingController extends Controller
         $agencyMerchantId = $this->getAgencyMerchantId($validated);
         $agencyMerchantName = $this->getAgencyMerchantName($agencyMerchantId);
 
+        $itineraryImagePath = null;
+        if (request()->hasFile('itinerary_image')) {
+            $itineraryImagePath = request()->file('itinerary_image')->store('itineraries', 'public');
+        }
+
         $bookingData = [
             'user_id' => auth()->id(),
             'agent_custom_id' => auth()->user()->agent_custom_id ?? ('AG'.auth()->id()),
@@ -307,14 +315,16 @@ class AgentBookingController extends Controller
             'customer_phone' => $validated['customer_phone'],
             'billing_phone' => $validated['billing_phone'],
             'billing_address' => $validated['billing_address'],
-            'flight_type' => $validated['flight_type'] ?? null,
+            'flight_type' => $validated['flight_type'] ?? 'oneway',
             'departure_city' => $firstSegment['from_city'] ?? null,
             'arrival_city' => $lastSegment['to_city'] ?? null,
             'departure_date' => $firstSegment['departure_date'] ?? null,
             'return_date' => $this->getReturnDate($validated, $firstSegment),
-            'airline_name' => $firstSegment['airline_name'] ?? null,
+            'airline_name' => $validated['airline_name'] ?? ($firstSegment['airline_name'] ?? null),
+            'airline_code' => $validated['airline_code'] ?? ($firstSegment['airline_code'] ?? null),
+            'itinerary_image' => $itineraryImagePath,
             'flight_number' => $firstSegment['flight_number'] ?? null,
-            'cabin_class' => $firstSegment['cabin_class'] ?? null,
+            'cabin_class' => $firstSegment['cabin_class'] ?? 'Economy',
             'adults' => $validated['adults'],
             'children' => $validated['children'],
             'infants' => $validated['infants'] + $validated['infant_in_lap'],
@@ -330,8 +340,7 @@ class AgentBookingController extends Controller
             'hotel_required' => filter_var($validated['hotel_required'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'cab_required' => filter_var($validated['cab_required'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'insurance_required' => filter_var($validated['insurance_required'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            'payment_status_id' => $defaultPaymentStatus ? $defaultPaymentStatus->id : null, // 
-
+            'payment_status_id' => $defaultPaymentStatus ? $defaultPaymentStatus->id : null,
         ];
 
         return Booking::create($bookingData);
@@ -713,20 +722,24 @@ class AgentBookingController extends Controller
             return;
         }
 
-        $flightType = $validated['flight_type'] ?? null;
-        $segments = $validated['segments'] ?? [];
-        $count = count($segments);
-
-        if (! $flightType) {
-            throw ValidationException::withMessages([
-                'flight_type' => 'Flight type is required.',
-            ]);
-        }
-
         // PNR validation
         if (empty($validated['gk_pnr']) && empty($validated['airline_pnr'])) {
             throw ValidationException::withMessages([
                 'gk_pnr' => 'At least one of GK PNR or Airline PNR is required.',
+            ]);
+        }
+
+        $segments = $validated['segments'] ?? [];
+        if (empty($segments)) {
+            return;
+        }
+
+        $flightType = $validated['flight_type'] ?? null;
+        $count = count($segments);
+
+        if (! $flightType) {
+            throw ValidationException::withMessages([
+                'flight_type' => 'Flight type is required when segments are provided.',
             ]);
         }
 
@@ -744,12 +757,6 @@ class AgentBookingController extends Controller
                     'segments' => 'Round trip booking must contain 2 segments.',
                 ]);
             }
-
-            // if (empty($segments[0]['return_date'])) {
-            //     throw ValidationException::withMessages([
-            //         'segments.0.return_date' => 'Return date is required for round trip booking.',
-            //     ]);
-            // }
         }
 
         // Multi-city validation

@@ -1,44 +1,42 @@
-<h3>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} New Booking Confirmation.
-</h3>
-
-
-<p>Dear {{ $booking->customer_name ?? 'Passeneger' }},</p>
-<p>Greetings of the day !!</p>
-<p>As per our conversation and as agreed, we have booked your reservation with
-    {{ $booking->segments->first()?->airline_name ?? 'the airline' }} under
-    Confirmation {{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}. Please see the details
-    below.
-</p>
-<p>
-    Total cost for all passengers: {{ $booking->currency ?? 'USD' }}
-    {{ number_format($booking->amount_charged, 2) }} (all incl. taxes and fees).
+<p style="margin: 0 0 12px 0;">Dear {{ $booking->customer_name ?? 'Passenger' }},</p>
+<p style="margin: 0 0 12px 0;">Greetings of the day !!</p>
+<p style="margin: 0 0 12px 0;">As per our conversation and as agreed, we have booked your reservation with
+    <strong>{{ $booking->airline_name ?? ($booking->segments->first()?->airline_name ?? 'the airline') }}</strong> under
+    Confirmation <strong>{{ $booking->airline_pnr ? $booking->airline_pnr : ($booking->gk_pnr ?: 'N/A') }}</strong>.
+    Please see the details below.
 </p>
 
-<p>
-    As per our telephonic conversation I,<b> {{ $booking->customer_name ?? '' }}</b>, authorize
+<p style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin: 16px 0;">
+    <strong>Total cost for all passengers:</strong> <span
+        style="color: #16a34a; font-weight: 700; font-size: 16px;">{{ $booking->currency ?? 'USD' }}
+        {{ number_format($booking->amount_charged, 2) }}</span> <small style="color: #64748b;">(all incl. taxes and
+        fees)</small>
+</p>
+
+<p style="margin: 0 0 12px 0;">
+    As per our telephonic conversation I, <b>{{ $booking->customer_name ?? '' }}</b>, authorize
     <b>
-        {{ $booking->segments->first()?->airline_name ?? 'the airline' }} /
+        {{ $booking->airline_name ?? ($booking->segments->first()?->airline_name ?? 'the airline') }} /
         {{ $booking->agency_merchant_name ?? '' }}
     </b>
     to process the above-mentioned charges under their respective merchants for charging my
-    ******{{ $booking->cards->first()?->card_last_four ?? '****' }} card for the booking the
-    below-mentioned
-    itinerary
-    with {{ $booking->segments->first()?->airline_name ?? 'the airline' }}.
-</p>
-<p>
-    This payment authorization is for the amount indicated above and is valid for one-time use only. I certify that
-    I am
-    <b>{{ $booking->customer_name ?? '' }}</b>, an authorized user of this card and
-    that I will not dispute the payment with my credit/debit
-    card company/bank.
-</p>
-<p>
-    Kindly confirm your acceptance of the terms and agreement to the declaration by replying to this email with
-    'I Agree' or 'I Authorize'.
+    <b>******{{ $booking->cards->first()?->card_last_four ?? '****' }}</b> card for the booking of the below-mentioned
+    itinerary with {{ $booking->airline_name ?? ($booking->segments->first()?->airline_name ?? 'the airline') }}.
 </p>
 
-<h4>Charges Description:</h4>
+
+<p style="margin: 16px 0 12px 0;">
+    This payment authorization is for the amount indicated above and is valid for one-time use only. I certify that
+    I am <b>{{ $booking->customer_name ?? '' }}</b>, an authorized user of this card and that I will not dispute the
+    payment with my credit/debit card company/bank.
+</p>
+<p
+    style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 10px 14px; border-radius: 4px; color: #1e40af; font-size: 13px; margin: 16px 0;">
+    📌 <strong>Action Required:</strong> Kindly confirm your acceptance of the terms and agreement to the declaration by
+    replying to this email with <strong>'I Agree'</strong> or <strong>'I Authorize'</strong>.
+</p>
+
+<h4 style="margin: 24px 0 10px 0; color: #0f172a; font-size: 15px; font-weight: 700;">Charges Description:</h4>
 
 @foreach ($booking->cards as $index => $card)
     @php
@@ -63,90 +61,132 @@
                                     ($booking->agencymerchantname ?? 'Agency Merchant'))))));
     @endphp
 
-    <p>
-        {{ $index + 1 }}.
-        {{ $booking->currency ?? 'USD' }} {{ number_format((float) $amount, 2) }}
-        ({{ $merchantName }}, incl. the taxes and fees)
-    </p>
+    <div
+        style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px;">
+        <strong>Charge {{ $index + 1 }}:</strong> {{ $booking->currency ?? 'USD' }}
+        <strong>{{ number_format((float) $amount, 2) }}</strong>
+        <span style="color: #64748b;">({{ $merchantName }}, incl. taxes & fees)</span>
+    </div>
 @endforeach
 
-<h4>Passenger Details:</h4>
+<h4 style="margin: 24px 0 10px 0; color: #0f172a; font-size: 15px; font-weight: 700;">Passenger Details:</h4>
 
-<table style="width: 100%; border: 1px solid #000; border-collapse: collapse; margin: 16px 0;">
-    <thead style="border: 1px solid #000;">
-        <tr style="background-color: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">S. No.</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Type</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">First Name</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Middle Name</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Last Name</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Gender</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">DOB</th>
-            <th style="padding: 12px 16px; text-align: left; font-weight: 600;">Price</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($booking->passengers as $index => $passenger)
-            <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 12px 16px;">{{ $index + 1 }}</td>
-                <td style="padding: 12px 16px;">{{ $passenger->type ?? 'ADT' }}</td>
-                <td style="padding: 12px 16px;">{{ $passenger->first_name }}</td>
-                <td style="padding: 12px 16px;">{{ $passenger->middle_name ?? '-' }}</td>
-                <td style="padding: 12px 16px;">{{ $passenger->last_name }}</td>
-                <td style="padding: 12px 16px;">{{ $passenger->gender ?? '-' }}</td>
-                <td style="padding: 12px 16px;">
-                    {{ $passenger->dob ? \Carbon\Carbon::parse($passenger->dob)->format('M-d-Y') : '-' }}
-                </td>
-                <td style="padding: 12px 16px;">USD
-                    {{ number_format(($booking->amount_charged ?? 0) / max($booking->passengers->count(), 1), 2) }}
-                </td>
+<div style="width: 100%; overflow-x: auto; margin: 12px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"
+        style="width: 100%; border: 1px solid #e2e8f0; border-collapse: collapse; border-radius: 8px; overflow: hidden; font-size: 12px;">
+        <thead>
+            <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #475569;">
+                <th style="padding: 10px 8px; text-align: center; font-weight: 700; border-right: 1px solid #e2e8f0;">#
+                </th>
+                <th style="padding: 10px 8px; text-align: center; font-weight: 700; border-right: 1px solid #e2e8f0;">
+                    Type</th>
+                <th style="padding: 10px 8px; text-align: left; font-weight: 700; border-right: 1px solid #e2e8f0;">
+                    First Name</th>
+                <th style="padding: 10px 8px; text-align: left; font-weight: 700; border-right: 1px solid #e2e8f0;">
+                    Middle</th>
+                <th style="padding: 10px 8px; text-align: left; font-weight: 700; border-right: 1px solid #e2e8f0;">Last
+                    Name</th>
+                <th style="padding: 10px 8px; text-align: center; font-weight: 700; border-right: 1px solid #e2e8f0;">
+                    Gender</th>
+                <th style="padding: 10px 8px; text-align: center; font-weight: 700; border-right: 1px solid #e2e8f0;">
+                    DOB</th>
+                <th style="padding: 10px 8px; text-align: right; font-weight: 700;">Price</th>
             </tr>
-        @endforeach
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach ($booking->passengers as $index => $passenger)
+                <tr style="border-bottom: 1px solid #f1f5f9; color: #1e293b;">
+                    <td style="padding: 10px 8px; text-align: center; border-right: 1px solid #f1f5f9;">
+                        {{ $index + 1 }}</td>
+                    <td
+                        style="padding: 10px 8px; text-align: center; border-right: 1px solid #f1f5f9; font-weight: 600; color: #4f46e5;">
+                        {{ $passenger->type ?? 'ADT' }}</td>
+                    <td style="padding: 10px 8px; text-align: left; border-right: 1px solid #f1f5f9; font-weight: 600;">
+                        {{ $passenger->first_name }}</td>
+                    <td style="padding: 10px 8px; text-align: left; border-right: 1px solid #f1f5f9; color: #64748b;">
+                        {{ $passenger->middle_name ?? '-' }}</td>
+                    <td style="padding: 10px 8px; text-align: left; border-right: 1px solid #f1f5f9; font-weight: 600;">
+                        {{ $passenger->last_name }}</td>
+                    <td style="padding: 10px 8px; text-align: center; border-right: 1px solid #f1f5f9;">
+                        {{ $passenger->gender ?? '-' }}</td>
+                    <td style="padding: 10px 8px; text-align: center; border-right: 1px solid #f1f5f9;">
+                        {{ $passenger->dob ? \Carbon\Carbon::parse($passenger->dob)->format('M d, Y') : '-' }}
+                    </td>
+                    <td style="padding: 10px 8px; text-align: right; font-weight: 700; color: #0f172a;">
+                        USD
+                        {{ number_format(($booking->amount_charged ?? 0) / max($booking->passengers->count(), 1), 2) }}
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 
-<h4>Purchase Summary:</h4>
-<h6>Payment Type - Credit/Debit Card Authorization</h6>
-<table style="width: 100%; border-collapse: collapse; margin: 16px 0; background-color: #f9fafb;">
+<h4 style="margin: 24px 0 10px 0; color: #0f172a; font-size: 15px; font-weight: 700;">Purchase Summary:</h4>
+<div style="font-size: 12px; color: #64748b; margin-bottom: 8px; font-weight: 600;">Payment Type: Credit / Debit Card
+    Authorization</div>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0"
+    style="width: 100%; border: 1px solid #e2e8f0; border-collapse: collapse; border-radius: 8px; overflow: hidden; font-size: 13px; margin: 10px 0;">
     <tbody>
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6; width: 40%;">Card Holder
-                Name:
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td
+                style="padding: 10px 14px; font-weight: 600; background-color: #f8fafc; color: #475569; width: 38%; border-right: 1px solid #e2e8f0;">
+                Card Holder Name:</td>
+            <td style="padding: 10px 14px; color: #0f172a; font-weight: 600;">
+                {{ $booking->cards->first()?->card_holder_name ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td
+                style="padding: 10px 14px; font-weight: 600; background-color: #f8fafc; color: #475569; border-right: 1px solid #e2e8f0;">
+                Card Type:</td>
+            <td style="padding: 10px 14px; color: #0f172a;">{{ $booking->cards->first()?->card_type ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td
+                style="padding: 10px 14px; font-weight: 600; background-color: #f8fafc; color: #475569; border-right: 1px solid #e2e8f0;">
+                Card Number:</td>
+            <td style="padding: 10px 14px; color: #0f172a; font-family: monospace;">
+                {{ $booking->cards->first()?->card_number ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td
+                style="padding: 10px 14px; font-weight: 600; background-color: #f8fafc; color: #475569; border-right: 1px solid #e2e8f0;">
+                Expiration:</td>
+            <td style="padding: 10px 14px; color: #0f172a;">{{ $booking->cards->first()?->expiration ?? 'N/A' }}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td
+                style="padding: 10px 14px; font-weight: 600; background-color: #f8fafc; color: #475569; border-right: 1px solid #e2e8f0;">
+                Billing Address:</td>
+            <td style="padding: 10px 14px; color: #0f172a;">{{ $booking->cards->first()?->billing_address ?? 'N/A' }}
             </td>
-            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->card_holder_name ?? 'N/A' }}</td>
         </tr>
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Card Type:</td>
-            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->card_type ?? 'N/A' }}</td>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td
+                style="padding: 10px 14px; font-weight: 600; background-color: #f8fafc; color: #475569; border-right: 1px solid #e2e8f0;">
+                Phone Number:</td>
+            <td style="padding: 10px 14px; color: #0f172a;">{{ $booking->cards->first()?->billing_phone ?? 'N/A' }}
+            </td>
         </tr>
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Card Number:</td>
-            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->card_number ?? 'N/A' }}</td>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td
+                style="padding: 10px 14px; font-weight: 600; background-color: #f8fafc; color: #475569; border-right: 1px solid #e2e8f0;">
+                Email:</td>
+            <td style="padding: 10px 14px; color: #0f172a;">{{ $booking->customer_email }}</td>
         </tr>
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Expiration:</td>
-            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->expiration ?? 'N/A' }}</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Billing Address:</td>
-            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->billing_address ?? 'N/A' }}</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Phone Number:</td>
-            <td style="padding: 12px 16px;">{{ $booking->cards->first()?->billing_phone ?? 'N/A' }}</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Email:</td>
-            <td style="padding: 12px 16px;">{{ $booking->customer_email }}</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Total Amount:</td>
-            <td style="padding: 12px 16px; font-weight: 600; color: #059669;">USD
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td
+                style="padding: 10px 14px; font-weight: 600; background-color: #f8fafc; color: #475569; border-right: 1px solid #e2e8f0;">
+                Total Amount:</td>
+            <td style="padding: 10px 14px; font-weight: 700; color: #16a34a; font-size: 15px;">USD
                 {{ number_format($booking->amount_charged, 2) }}</td>
         </tr>
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 12px 16px; font-weight: 600; background-color: #f3f4f6;">Transaction Date:</td>
-            <td style="padding: 12px 16px;">{{ \Carbon\Carbon::now()->format('M dS, Y') }}</td>
+        <tr>
+            <td
+                style="padding: 10px 14px; font-weight: 600; background-color: #f8fafc; color: #475569; border-right: 1px solid #e2e8f0;">
+                Transaction Date:</td>
+            <td style="padding: 10px 14px; color: #0f172a;">{{ \Carbon\Carbon::now()->format('M d, Y') }}</td>
         </tr>
     </tbody>
 </table>

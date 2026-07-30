@@ -21,21 +21,23 @@ class AuthConsentController extends Controller
      */
     private function getRoleBasedConfig()
     {
-        $user = auth()->user();
-        
-        if ($user->hasRole('agent')) {
+        // These actions are exposed under both the agent and charge route groups.
+        // Use the route that was actually authorized by middleware instead of
+        // Spatie's role relation. The application stores the login role in the
+        // users.role column, and the two can be out of sync for individual users.
+        if (request()->routeIs('agent.*')) {
             return [
                 'view_prefix' => 'agent.auth',
                 'route_prefix' => 'agent',
-                'redirect_route' => 'agent.bookings.index'
+                'redirect_route' => 'agent.bookings.index',
             ];
         }
-        
+
         // Default for charge team and admin
         return [
             'view_prefix' => 'charge.auth',
             'route_prefix' => 'charge',
-            'redirect_route' => 'charge.dashboard'
+            'redirect_route' => 'charge.dashboard',
         ];
     }
 
@@ -50,36 +52,28 @@ class AuthConsentController extends Controller
             'passengers',
             'agencyMerchant',
         ])->findOrFail($id);
-        // Map service_type to a specific body template
-        $templateMap = [
-            'New Booking' => 'emails.charge.auth.new-booking',
-            'Exchange' => 'emails.charge.auth.exchange',
-            'Cancellation' => 'emails.charge.auth.cancellation',
-            'Refund' => 'emails.charge.auth.refund',
-            'Seat selection' => 'emails.charge.auth.seat-assignment',
-            'Baggage edition' => 'emails.charge.auth.baggage-edition',
-            'Pet edition' => 'emails.charge.auth.pet-edition',
-            'Others' => 'emails.charge.auth.others',
-            'Cancel & Refund' => 'emails.charge.auth.cancel-and-refund',
-            'Change' => 'emails.charge.auth.change',
-            'Exchange & Upgrade' => 'emails.charge.auth.exchange-upgrade',
-        ];
 
-        $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';
+        // Get booking language
+        $language = $this->getBookingLanguage($booking);
+
+        // Get the appropriate template view based on service type and language
+    $bodyView = $this->getTemplateView($booking->service_type, $language, $booking);
 
         // Default email body content (can be edited in UI)
         $emailContent = view($bodyView, compact('booking'))->render();
 
+        // Handle Purchase Summary split for Spanish as well
+        // Spanish: "Resumen de Compra" or keep English "Purchase Summary"
         $parts = preg_split(
-            '/<h4[^>]*>\s*Purchase Summary\s*:?\s*<\/h4>/i',
+            '/<h4[^>]*>\s*(?:Purchase Summary|Resumen de Compra)\s*:?\s*<\/h4>/i',
             $emailContent
         );
 
         $mainContent = $parts[0] ?? $emailContent;
-
         $purchaseSummary = '';
 
         if (isset($parts[1])) {
+            // Keep the original heading from the template
             $purchaseSummary = '<h4>Purchase Summary:</h4>'.$parts[1];
         }
 
@@ -87,11 +81,12 @@ class AuthConsentController extends Controller
         $config = $this->getRoleBasedConfig();
 
         return view(
-            $config['view_prefix'] . '.edit', 
+            $config['view_prefix'].'.edit',
             compact(
                 'booking',
                 'mainContent',
-                'purchaseSummary'
+                'purchaseSummary',
+                'language'
             )
         );
     }
@@ -116,7 +111,7 @@ class AuthConsentController extends Controller
         // Get role-based configuration
         $config = $this->getRoleBasedConfig();
 
-        return redirect()->route($config['route_prefix'] . '.authorize.preview.page', $id);
+        return redirect()->route($config['route_prefix'].'.authorize.preview.page', $id);
     }
 
     /**
@@ -141,7 +136,7 @@ class AuthConsentController extends Controller
         // Get role-based configuration
         $config = $this->getRoleBasedConfig();
 
-        return view($config['view_prefix'] . '.preview', [
+        return view($config['view_prefix'].'.preview', [
             'booking' => $booking,
             'mainContent' => $mainContent,
             'purchaseSummary' => $purchaseSummary,
@@ -164,18 +159,14 @@ class AuthConsentController extends Controller
         // Get role-based configuration
         $config = $this->getRoleBasedConfig();
 
-        if ($booking->auth_email_sent_at || $booking->status === 'auth_email_sent') {
-            return redirect()
-                ->route($config['redirect_route'])
-                ->with('error', 'Auth mail has already been sent for this booking.');
-        }
+        // Allow sending/resending auth mail regardless of booking status
 
         $mainContent = $request->input('main_content') ?? session('main_content_'.$id);
         $purchaseSummary = $request->input('purchase_summary') ?? session('purchase_summary_'.$id);
 
         if (! $mainContent) {
             return redirect()
-                ->route($config['route_prefix'] . '.authorize.edit', $id)
+                ->route($config['route_prefix'].'.authorize.edit', $id)
                 ->with('error', 'Email content missing. Please preview again.');
         }
 
@@ -197,8 +188,6 @@ class AuthConsentController extends Controller
                 'auth_email_sent_at' => now(),
             ]);
 
-            session()->forget(['main_content_'.$id, 'purchase_summary_'.$id]);
-
             return redirect()
                 ->route($config['redirect_route'])
                 ->with('success', 'Acknowledgement mail sent successfully.');
@@ -212,7 +201,7 @@ class AuthConsentController extends Controller
             ]);
 
             return redirect()
-                ->route($config['route_prefix'] . '.authorize.preview.page', $id)
+                ->route($config['route_prefix'].'.authorize.preview.page', $id)
                 ->with('error', 'Mail sending failed: '.$e->getMessage());
 
         } catch (\Exception $e) {
@@ -224,7 +213,7 @@ class AuthConsentController extends Controller
             ]);
 
             return redirect()
-                ->route($config['route_prefix'] . '.authorize.preview.page', $id)
+                ->route($config['route_prefix'].'.authorize.preview.page', $id)
                 ->with('error', 'Unexpected error while sending mail: '.$e->getMessage());
         }
     }
@@ -246,23 +235,16 @@ class AuthConsentController extends Controller
         $purchaseSummary = $request->input('purchase_summary') ?? session('purchase_summary_'.$id);
 
         if (! $mainContent) {
-            // fallback to default body for current service_type
-            $templateMap = [
-                'New Booking' => 'emails.charge.auth.new-booking',
-                'Exchange' => 'emails.charge.auth.exchange',
-                'Exchange & Upgrade' => 'emails.charge.auth.exchange-upgrade',
-                'Cancellation' => 'emails.charge.auth.cancellation',
-                'Refund' => 'emails.charge.auth.refund',
-                'Changes Confirmation' => 'emails.charge.auth.changes-confirmation',
-                'Name Correction' => 'emails.charge.auth.name-correction',
-                'Pet Addition' => 'emails.charge.auth.pet-addition',
-            ];
+            // Get booking language
+            $language = $this->getBookingLanguage($booking);
 
-            $bodyView = $templateMap[$booking->service_type] ?? 'emails.charge.auth.new-booking';
+            // Get the appropriate template view with language
+            $bodyView = $this->getTemplateView($booking->service_type, $language, $booking);
+
             $emailContent = view($bodyView, compact('booking'))->render();
 
             $parts = preg_split(
-                '/<h4[^>]*>\s*Purchase Summary\s*:?\s*<\/h4>/i',
+                '/<h4[^>]*>\s*(?:Purchase Summary|Resumen de Compra)\s*:?\s*<\/h4>/i',
                 $emailContent
             );
 
@@ -342,54 +324,111 @@ class AuthConsentController extends Controller
             return $html;
         }
 
-        // Style tables - ensure they have proper width
-        $html = preg_replace(
-            '/<table(.*?)>/i',
-            '<table $1 style="width:100%; border-collapse:collapse; border:1px solid #dcdcdc; margin:15px 0;">',
-            $html
-        );
-
-        // Style TH
-        $html = preg_replace(
-            '/<th(.*?)>/i',
-            '<th $1 style="border:1px solid #dcdcdc; padding:10px; background:#f8f9fa; font-weight:bold; text-align:left;">',
-            $html
-        );
-
-        // Style TD
-        $html = preg_replace(
-            '/<td(.*?)>/i',
-            '<td $1 style="border:1px solid #dcdcdc; padding:10px;">',
-            $html
-        );
-
-        // Add responsive wrapper for tables
-        $html = preg_replace(
-            '/<table/i',
-            '<div style="overflow-x:auto;"><table',
-            $html
-        );
-
-        $html = preg_replace(
-            '/<\/table>/i',
-            '</table></div>',
-            $html
-        );
-
-        // Headings
-        $html = preg_replace(
-            '/<h4(.*?)>/i',
-            '<h4 $1 style="margin-top:25px; color:#1e3a8a;">',
-            $html
-        );
-
-        // Fix any nested table issues
-        $html = preg_replace(
-            '/<div style="overflow-x:auto;"><div style="overflow-x:auto;">/i',
-            '<div style="overflow-x:auto;">',
-            $html
-        );
-
+        // Return html directly to preserve rich inline CSS and prevent layout distortion
         return $html;
+    }
+
+    /**
+     * Get the language for email templates based on booking language field
+     */
+    private function getBookingLanguage($booking)
+    {
+        if (empty($booking->language)) {
+            return 'en'; // Default to English
+        }
+
+        // Extract language from format like "English-Flight" or "Spanish-Flight"
+        $languageMap = [
+            'english-flight' => 'en',
+            'spanish-flight' => 'es',
+            // Add more languages as needed
+            'french-flight' => 'fr',
+            'german-flight' => 'de',
+        ];
+
+        $languageKey = strtolower($booking->language);
+
+        return $languageMap[$languageKey] ?? 'en';
+    }
+
+    /**
+     * Get the template view path based on service type and language
+     */
+    /**
+     * Get the template view path based on service type and language
+     */
+    private function getTemplateView($serviceType, $language = 'en', $booking = null)
+    {
+        $templateMap = [
+            'New Booking' => 'new-booking',
+            'Exchange' => 'exchange',
+            'Cancellation' => 'cancellation',
+            'Refund' => 'refund',
+            'Seat selection' => 'seat-assignment',
+            'Baggage edition' => 'baggage-edition',
+            'Pet edition' => 'pet-edition',
+            'Others' => 'others',
+            'Cancel & Refund' => 'cancel-and-refund',
+            'Change' => 'change',
+            'Exchange & Upgrade' => 'exchange-upgrade',
+            'Changes Confirmation' => 'changes-confirmation',
+            'Name Correction' => 'name-correction',
+            'Pet Addition' => 'pet-addition',
+        ];
+
+        $templateName = $templateMap[$serviceType] ?? 'new-booking';
+
+        // Build the view path based on language
+        $languagePaths = [
+            'es' => "emails.spanish.auth.{$templateName}",
+            'en' => "emails.charge.auth.{$templateName}",
+        ];
+
+        $viewPath = $languagePaths[$language] ?? "emails.charge.auth.{$templateName}";
+
+        // Check if the view exists, fallback to English if not
+        if (! view()->exists($viewPath)) {
+            // Get booking language for logging
+            $bookingLanguage = $booking ? ($booking->language ?? 'not set') : 'not provided';
+
+            Log::warning("Template not found for language: {$language}, service: {$serviceType}. Falling back to English.", [
+                'booking_language' => $bookingLanguage,
+                'requested_view' => $viewPath,
+            ]);
+
+            $viewPath = "emails.charge.auth.{$templateName}";
+        }
+
+        return $viewPath;
+    }
+
+    /**
+     * Get supported languages configuration
+     */
+    private function getSupportedLanguages()
+    {
+        return [
+            'en' => [
+                'name' => 'English',
+                'booking_value' => 'English-Flight',
+                'email_view_path' => 'emails.charge.auth',
+                'purchase_summary_heading' => 'Purchase Summary',
+            ],
+            'es' => [
+                'name' => 'Spanish',
+                'booking_value' => 'Spanish-Flight',
+                'email_view_path' => 'emails.spanish.auth',
+                'purchase_summary_heading' => 'Resumen de Compra',
+            ],
+            // Add more languages as needed
+        ];
+    }
+
+    /**
+     * Check if a language is supported
+     */
+    private function isLanguageSupported($languageCode)
+    {
+        return array_key_exists($languageCode, $this->getSupportedLanguages());
     }
 }

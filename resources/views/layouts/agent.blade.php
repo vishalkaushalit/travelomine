@@ -239,6 +239,14 @@
                                 </a>
                              </li>
 
+                              <!-- E-Ticket Generator -->
+                              <li class="nav-item">
+                                 <a href="{{ route('agent.e-ticket.editor') }}" class="nav-link {{ request()->routeIs('agent.e-ticket.*') ? 'active' : '' }}">
+                                     <i class="nav-icon fas fa-ticket-alt"></i>
+                                     <p>E-Ticket Generator</p>
+                                 </a>
+                              </li>
+
                             <!-- Settings (Placeholder) -->
                             <li class="nav-item">
                                 <a href="#" class="nav-link">

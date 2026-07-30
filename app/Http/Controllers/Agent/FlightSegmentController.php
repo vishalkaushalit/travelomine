@@ -26,6 +26,7 @@ class FlightSegmentController extends Controller
             'segments.*.departure_date' => 'required|date',
             'segments.*.return_date' => 'nullable|date',
             'segments.*.airline_name' => 'nullable|string|max:100',
+            'segments.*.airline_code' => 'nullable|string|max:50',
             'segments.*.flight_number' => 'nullable|string|max:50',
             'segments.*.segment_pnr' => 'nullable|string|max:50',
             'segments.*.cabin_class' => 'nullable|string|max:50',
@@ -119,6 +120,7 @@ class FlightSegmentController extends Controller
                 'departure_date' => null,
                 'return_date' => null,
                 'airline_name' => null,
+                'airline_code' => null,
                 'flight_number' => null,
                 'cabin_class' => null,
             ];
@@ -133,6 +135,7 @@ class FlightSegmentController extends Controller
                 ? ($firstSegment['return_date'] ?? null)
                 : null,
             'airline_name' => $firstSegment['airline_name'] ?? null,
+            'airline_code' => $firstSegment['airline_code'] ?? null,
             'flight_number' => $firstSegment['flight_number'] ?? null,
             'cabin_class' => $firstSegment['cabin_class'] ?? null,
         ];
@@ -161,6 +164,7 @@ class FlightSegmentController extends Controller
                 'return_date' => $segment['return_date'] ?? null,
 
                 'airline_name' => $segment['airline_name'] ?? null,
+                'airline_code' => $segment['airline_code'] ?? null,
                 'flight_number' => $segment['flight_number'] ?? null,
                 'segment_pnr' => $segment['segment_pnr'] ?? null,
                 'cabin_class' => $segment['cabin_class'] ?? null,

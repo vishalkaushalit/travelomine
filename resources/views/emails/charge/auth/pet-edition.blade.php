@@ -1,12 +1,9 @@
-    <h3>Authorization for {{ $booking->segments->first()?->airline_name ?? 'the airline' }} Pet Edition Confirmation.
-    </h3>
-
     <p>Dear {{ $booking->customer_name ?? 'Passeneger' }},</p>
     <p>Greetings of the day !!</p>
-    <p>As per our conversation and as agreed, we have booked your pet edition with
+    <p>As per our conversation and as agreed, we have booked your pet addition with
         {{ $booking->segments->first()?->airline_name ?? 'the airline' }} under
         Confirmation {{ $booking->airline_pnr ? $booking->airline_pnr : $booking->gk_pnr }}.
-            Please see the details below.
+        Please see the details below.
     </p>
     <p>
         Total cost for all passengers: {{ $booking->currency ?? 'USD' }}
